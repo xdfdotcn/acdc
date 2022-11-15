@@ -1,0 +1,13 @@
+[mysqld]
+# binlog 前缀,全路径前缀名
+log-bin=/var/lib/mysql/mysql-bin
+server-id=123454
+binlog_format=ROW
+# 过期时间最大99天
+expire_logs_days=99
+default-storage-engine=INNODB
+character-set-server=utf8
+collation-server=utf8_general_ci
+
+[mysql]
+default-character-set=utf8

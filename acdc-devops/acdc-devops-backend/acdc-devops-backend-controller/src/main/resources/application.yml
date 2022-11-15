@@ -1,0 +1,44 @@
+spring:
+  profiles:
+    active: @profile.active@
+  application:
+    name: acdc-scheduler
+  messages:
+    basename: i18n/messages
+    encoding: UTF-8
+server:
+  port: 8080
+
+custom:
+  rest:
+    connection:
+      connect-timeout: 15000
+      read-timeout: 60000
+scheduler:
+  config:
+    pool-size: 24
+  user-trigger:
+    interval:
+      ms: 10000
+  watch-cluster:
+    interval:
+      ms: 10000
+  extend-event:
+    interval:
+      ms: 10000
+# metrics:
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+          - prometheus
+          - health
+      base-path: /actuator
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}

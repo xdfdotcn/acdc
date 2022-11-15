@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <!--
+        1. 本次更改发生于 devops 1.11 迭代
+        2. 用户表结构调整
+        3. 增加默认用户
+        4. connector_requisition 表删除
+        5. connection_requisition 非空字段删除
+        6. connector_configuration 表字段类型调整
+
+    -->
+    <changeSet id="devops-tag-1_11" author="ACDC">
+        <tagDatabase tag="devops-1_11"/>
+    </changeSet>
+
+    <changeSet id="devops-1_11_1" author="ACDC">
+        <dropColumn tableName="user" columnName="login"/>
+        <dropColumn tableName="user" columnName="first_name"/>
+        <dropColumn tableName="user" columnName="last_name"/>
+        <dropColumn tableName="user" columnName="activated"/>
+        <dropColumn tableName="user" columnName="activation_key"/>
+        <dropColumn tableName="user" columnName="reset_key"/>
+        <dropColumn tableName="user" columnName="reset_date"/>
+        <dropColumn tableName="user" columnName="lang_key"/>
+        <dropColumn tableName="user" columnName="image_url"/>
+        <renameColumn columnDataType="datetime(3)"
+                      newColumnName="creation_time"
+                      oldColumnName="created_date"
+                      remarks="创建时间"
+                      tableName="user"/>
+        <renameColumn columnDataType="datetime(3)"
+                      newColumnName="update_time"
+                      oldColumnName="last_modified_date"
+                      remarks="更新时间"
+                      tableName="user"/>
+        <renameColumn columnDataType="varchar(50)"
+                      newColumnName="updated_by"
+                      oldColumnName="last_modified_by"
+                      remarks="更新时间"
+                      tableName="user"/>
+
+    </changeSet>
+
+    <changeSet id="devops-1_11_2" author="ACDC">
+        <!--初始化用户数据-->
+        <loadData
+                file="config/liquibase/data/user.csv"
+                separator=";"
+                tableName="user">
+        </loadData>
+
+        <!--初始化用户角色数据-->
+        <loadData
+                file="config/liquibase/data/authority.csv"
+                separator=";"
+                tableName="authority">
+        </loadData>
+
+        <!--用户与角色的绑定数据-->
+        <loadData
+                file="config/liquibase/data/user_authority.csv"
+                separator=";"
+                tableName="user_authority">
+        </loadData>
+    </changeSet>
+
+    <changeSet id="devops-1_11_3" author="ACDC">
+        <dropTable tableName="connector_requisition"/>
+    </changeSet>
+
+    <changeSet id="devops-1_11_4" author="ACDC">
+        <dropNotNullConstraint tableName="connection_requisition" columnName="source_approve_result"
+                               columnDataType="varchar(255)"/>
+        <dropNotNullConstraint tableName="connection_requisition" columnName="dba_approve_result"
+                               columnDataType="varchar(255)"/>
+
+        <modifyDataType columnName="name" newDataType="varchar(200)" tableName="connector_configuration"/>
+        <modifyDataType columnName="value" newDataType="text" tableName="connector_configuration"/>
+    </changeSet>
+</databaseChangeLog>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <!--
+        1. 字段类型变更,为了兼容h2
+    -->
+    <changeSet id="devops-tag-1_3" author="ACDC">
+        <tagDatabase tag="devops-1_3"/>
+    </changeSet>
+
+    <changeSet id="devops-1_3" author="ACDC">
+        <modifyDataType columnName="data_system_type" newDataType="int" tableName="connector_class"/>
+        <modifyDataType columnName="connector_type" newDataType="int" tableName="connector_class"/>
+        <modifyDataType columnName="role" newDataType="int" tableName="rdb_instance"/>
+    </changeSet>
+
+</databaseChangeLog>

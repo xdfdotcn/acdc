@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <!--
+        1. 本次更改发生于 devops 1.4 迭代
+    -->
+    <changeSet id="devops-tag-1_6" author="ACDC">
+        <tagDatabase tag="devops-1_6"/>
+    </changeSet>
+
+    <changeSet id="devops-1_6_1" author="ACDC">
+        <createTable tableName="connection" remarks="数据链路">
+
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="source_data_system_type" type="int" remarks="源数据系统类型;0:mysql,1:tidb,2:hive,3:kafka">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="source_project_id" type="bigint" remarks="源数据系统所属项目">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="source_data_set_id" type="bigint" remarks="源数据集 id;rdbTableId/topicId">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="source_connector_id" type="bigint" remarks="对应的 source connector">
+                <constraints nullable="true"/>
+            </column>
+
+            <column name="sink_data_system_type" type="int" remarks="目标数据系统类型;0:mysql,1:tidb,2:hive,3:kafka">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="sink_project_id" type="bigint" remarks="目标数据系统所属项目">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="sink_instance_id" type="bigint" remarks="目标数据系统实例">
+                <constraints nullable="true"/>
+            </column>
+
+            <column name="sink_data_set_id" type="bigint" remarks="目标数据集 id;可能是 rdbTableId/hiveTableId/topicId">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="sink_connector_id" type="bigint" remarks="对应的 sink connector">
+                <constraints nullable="true"/>
+            </column>
+
+            <column name="specific_configuration" type="varchar(1024)" remarks="特殊配置，json 格式">
+                <constraints nullable="true"/>
+            </column>
+
+            <column name="version" type="int" defaultValue="1" remarks="connection 版本，每次有需要审批的变更时 + 1">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="requisition_state" type="int" remarks="申请状态;0: approving 1: refused 2: approved">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="actual_state" type="int" remarks="实际状态;0:starting 1:running 2:stopping 3:stopped 4:failed">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="desired_state" type="int" remarks="预期状态;1:running 3:stopped">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="user_id" type="bigint" remarks="创建者">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="is_deleted" type="bit" defaultValue="0" remarks="逻辑删除;0: 未删除 1: 已删除">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="update_time" type="datetime(3)" remarks="更新时间">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="creation_time" type="datetime(3)" remarks="创建时间">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="connection_column_configuration" remarks="数据链路字段配置">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="connection_id" type="bigint" remarks="所属链路">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="connection_version" type="int" remarks="链路版本">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="source_column_name" type="varchar(128)" remarks="源字段名称">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="sink_column_name" type="varchar(128)" remarks="目标字段名称">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="filter_operator" type="varchar(20)" remarks="过滤操作符">
+                <constraints nullable="true"/>
+            </column>
+
+            <column name="filter_value" type="varchar(128)" remarks="过滤值">
+                <constraints nullable="true"/>
+            </column>
+
+            <column name="update_time" type="datetime(3)" remarks="更新时间">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="creation_time" type="datetime(3)" remarks="创建时间">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <dropAllForeignKeyConstraints baseTableName="connector_requisition"/>
+        <dropAllForeignKeyConstraints baseTableName="connector"/>
+        <dropTable tableName="dim_deletion_mode"/>
+        <dropTable tableName="dim_connector_requisition_status"/>
+        <dropColumn tableName="connector" columnName="creator_id"/>
+    </changeSet>
+</databaseChangeLog>

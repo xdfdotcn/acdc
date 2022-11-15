@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: acdc
+  name: acdc-ui
+  labels: {}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: acdc-ui
+  template:
+    metadata:
+      labels:
+        app: acdc-ui
+        name: acdc-ui
+        app.kubernetes.io/component: acdc-devops
+        app.kubernetes.io/name: acdc-ui
+        app.kubernetes.io/part-of: acdc
+    spec:
+      containers:
+        - name: acdc-ui
+          image: xdfdotcn/acdc-devops-ui:1.0.0-Alpha-SNAPSHOT
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          env:
+            - name: TZ
+              value: Asia/Shanghai
+            - name: LISTEN_PORT
+              value: 80
+            - name: ACDC_API_URL
+                value: http://api:9602
+          resources:
+            limits:
+              cpu: 800m
+              memory: 1Gi
+            requests:
+              cpu: 400m
+              memory: 500Mi

@@ -1,0 +1,11 @@
+cn.xdf.acdc.connect.jdbc.dialect.GenericDatabaseDialect$Provider
+cn.xdf.acdc.connect.jdbc.dialect.Db2DatabaseDialect$Provider
+cn.xdf.acdc.connect.jdbc.dialect.DerbyDatabaseDialect$Provider
+cn.xdf.acdc.connect.jdbc.dialect.OracleDatabaseDialect$Provider
+cn.xdf.acdc.connect.jdbc.dialect.SqliteDatabaseDialect$Provider
+cn.xdf.acdc.connect.jdbc.dialect.PostgreSqlDatabaseDialect$Provider
+cn.xdf.acdc.connect.jdbc.dialect.MySqlDatabaseDialect$Provider
+cn.xdf.acdc.connect.jdbc.dialect.SqlServerDatabaseDialect$Provider
+cn.xdf.acdc.connect.jdbc.dialect.SapHanaDatabaseDialect$Provider
+cn.xdf.acdc.connect.jdbc.dialect.SybaseDatabaseDialect$Provider
+cn.xdf.acdc.connect.jdbc.dialect.VerticaDatabaseDialect$Provider

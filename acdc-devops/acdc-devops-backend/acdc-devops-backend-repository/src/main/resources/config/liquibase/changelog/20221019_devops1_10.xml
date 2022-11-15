@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <!--
+        1. 本次更改发生于 devops 1.10 迭代
+        2. 增加third_party_id字段,三方审批系统中的审批单 id
+        3. 修改 connector 表字段名
+    -->
+    <changeSet id="devops-tag-1_10" author="ACDC">
+        <tagDatabase tag="devops-1_10"/>
+    </changeSet>
+
+    <changeSet id="devops-1_10_1" author="ACDC">
+        <addColumn tableName="connection_requisition">
+            <column name="third_party_id" type="varchar(255)" remarks="三方审批系统中的审批单 id">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="devops-1_10_2" author="ACDC">
+        <dropAllForeignKeyConstraints baseTableName="connector"/>
+
+        <modifyDataType columnName="desired_state_id" newDataType="int" tableName="connector"/>
+        <modifyDataType columnName="actual_state_id" newDataType="int" tableName="connector"/>
+
+        <renameColumn columnDataType="int"
+                      newColumnName="desired_state"
+                      oldColumnName="desired_state_id"
+                      remarks="0:INITIALIZED,1: PENDING,2: STARTING,3: RUNNING,4: UPDATING,5: STOPPING,6: STOPPED,7: RUNTIME_FAILED,8: CREATION_FAILED;"
+                      tableName="connector"/>
+
+        <renameColumn columnDataType="int"
+                      newColumnName="actual_state"
+                      oldColumnName="actual_state_id"
+                      remarks="0:INITIALIZED,1: PENDING,2: STARTING,3: RUNNING,4: UPDATING,5: STOPPING,6: STOPPED,7: RUNTIME_FAILED,8: CREATION_FAILED;"
+                      tableName="connector"/>
+
+    </changeSet>
+</databaseChangeLog>

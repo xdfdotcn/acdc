@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+    <!--
+        Added the constraints for entity RdbTidb.
+    -->
+    <changeSet id="20210908065206-2" author="jhipster">
+
+        <addForeignKeyConstraint baseColumnNames="rdb_id"
+                                 baseTableName="rdb_tidb"
+                                 constraintName="fk_rdb_tidb__rdb_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="rdb"/>
+
+        <addForeignKeyConstraint baseColumnNames="kafka_topic_id"
+                                 baseTableName="rdb_tidb"
+                                 constraintName="fk_rdb_tidb__kafka_topic_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="kafka_topic"/>
+    </changeSet>
+</databaseChangeLog>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+    <!--
+        Added the constraints for entity Project.
+    -->
+    <changeSet id="20210908065203-2" author="jhipster">
+
+        <addForeignKeyConstraint baseColumnNames="owner_id"
+                                 baseTableName="project"
+                                 constraintName="fk_project__owner_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="user"/>
+
+        <addForeignKeyConstraint baseColumnNames="project_id"
+                                 baseTableName="rel_project__rdb"
+                                 constraintName="fk_rel_project__rdb__project_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="project"/>
+
+        <addForeignKeyConstraint baseColumnNames="rdb_id"
+                                 baseTableName="rel_project__rdb"
+                                 constraintName="fk_rel_project__rdb__rdb_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="rdb"/>
+
+        <addForeignKeyConstraint baseColumnNames="project_id"
+                                 baseTableName="rel_project__user"
+                                 constraintName="fk_rel_project__user__project_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="project"/>
+
+        <addForeignKeyConstraint baseColumnNames="user_id"
+                                 baseTableName="rel_project__user"
+                                 constraintName="fk_rel_project__user__user_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="user"/>
+    </changeSet>
+</databaseChangeLog>

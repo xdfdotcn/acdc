@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: acdc-schema-registry-ui
+  namespace: acdc
+  labels:
+    k8s-app: acdc-schema-registry-ui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: acdc-schema-registry-ui
+  template:
+    metadata:
+      labels:
+        k8s-app: acdc-schema-registry-ui
+        app.kubernetes.io/component: acdc-schema-registry-ui
+        app.kubernetes.io/name: acdc-schema-registry-ui
+        app.kubernetes.io/part-of: acdc
+    spec:
+      containers:
+        - name: acdc-schema-registry-ui
+          image: landoop/schema-registry-ui
+          env:
+            - name: SCHEMAREGISTRY_URL
+              value: http://schema_registry:8081
+            - name: PROXY
+              value: 'true'
+          resources:
+            limits:
+              cpu: '1'
+              memory: 1Gi
+            requests:
+              cpu: '1'
+              memory: 1Gi

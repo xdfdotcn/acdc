@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <!--
+        devops 1.2 模型变更：
+
+        1. 增加 sink_connector 表
+        2. 删除 rel_sink_rdb_table__connector_data_extension 表
+        3. 删除 rel_sink_hive_table__connector_data_extension 表
+        4. 删除 sink_column_mapping 表
+        5. 删除 rel_sink_rdb_table__sink_column_mapping 表
+        6. 删除 rel_sink_hive_table__sink_column_mapping 表
+        7. 删除 sink_hive_table 表
+        8. 删除 sink_rdb_table 表
+        9. 增加 kafka_sink_connector 表
+        11. 增加 sink_connector_connector_data_extension_mapping 表
+        12. 增加 sink_connector_column_mapping 表
+        13. 增加 kafka_cluster_project_mapping 表
+        14. 增加 hive_sink_connector 表
+        15. 增加 jdbc_sink_connector 表
+    -->
+    <changeSet id="devops-tag-1_2" author="ACDC">
+        <tagDatabase tag="devops-1_2"/>
+    </changeSet>
+
+    <changeSet id="devops-1_2-1" author="ACDC">
+        <dropTable tableName="rel_sink_hive_table__sink_column_mapping"/>
+        <dropTable tableName="rel_sink_rdb_table__sink_column_mapping"/>
+        <dropTable tableName="rel_sink_hive_table__connector_data_extension"/>
+        <dropTable tableName="rel_sink_rdb_table__connector_data_extension"/>
+        <dropTable tableName="sink_column_mapping"/>
+        <dropTable tableName="sink_hive_table"/>
+        <dropTable tableName="sink_rdb_table"/>
+
+        <rollback>
+            create table rel_sink_hive_table__sink_column_mapping (id int);
+            create table rel_sink_rdb_table__sink_column_mapping (id int);
+            create table rel_sink_hive_table__connector_data_extension (id int);
+            create table rel_sink_rdb_table__connector_data_extension (id int);
+            create table sink_column_mapping (id int);
+            create table sink_hive_table (id int);
+            create table sink_rdb_table (id int);
+        </rollback>
+    </changeSet>
+
+    <changeSet id="devops-1_2-2" author="ACDC">
+        <createTable tableName="kafka_cluster_project_mapping" remarks="kafka 集群与所属项目的映射">
+            <column name="id" type="int" remarks="主键" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="kafka_cluster_id" type="int" remarks="kafka集群">
+                <constraints nullable="true"/>
+            </column>
+            <column name="project_id" type="int" remarks="项目">
+                <constraints nullable="true"/>
+            </column>
+            <column name="creation_time" type="datetime(3)" remarks="创建时间">
+                <constraints nullable="true"/>
+            </column>
+            <column name="update_time" type="datetime(3)" remarks="更新时间">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="devops-1_2-3" author="ACDC">
+        <createTable tableName="sink_connector_connector_data_extension_mapping" remarks="sink connector 字段扩展配置, 1:n">
+            <column name="id" type="int" remarks="主键" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="sink_connector_id" type="int" remarks="所属 sink connector">
+                <constraints nullable="true"/>
+            </column>
+            <column name="connector_data_extension_id" type="int" remarks="对应的字段扩展">
+                <constraints nullable="true"/>
+            </column>
+            <column name="creation_time" type="datetime(3)" remarks="创建时间">
+                <constraints nullable="true"/>
+            </column>
+            <column name="update_time" type="datetime(3)" remarks="更新时间">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="devops-1_2-4" author="ACDC">
+        <createTable tableName="sink_connector_column_mapping" remarks="sink connector 字段映射">
+            <column name="id" type="int" remarks="主键" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="sink_connector_id" type="int" remarks="所属 sink connector">
+                <constraints nullable="true"/>
+            </column>
+            <column name="source_column_name" type="varchar(128)" remarks="源字段名">
+                <constraints nullable="true"/>
+            </column>
+            <column name="sink_column_name" type="varchar(128)" remarks="目标字段名">
+                <constraints nullable="true"/>
+            </column>
+            <column name="creation_time" type="datetime(3)" remarks="创建时间">
+                <constraints nullable="true"/>
+            </column>
+            <column name="update_time" type="datetime(3)" remarks="更新时间">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="devops-1_2-5" author="ACDC">
+        <createTable tableName="kafka_sink_connector" remarks="kafka sink connector">
+            <column name="id" type="int" remarks="主键" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="sink_connector_id" type="int" remarks="所属 sink connector">
+                <constraints nullable="true"/>
+            </column>
+            <column name="kafka_topic_id" type="int" remarks="目标 topic">
+                <constraints nullable="true"/>
+            </column>
+            <column name="key_converter" type="varchar(1024)" remarks="消息 key 序列化类全限类名">
+                <constraints nullable="true"/>
+            </column>
+            <column name="value_converter" type="varchar(1024)" remarks="消息 value 序列化类全限类名">
+                <constraints nullable="true"/>
+            </column>
+            <column name="creation_time" type="datetime(3)" remarks="创建时间">
+                <constraints nullable="true"/>
+            </column>
+            <column name="update_time" type="datetime(3)" remarks="更新时间">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="devops-1_2-6" author="ACDC">
+        <createTable tableName="sink_connector" remarks="sink connector">
+            <column name="id" type="int" remarks="主键" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="connector_id" type="int" remarks="所属 connector">
+                <constraints nullable="true"/>
+            </column>
+            <column name="kafka_topic_id" type="int" remarks="数据源 topic">
+                <constraints nullable="true"/>
+            </column>
+            <column name="filter_expression" type="varchar(1024)" remarks="数据过滤条件">
+                <constraints nullable="true"/>
+            </column>
+            <column name="creation_time" type="datetime(3)" remarks="创建时间">
+                <constraints nullable="true"/>
+            </column>
+            <column name="update_time" type="datetime(3)" remarks="更新时间">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="devops-1_2-7" author="ACDC">
+        <createTable tableName="hive_sink_connector" remarks="hive sink connector">
+            <column name="id" type="int" remarks="主键" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="sink_connector_id" type="int" remarks="所属 sink connector">
+                <constraints nullable="true"/>
+            </column>
+            <column name="hive_table_id" type="int" remarks="写入的 hive_table">
+                <constraints nullable="true"/>
+            </column>
+            <column name="creation_time" type="datetime(3)" remarks="创建时间">
+                <constraints nullable="true"/>
+            </column>
+            <column name="update_time" type="datetime(3)" remarks="更新时间">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="devops-1_2-8" author="ACDC">
+        <createTable tableName="jdbc_sink_connector" remarks="jdbc sink connector">
+            <column name="id" type="int" remarks="主键" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="sink_connector_id" type="int" remarks="所属 sink connector">
+                <constraints nullable="true"/>
+            </column>
+            <column name="rdb_table_id" type="int" remarks="写入的 rbd_table">
+                <constraints nullable="true"/>
+            </column>
+            <column name="logical_deletion_column" type="varchar(128)" remarks="逻辑删除字段名称">
+                <constraints nullable="true"/>
+            </column>
+            <column name="logical_deletion_column_value_deletion" type="varchar(255)" remarks="逻辑字段删除值">
+                <constraints nullable="true"/>
+            </column>
+            <column name="logical_deletion_column_value_normal" type="varchar(255)" remarks="逻辑字段正常值">
+                <constraints nullable="true"/>
+            </column>
+            <column name="creation_time" type="datetime(3)" remarks="创建时间">
+                <constraints nullable="true"/>
+            </column>
+            <column name="update_time" type="datetime(3)" remarks="更新时间">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>

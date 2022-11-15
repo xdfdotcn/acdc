@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+    <!--
+        Added the constraints for entity SinkHiveTable.
+    -->
+    <changeSet id="20210913031641-2" author="jhipster">
+
+        <addForeignKeyConstraint baseColumnNames="hive_table_id"
+                                 baseTableName="sink_hive_table"
+                                 constraintName="fk_sink_hive_table__hive_table_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="hive_table"/>
+
+        <addForeignKeyConstraint baseColumnNames="connector_id"
+                                 baseTableName="sink_hive_table"
+                                 constraintName="fk_sink_hive_table__connector_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="connector"/>
+
+        <addForeignKeyConstraint baseColumnNames="kafka_topic_id"
+                                 baseTableName="sink_hive_table"
+                                 constraintName="fk_sink_hive_table__kafka_topic_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="kafka_topic"/>
+
+        <addForeignKeyConstraint baseColumnNames="sink_hive_table_id"
+                                 baseTableName="rel_sink_hive_table__connector_data_extension"
+                                 constraintName="fk_rel_sink_hive_table__connect__sink_hive_table_51_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="sink_hive_table"/>
+
+        <addForeignKeyConstraint baseColumnNames="connector_data_extension_id"
+                                 baseTableName="rel_sink_hive_table__connector_data_extension"
+                                 constraintName="fk_rel_sink_hive_table__connect__connector_data_extension_22_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="connector_data_extension"/>
+
+        <addForeignKeyConstraint baseColumnNames="sink_hive_table_id"
+                                 baseTableName="rel_sink_hive_table__sink_column_mapping"
+                                 constraintName="fk_rel_sink_hive_table__sink_column_mapping__sink_hive_table_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="sink_hive_table"/>
+
+        <addForeignKeyConstraint baseColumnNames="sink_column_mapping_id"
+                                 baseTableName="rel_sink_hive_table__sink_column_mapping"
+                                 constraintName="fk_rel_sink_hive_table__sink_co__sink_column_mapping_2b_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="sink_column_mapping"/>
+    </changeSet>
+</databaseChangeLog>

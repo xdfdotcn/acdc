@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+    <!--
+        Added the constraints for entity ConnectorClass.
+    -->
+    <changeSet id="20210908065213-2" author="jhipster">
+
+        <addForeignKeyConstraint baseColumnNames="connector_type_id"
+                                 baseTableName="connector_class"
+                                 constraintName="fk_connector_class__connector_type_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="dim_connector_type"/>
+
+        <addForeignKeyConstraint baseColumnNames="dim_service_type_id"
+                                 baseTableName="connector_class"
+                                 constraintName="fk_connector_class__dim_service_type_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="dim_service_type"/>
+    </changeSet>
+</databaseChangeLog>

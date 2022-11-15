@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+    <!--
+        Added the constraints for entity SinkRdbTable.
+    -->
+    <changeSet id="20210908065228-2" author="jhipster">
+
+        <addForeignKeyConstraint baseColumnNames="connector_id"
+                                 baseTableName="sink_rdb_table"
+                                 constraintName="fk_sink_rdb_table__connector_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="connector"/>
+
+        <addForeignKeyConstraint baseColumnNames="rdb_table_id"
+                                 baseTableName="sink_rdb_table"
+                                 constraintName="fk_sink_rdb_table__rdb_table_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="rdb_table"/>
+
+        <addForeignKeyConstraint baseColumnNames="kafka_topic_id"
+                                 baseTableName="sink_rdb_table"
+                                 constraintName="fk_sink_rdb_table__kafka_topic_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="kafka_topic"/>
+
+        <addForeignKeyConstraint baseColumnNames="dim_deletion_mode_id"
+                                 baseTableName="sink_rdb_table"
+                                 constraintName="fk_sink_rdb_table__dim_deletion_mode_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="dim_deletion_mode"/>
+
+        <addForeignKeyConstraint baseColumnNames="sink_rdb_table_id"
+                                 baseTableName="rel_sink_rdb_table__connector_data_extension"
+                                 constraintName="fk_rel_sink_rdb_table__connecto__sink_rdb_table_0c_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="sink_rdb_table"/>
+
+        <addForeignKeyConstraint baseColumnNames="connector_data_extension_id"
+                                 baseTableName="rel_sink_rdb_table__connector_data_extension"
+                                 constraintName="fk_rel_sink_rdb_table__connecto__connector_data_extension_d8_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="connector_data_extension"/>
+
+        <addForeignKeyConstraint baseColumnNames="sink_rdb_table_id"
+                                 baseTableName="rel_sink_rdb_table__sink_column_mapping"
+                                 constraintName="fk_rel_sink_rdb_table__sink_column_mapping__sink_rdb_table_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="sink_rdb_table"/>
+
+        <addForeignKeyConstraint baseColumnNames="sink_column_mapping_id"
+                                 baseTableName="rel_sink_rdb_table__sink_column_mapping"
+                                 constraintName="fk_rel_sink_rdb_table__sink_col__sink_column_mapping_af_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="sink_column_mapping"/>
+    </changeSet>
+</databaseChangeLog>

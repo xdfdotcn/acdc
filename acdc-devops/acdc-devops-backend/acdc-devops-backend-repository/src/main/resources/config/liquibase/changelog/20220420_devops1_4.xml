@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <!--
+        1. 字段类型变更,为了兼容h2
+    -->
+    <changeSet id="devops-tag-1_4" author="ACDC">
+        <tagDatabase tag="devops-1_4"/>
+    </changeSet>
+
+    <changeSet id="devops-1_4" author="ACDC">
+        <!-- kafka_cluster_project_mapping-->
+        <modifyDataType columnName="id" newDataType="bigint" tableName="kafka_cluster_project_mapping"/>
+        <addAutoIncrement columnName="id" tableName="kafka_cluster_project_mapping" columnDataType="bigint"/>
+        <modifyDataType columnName="kafka_cluster_id" newDataType="bigint" tableName="kafka_cluster_project_mapping"/>
+        <modifyDataType columnName="project_id" newDataType="bigint" tableName="kafka_cluster_project_mapping"/>
+
+        <!-- sink_connector_connector_data_extension_mapping-->
+        <modifyDataType columnName="id" newDataType="bigint"
+                        tableName="sink_connector_connector_data_extension_mapping"/>
+        <addAutoIncrement columnName="id" tableName="sink_connector_connector_data_extension_mapping"
+                          columnDataType="bigint"/>
+        <modifyDataType columnName="sink_connector_id" newDataType="bigint"
+                        tableName="sink_connector_connector_data_extension_mapping"/>
+        <modifyDataType columnName="connector_data_extension_id" newDataType="bigint"
+                        tableName="sink_connector_connector_data_extension_mapping"/>
+
+        <!-- sink_connector_column_mapping-->
+        <modifyDataType columnName="id" newDataType="bigint" tableName="sink_connector_column_mapping"/>
+        <addAutoIncrement columnName="id" tableName="sink_connector_column_mapping" columnDataType="bigint"/>
+        <modifyDataType columnName="sink_connector_id" newDataType="bigint" tableName="sink_connector_column_mapping"/>
+
+        <!-- kafka_sink_connector-->
+        <modifyDataType columnName="id" newDataType="bigint" tableName="kafka_sink_connector"/>
+        <addAutoIncrement columnName="id" tableName="kafka_sink_connector" columnDataType="bigint"/>
+        <modifyDataType columnName="sink_connector_id" newDataType="bigint" tableName="kafka_sink_connector"/>
+        <modifyDataType columnName="kafka_topic_id" newDataType="bigint" tableName="kafka_sink_connector"/>
+
+        <!-- sink_connector-->
+        <modifyDataType columnName="id" newDataType="bigint" tableName="sink_connector"/>
+        <addAutoIncrement columnName="id" tableName="sink_connector" columnDataType="bigint"/>
+        <modifyDataType columnName="connector_id" newDataType="bigint" tableName="sink_connector"/>
+        <modifyDataType columnName="kafka_topic_id" newDataType="bigint" tableName="sink_connector"/>
+
+        <!-- hive_sink_connector-->
+        <modifyDataType columnName="id" newDataType="bigint" tableName="hive_sink_connector"/>
+        <addAutoIncrement columnName="id" tableName="hive_sink_connector" columnDataType="bigint"/>
+        <modifyDataType columnName="sink_connector_id" newDataType="bigint" tableName="hive_sink_connector"/>
+        <modifyDataType columnName="hive_table_id" newDataType="bigint" tableName="hive_sink_connector"/>
+
+        <!-- jdbc_sink_connector-->
+        <modifyDataType columnName="id" newDataType="bigint" tableName="jdbc_sink_connector"/>
+
+        <addAutoIncrement columnName="id" tableName="jdbc_sink_connector" columnDataType="bigint"/>
+        <modifyDataType columnName="sink_connector_id" newDataType="bigint" tableName="jdbc_sink_connector"/>
+        <modifyDataType columnName="rdb_table_id" newDataType="bigint" tableName="jdbc_sink_connector"/>
+    </changeSet>
+
+</databaseChangeLog>

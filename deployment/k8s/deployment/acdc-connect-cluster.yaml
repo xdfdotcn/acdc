@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: acdc-connect-source-mysql
+  namespace: acdc
+  labels:
+    k8s-app: acdc-connect-source-mysql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: acdc-connect-source-mysql
+  template:
+    metadata:
+      labels:
+        k8s-app: acdc-connect-source-mysql
+        app.kubernetes.io/component: acdc-connect-cluster
+        app.kubernetes.io/name: acdc-connect-source-mysql
+        app.kubernetes.io/part-of: acdc
+      annotations:
+        prometheus.io/path: /metrics
+        prometheus.io/port: '8080'
+        prometheus.io/scrape: 'true'
+    spec:
+      containers:
+        - name: acdc-connect-source-mysql
+          image: xdfdotcn/acdc-connect:1.9.5.Final-1.0.0-Alpha-SNAPSHOT-20221201094119
+          env:
+            - name: BOOTSTRAP_SERVERS
+              value: kafka:9093
+            - name: GROUP_ID
+              value: source-mysql-cluster
+            - name: CONFIG_STORAGE_TOPIC
+              value: source-mysql-configs
+            - name: OFFSET_STORAGE_TOPIC
+              value: source-mysql-offsets
+            - name: STATUS_STORAGE_TOPIC
+              value: source-mysql-status
+            - name: CONNECT_SECURITY_PROTOCOL
+              value: SASL_PLAINTEXT
+            - name: CONNECT_SASL_MECHANISM
+              value: SCRAM-SHA-512
+            - name: CONNECT_SASL_JAAS_CONFIG
+              value: org.apache.kafka.common.security.scram.ScramLoginModule required username="admin" password="admin_password";
+            - name: CONNECT_PRODUCER_SECURITY_PROTOCOL
+              value: SASL_PLAINTEXT
+            - name: CONNECT_PRODUCER_SASL_MECHANISM
+              value: SCRAM-SHA-512
+            - name: CONNECT_PRODUCER_SASL_JAAS_CONFIG
+              value: org.apache.kafka.common.security.scram.ScramLoginModule required username="admin" password="admin_password";
+            - name: CONNECT_CONSUMER_SECURITY_PROTOCOL
+              value: SASL_PLAINTEXT
+            - name: CONNECT_CONSUMER_SASL_MECHANISM
+              value: SCRAM-SHA-512
+            - name: CONNECT_CONSUMER_SASL_JAAS_CONFIG
+              value: org.apache.kafka.common.security.scram.ScramLoginModule required username="admin" password="admin_password";
+            - name: KAFKA_OPTS
+              value: -javaagent:/kafka/etc/jmx_prometheus_javaagent.jar=8080:/kafka/etc/config.yml
+            - name: TZ
+              value: Asia/Shanghai
+          resources:
+            limits:
+              cpu: '1'
+              memory: 2Gi
+            requests:
+              cpu: '1'
+              memory: 2Gi
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8083
+              scheme: HTTP
+            initialDelaySeconds: 60
+            timeoutSeconds: 1
+            periodSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8083
+              scheme: HTTP
+            initialDelaySeconds: 60
+            timeoutSeconds: 1
+            periodSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3

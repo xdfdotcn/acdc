@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}" lang="en">
+<head>
+  <title th:text="#{email.activation.title}">ACDC</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <link rel="icon" th:href="@{|${baseUrl}/favicon.ico|}"/>
+</head>
+<body>
+
+<p>
+    <span th:each="user,userState : ${to}">
+    <span th:text="${user.briefDomainAccount}"/>&emsp;
+    </span> 老师好:
+</p>
+<div th:if="${#strings.contains(connectionRequisitionDetailDTO.state,'APPROVING')}">
+  您有一封ACDC链路审批邮件,
+  <a th:with="url=(@{|${connectionRequisitionDetailDTO.baseUrl}|})"
+     th:href="${connectionRequisitionDetailDTO.baseUrl}">去审批</a>
+</div>
+
+<div th:if="${#strings.contains(connectionRequisitionDetailDTO.state,'REFUSED')}">
+  您的申请已经被拒绝,请联系 ACDC 运维老师.
+
+</div>
+
+<div th:if="${#strings.equals(connectionRequisitionDetailDTO.state,'APPROVED')}">
+  您的申请已经审批通过.
+</div>
+
+<H3>申请人邮箱:</H3>
+<p th:text="${connectionRequisitionDetailDTO.connections[0].userEmail}"></p>
+
+<H3>申请人所属项目:</H3>
+<p>
+    <span th:each="projectName,projectNameState : ${connectionRequisitionDetailDTO.proposerProjects}">
+    <span th:text="${projectName}"/>&emsp;
+    </span>
+</p>
+
+<H3>申请理由:</H3>
+<p th:text="${connectionRequisitionDetailDTO.description}"></p>
+
+
+<H3>当前审批状态:</H3>
+<p th:if="${#strings.equals(connectionRequisitionDetailDTO.state,'APPROVING')}">待审批</p>
+<p th:if="${#strings.equals(connectionRequisitionDetailDTO.state,'SOURCE_OWNER_APPROVING')}">待源端负责人审批</p>
+<p th:if="${#strings.equals(connectionRequisitionDetailDTO.state,'SOURCE_OWNER_REFUSED')}">源端负责人审批拒绝</p>
+<p th:if="${#strings.equals(connectionRequisitionDetailDTO.state,'DBA_APPROVING')}">待DBA审批</p>
+<p th:if="${#strings.equals(connectionRequisitionDetailDTO.state,'DBA_REFUSED')}">DBA审批拒绝</p>
+<p th:if="${#strings.equals(connectionRequisitionDetailDTO.state,'APPROVED')}">审批通过</p>
+
+<div th:if="${ not #strings.isEmpty(connectionRequisitionDetailDTO.sourceApproveResult)}">
+  <H3>源端数据库负责人审批结果:</H3>
+  <p th:text="${connectionRequisitionDetailDTO.sourceApproveResult}"/>
+</div>
+<div th:if="${not #strings.isEmpty(connectionRequisitionDetailDTO.dbaApproveResult)}">
+  <H3>DBA 审批结果:</H3>
+  <p th:text="${connectionRequisitionDetailDTO.dbaApproveResult}"/>
+</div>
+
+<br/>
+<br/>
+
+<H3>申请链路信息:</H3>
+<table border="1" aria-colspan="10" width="100%">
+  <tr>
+    <th>序号</th>
+    <th>数据库类型</th>
+    <th>所属项目</th>
+    <th>所属集群</th>
+    <th>数据库</th>
+    <th>数据表</th>
+  </tr>
+  <tr th:each="connection,iterationState : ${connectionRequisitionDetailDTO.connections}">
+    <td th:text="${iterationState.index}">index</td>
+    <td th:text="${connection.sourceDataSystemType}">mysql</td>
+    <td th:text="${connection.sourceProjectName}">projectName</td>
+    <td th:text="${connection.sourceDataSystemClusterName}">clusterName</td>
+    <td th:text="${connection.sourceDatabaseName}">databaseName</td>
+    <td th:text="${connection.sourceDatasetName}">datasetName</td>
+  </tr>
+</table>
+</br>
+<H3>表字段信息:</H3>
+
+<div th:each="connection,outIterationState : ${connectionRequisitionDetailDTO.connections}">
+  <H4 th:text="${connection.sourceDatasetName}"></H4>
+  <table border="1" aria-colspan="10" width="100%">
+    <tr>
+      <th>数据表字段</th>
+    </tr>
+    <tr th:each="connectionColumnConfiguration,innerIterationState : ${connection.connectionColumnConfigurations}">
+      <td th:if="${not #strings.isEmpty(connectionColumnConfiguration.sourceFieldFormat)}"
+          th:text="${connectionColumnConfiguration.sourceFieldFormat}">fieldFormat
+      </td>
+    </tr>
+  </table>
+  </br>
+</div>
+</body>
+</html>

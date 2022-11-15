@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: acdc-schema-registry
+  namespace: acdc
+  labels:
+    k8s-app: acdc-schema-registry
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: acdc-schema-registry
+  template:
+    metadata:
+      labels:
+        k8s-app: acdc-schema-registry
+        app.kubernetes.io/component: acdc-schema-registry
+        app.kubernetes.io/name: acdc-schema-registry
+        app.kubernetes.io/part-of: acdc
+    spec:
+      containers:
+        - name: acdc-schema-registry
+          image: confluentinc/cp-schema-registry
+          env:
+            - name: SCHEMA_REGISTRY_HOST_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.podIP
+            - name: SCHEMA_REGISTRY_LISTENERS
+              value: http://$(SCHEMA_REGISTRY_HOST_NAME):8081
+            - name: SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS
+              value: kafka:9093
+            - name: SCHEMA_REGISTRY_KAFKASTORE_GROUP_ID
+              value: acdc-schema-registy
+            - name: SCHEMA_REGISTRY_MASTER_ELIGIBILITY
+              value: 'true'
+            - name:  SCHEMA_REGISTRY_KAFKASTORE_SECURITY_PROTOCOL
+              value: SASL_PLAINTEXT
+            - name: SCHEMA_REGISTRY_KAFKASTORE_SASL_MECHANISM
+              value: SCRAM-SHA-512
+            - name: SCHEMA_REGISTRY_KAFKASTORE_SASL_JAAS_CONFIG
+              value: org.apache.kafka.common.security.scram.ScramLoginModule required username="admin" password="admin_password";
+          resources:
+            limits:
+              cpu: '1'
+              memory: 2Gi
+            requests:
+              cpu: '1'
+              memory: 2Gi

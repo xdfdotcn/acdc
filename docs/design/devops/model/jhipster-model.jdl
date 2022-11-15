@@ -1,0 +1,403 @@
+/**
+ * Project object.
+ * @author acdc
+ */
+entity Project {
+	name String required maxlength(128) /** 名称 */
+    description String maxlength(1024) /** 描述 */
+    creationTime Instant /** 创建时间 */
+    updateTime Instant /** 更新时间 */
+}
+entity Rdb {
+	rdbType String required maxlength(32) /** 类型 */
+    name String required maxlength(128) /** 数据库集群名称 */
+    username String required maxlength(1024) /** 用户名 */
+    password String required maxlength(1024) /** 密码 */
+    description String maxlength(1024) /** 描述 */
+    creationTime Instant /** 创建时间 */
+    updateTime Instant /** 更新时间 */
+}
+
+entity RdbMysql {
+    creationTime Instant /** 创建时间 */
+    updateTime Instant /** 更新时间 */
+}
+
+entity RdbTidb {
+    creationTime Instant /** 创建时间 */
+    updateTime Instant /** 更新时间 */
+}
+
+entity RdbInstance {
+	host String required maxlength(1024) /** 创建时间 */
+	port Integer required /** 服务地址 */
+    vip String maxlength(1024) /** 服务端口 */
+    creationTime Instant /** 创建时间 */
+    updateTime Instant /** 更新时间 */
+}
+entity DimInstanceRole {
+	name String required maxlength(32) /** 名称 */
+    description String maxlength(128) /** 描述 */
+}
+
+entity RdbDatabase {
+	name String required maxlength(128) /** 数据库名称 */
+    creationTime Instant /** 创建时间 */
+    updateTime Instant /** 更新时间 */
+}
+entity RdbTable {
+	name String required maxlength(128) /** 表名 */
+    creationTime Instant /** 创建时间 */
+    updateTime Instant /** 更新时间 */
+}
+
+entity KafkaCluster {
+	version String required maxlength(32) /** kafka版本 */
+    bootstrapServers String required maxlength(3072) /** 服务实例地址 */
+    securityConfiguration String maxlength(1024) /** 安全认证配置 */
+    description String maxlength(1024) /** 集群描述 */
+    creationTime Instant /** 创建时间 */
+    updateTime Instant /** 更新时间 */
+}
+
+/**
+ * kafka topic 信息
+ */
+entity KafkaTopic {
+	name String required maxlength(1024) /** topic名称 */
+    creationTime Instant /** 创建时间 */
+    updateTime Instant /** 更新时间 */
+}
+
+/**
+ * connector的java实现类
+ */
+entity ConnectorClass {
+	name String required maxlength(1024) /** 全限类名 */
+    simpleName String required maxlength(128) /** 非全限类名 */
+    description String maxlength(1024) /** 描述 */
+    creationTime Instant /** 创建时间 */
+    updateTime Instant /** 更新时间 */
+}
+
+/**
+ * 维表，connector 类型，mysql source，hive sink等
+ */
+entity DimConnectorType {
+	name String required maxlength(32) /** 名称 */
+	description String maxlength(128) /** 描述 */
+}
+
+/**
+ * 服务类型，mysql，tidb，redis，event_center等
+ */
+entity DimServiceType {
+	name String required maxlength(32) /** 名称 */
+	description String maxlength(128) /** 描述 */
+}
+
+/**
+ * 默认的配置项，例如schema注册中心地址，序列化方式等
+ */
+entity DefaultConnectorConfiguration {
+	name String required maxlength(128) /** 配置项名称 */
+    value String required maxlength(1024) /** 配置项值 */
+    creationTime Instant /** 创建时间 */
+    updateTime Instant /** 更新时间 */
+}
+
+entity ConnectCluster {
+	connectRestApiUrl String required maxlength(3072) /** connect REST API 地址 */
+    description String maxlength(1024) /** 集群描述 */
+    version String required maxlength(32) /** 版本 */
+    creationTime Instant /** 创建时间 */
+    updateTime Instant /** 更新时间 */
+}
+
+/**
+ * 记录connector的事件，新建，status的变更
+ */
+entity ConnectorEvent {
+	reason String required maxlength(128) /** 事件来由 */
+	message String required maxlength(3072) /** 事件信息 */
+    creationTime Instant /** 创建时间 */
+    updateTime Instant /** 更新时间 */
+}
+
+/**
+ * 事件类型：审批，通知，警告等
+ */
+entity DimEventType {
+	value String required maxlength(32) /** 名称 */
+	description String maxlength(128) /** 描述 */
+}
+
+/**
+ * connector实例
+ */
+entity Connector {
+    name String required unique maxlength(128) /** connector名称 */
+    creationTime Instant /** 创建时间 */
+    updateTime Instant /** 更新时间 */
+}
+
+/**
+ * connector 申请单
+ */
+entity ConnectorRequisition {
+	sourceApproveResult ApproveResult /** source负责人审批结果 */
+    dbaApproveResult ApproveResult /** dba审批结果 */
+    creationTime Instant /** 创建时间 */
+    updateTime Instant /** 更新时间 */
+}
+
+/**
+ * 审批结果：同意，拒绝
+ */
+enum ApproveResult {
+    AGREED ("同意"),
+    REJECTED ("拒绝")
+}
+
+/**
+ * connector状态
+ */
+entity DimConnectorRequisitionStatus {
+	code String required unique maxlength(32) /** 唯一编码 */
+	name String required maxlength(32) /** 名称 */
+    description String maxlength(128) /** 描述 */
+    creationTime Instant /** 创建时间 */
+    updateTime Instant /** 更新时间 */
+}
+
+/**
+ * connector状态
+ */
+entity DimConnectorStatus {
+	code String required unique maxlength(32) /** 唯一编码 */
+	name String required maxlength(32) /** 名称 */
+    description String maxlength(128) /** 描述 */
+    creationTime Instant /** 创建时间 */
+    updateTime Instant /** 更新时间 */
+}
+entity ConnectorConfiguration {
+	name String required maxlength(32) /** 配置项名称 */
+    value String required maxlength(1024) /** 配置项值 */
+    creationTime Instant /** 创建时间 */
+    updateTime Instant /** 更新时间 */
+}
+
+/**
+ * source表信息
+ */
+entity SourceRdbTable {
+	excludedColumns String maxlength(1024) /** 需要排除的字段 */
+    maskedColumns String maxlength(1024) /** 需要脱敏的字段 */
+    maskHashAlgorithm String maxlength(128) /** 加密的hash算法 */
+    maskHashAlgorithmSalt String maxlength(1024) /** hash算法的salt */
+    creationTime Instant /** 创建时间 */
+    updateTime Instant /** 更新时间 */
+}
+
+/**
+ * connector数据扩展，暂时都是string类型，或者隐含的一些关键字类型，例如${datetime}
+ */
+entity ConnectorDataExtension {
+	name String required maxlength(128) /** 字段名称 */
+    value String required maxlength(1024) /** 字段类型 */
+    creationTime Instant /** 创建时间 */
+    updateTime Instant /** 更新时间 */
+}
+
+/**
+ * sink表信息
+ */
+entity SinkRdbTable {
+	filterExpression String maxlength(1024)
+    logicalDeletionColumn String maxlength(128)
+    logicalDeletionColumnValueDeletion String maxlength(32)
+	logicalDeletionColumnValueNormal String maxlength(32)
+    creationTime Instant /** 创建时间 */
+    updateTime Instant /** 更新时间 */
+}
+
+/**
+ * 删除模式
+ */
+entity DimDeletionMode {
+	value String required maxlength(32) /** 名称 */
+    description String maxlength(128) /** 描述 */
+}
+
+/**
+ * sink字段映射
+ */
+entity SinkColumnMapping {
+	sourceColumnName String required maxlength(128)
+    sinkColumnName String required maxlength(128)
+    creationTime Instant /** 创建时间 */
+    updateTime Instant /** 更新时间 */
+}
+
+relationship ManyToMany {
+    Project{rdb(name)} to Rdb{project(name)}
+    Project{user(domainAccount)} to User{project(name)}
+    SourceRdbTable{connectorDataExtension(name)} to ConnectorDataExtension{sourceRdbTable}
+    SinkRdbTable{connectorDataExtension(name)} to ConnectorDataExtension{sinkRdbTable}
+    SinkRdbTable{sinkConnectorColumnMapping} to SinkColumnMapping{sinkRdbTable}
+}
+
+relationship OneToMany {
+    Rdb{rdbDatabase(name)}
+    to
+    /** 所属数据库集群服务 */
+    RdbDatabase{rdb(name)}
+    Rdb{rdbInstance(host)}
+    to
+    /** 所属数据库 */
+    RdbInstance{rdb(name)}
+
+    RdbDatabase{rdbTable(name)}
+    to
+    /** 所属DB */
+    RdbTable{rdbDatabase(name)}
+
+    KafkaCluster{kafkaTopic(name)}
+    to
+    /** 所属kafka集群 */
+    KafkaTopic{kafkaCluster(bootstrapServers) required}
+
+    ConnectorClass{defaultConnectorConfiguration(name)}
+    to
+    /** connector实现类 */
+    DefaultConnectorConfiguration
+
+    Connector{connectorConfiguration}
+    to
+    /** 所属connector */
+    ConnectorConfiguration
+
+}
+
+relationship ManyToOne {
+
+    /** 项目拥有者 */
+    Project{owner(domainAccount)}
+    to
+    User
+
+    /** 作为datasource时，写入的kafka集群 */
+    Rdb{kafkaCluster}
+    to
+    KafkaCluster
+
+    /** 实例身份 */
+	RdbInstance{role(name)}
+    to
+    DimInstanceRole
+
+    /** connector 类型 */
+    ConnectorClass{connectorType(name)}
+    to
+    DimConnectorType
+
+    /** service 类型 */
+    ConnectorClass{dimServiceType(name)}
+    to
+    DimServiceType
+
+    /** connector class */
+    ConnectCluster{connectorClass(name)}
+    to
+    ConnectorClass
+
+    /** 事件类型 */
+    ConnectorEvent{dimEventType(value)}
+    to
+    DimEventType
+
+    ConnectorEvent{connector}
+    to
+    Connector
+
+    /** 创建者 */
+    Connector{creator}
+    to
+    User
+
+    /** connector实现类 */
+    Connector{connectorClass}
+    to
+    ConnectorClass
+
+    /** connect集群 */
+    Connector
+    to
+    ConnectCluster
+
+    /** kafka集群 */
+    Connector
+    to
+    KafkaCluster
+
+    /** desired state */
+    Connector{desiredState(code)}
+    to
+    DimConnectorStatus
+
+    /** actual state */
+    Connector{actualState(code)}
+    to
+    DimConnectorStatus
+
+    /** connector */
+    SourceRdbTable{connector}
+    to
+    Connector
+
+    /** 关联的表 */
+    SourceRdbTable{rdbTable}
+    to
+    RdbTable
+
+    /** 写入kafka的topic */
+    SourceRdbTable
+    to
+    KafkaTopic
+
+    /** connector */
+    SinkRdbTable{connector}
+    to
+    Connector
+
+    /** 关联的表 */
+    SinkRdbTable{rdbTable}
+    to
+    RdbTable
+
+    /** 读取kafka的topic */
+    SinkRdbTable
+    to
+    KafkaTopic
+
+    /** 删除模式 */
+    SinkRdbTable{dimDeletionMode}
+    to
+    DimDeletionMode
+
+	/** connetor实例 */
+	ConnectorRequisition{connector}
+    to
+    Connector
+
+    /** 申请单状态 */
+    ConnectorRequisition{status(code)}
+    to
+    DimConnectorRequisitionStatus
+}
+
+relationship OneToOne {
+	RdbMysql{rdb} to Rdb
+    RdbMysql{dataSourceInstance} to RdbInstance
+    RdbTidb{kafkaTopic} to KafkaTopic
+}

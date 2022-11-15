@@ -1,0 +1,338 @@
+version: "3.9"
+services:
+
+  # 元数据管理MYSQL
+  meta_db:
+    image: mysql:5.7
+    container_name: acdc_meta_db
+    ports:
+      - "9601:3306"
+    restart: always
+    command: --default-authentication-plugin=mysql_native_password #这行代码解决无法访问的问题
+    environment:
+      - "MYSQL_ROOT_PASSWORD=root"
+      - "MYSQL_CONF_PATH=/etc/mysql/conf.d"
+    volumes:
+      - ./mysql/mysqld.cnf:/etc/mysql/conf.d/mysqld.cnf
+      - ./volumes/meta_db/mysql/data:/var/lib/mysql
+    deploy:
+      resources:
+        limits:
+          cpus: '0.10'
+          memory: 500M
+    networks:
+      - acdcnet
+
+  # API 服务
+  api:
+    image: xdfdotcn/acdc-devops-backend-api:1.0.0-Alpha-SNAPSHOT
+    container_name: acdc_api
+    ports:
+      - "9602:9602"
+    networks:
+      - acdcnet
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+    restart: on-failure
+    depends_on:
+      - meta_db
+    environment:
+      - "SPRING_DATASOURCE_URL=jdbc:mysql://meta_db:3306/acdc?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&createDatabaseIfNotExist=true"
+      - "SPRING_DATASOURCE_USERNAME=root"
+      - "SPRING_DATASOURCE_PASSWORD=root"
+      - "SPRING_PROFILES_ACTIVE=dev"
+      - "SERVER_PORT=9602"
+      - "ACDC_APPROVAL_POLICY=SKIP_ALL"
+      - "ACDC_UI_CONFIG_GRAFANA_URL_CONNECTIONFOROPERATOR=http://127.0.0.1:3000/d/XtztcTk4z/connection-for-operation?orgId=1&refresh=30s&kiosk=tv"
+      - "ACDC_UI_CONFIG_GRAFANA_URL_TIDBSOURCECONNECTOR=http://127.0.0.1:3000/d/_9i0l1z4z/tidb-source-connector?orgId=1&refresh=30s&kiosk=tv"
+      - "ACDC_UI_CONFIG_GRAFANA_URL_CONNECTIONFORUSER=http://127.0.0.1:3000/d/LE5t0bR4k/connection-for-user?orgId=1&refresh=30s&kiosk=tv"
+      - "ACDC_UI_CONFIG_GRAFANA_URL_MYSQLSOURCECONNECTOR=http://127.0.0.1:3000/d/72ubUJk4z/mysql-source-connector?orgId=1&refresh=30s&kiosk=tv"
+      - "ACDC_UI_CONFIG_GRAFANA_URL_CONNECTORS=http://127.0.0.1:3000/d/q2M9dhGVz/connectors?orgId=1&refresh=30s&kiosk=tv"
+      - "SPRING_MAIL_HOST=place_holder"
+      - "SPRING_MAIL_PORT=6666"
+      - "SPRING_MAIL_USERNAME=place_holder"
+      - "SPRING_MAIL_PASSWORD=place_holder"
+      - "ACDC_HIVE_JDBC_URL=place_holder"
+      - "ACDC_HIVE_JDBC_USER=place_holder"
+      - "ACDC_HIVE_JDBC_PASSWORD=place_holder"
+      - "ACDC_MAIL_FROMEMAILADDRESS=place_holder"
+      - "ACDC_MAIL_CCEMAILADDRESS=place_holder"
+      - "YOUR_HOST=place_holder"
+
+  # acdc devops ctl
+  ctl:
+    image: xdfdotcn/acdc-devops-ctl:1.0.0-Alpha-SNAPSHOT
+    container_name: acdc_devops_ctl
+    entrypoint:
+      - sh
+      - /quick-start/entrypoint.sh
+    volumes:
+      - ./ctl/entrypoint.sh:/quick-start/entrypoint.sh
+    depends_on:
+      - api
+    networks:
+      - acdcnet
+
+  # UI 服务
+  ui:
+    image: xdfdotcn/acdc-devops-ui:1.0.0-Alpha-SNAPSHOT
+    container_name: acdc_ui
+    ports:
+      - "9603:9603"
+    environment:
+      - "LISTEN_PORT=9603"
+      - "ACDC_API_URL=http://api:9602"
+    networks:
+      - acdcnet
+    deploy:
+      resources:
+        limits:
+          cpus: '0.10'
+          memory: 500M
+    depends_on:
+      - api
+
+  # Controller 服务
+  controller:
+    image: xdfdotcn/acdc-devops-backend-controller:1.0.0-Alpha-SNAPSHOT
+    container_name: acdc_controller
+    ports:
+      - "9604:9604"
+    networks:
+      - acdcnet
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+    restart: on-failure
+    depends_on:
+      - meta_db
+    environment:
+      - "SPRING_DATASOURCE_URL=jdbc:mysql://meta_db:3306/acdc?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&createDatabaseIfNotExist=true"
+      - "SPRING_DATASOURCE_USERNAME=root"
+      - "SPRING_DATASOURCE_PASSWORD=root"
+      - "SPRING_PROFILES_ACTIVE=dev"
+      - "SERVER_PORT=9604"
+      - "ACDC_CONNECTOR_TOPIC_PARTITIONDEFAULTVALUE=1"
+      - "ACDC_CONNECTOR_TOPIC_REPLICATIONFACTORDEFAULTVALUE=1"
+      - "SPRING_LIQUIBASE_ENABLED=false"
+      - "SPRING_MAIL_HOST=place_holder"
+      - "SPRING_MAIL_PORT=6666"
+      - "SPRING_MAIL_USERNAME=place_holder"
+      - "SPRING_MAIL_PASSWORD=place_holder"
+
+  # prometheus
+  prometheus:
+    image: prom/prometheus:v2.26.0
+    container_name: acdc_prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - acdcnet
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    command: --web.enable-lifecycle --config.file=/etc/prometheus/prometheus.yml
+
+  # grafana
+  grafana:
+    image: grafana/grafana:7.4.3
+    container_name: acdc_grafana
+    depends_on:
+      - prometheus
+    ports:
+      - "3000:3000"
+    networks:
+      - acdcnet
+    volumes:
+      - ./grafana/datasources.yml:/etc/grafana/provisioning/datasources/prometheus.yml
+      - ./grafana/dashborads.yml:/etc/grafana/provisioning/dashboards/dashboards.yaml
+      - ./grafana/dashboards:/grafana-dashboard-definitions/0
+      - ./grafana/plugins/grafana-piechart-panel:/var/lib/grafana/plugins/grafana-piechart-panel
+      - ./grafana/grafana.ini:/etc/grafana/grafana.ini
+
+  # zookeeper
+  # https://github.com/docker/compose/issues/3927
+  zookeeper:
+    image: 'bitnami/zookeeper:latest'
+    container_name: acdc_zookeeper
+    user: root
+    ports:
+      - '22181:2181'
+    restart: on-failure
+    volumes:
+      - ./volumes/zookeeper/:/bitnami/zookeeper
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1G
+    networks:
+      - acdcnet
+
+  # kafka
+  kafka:
+    image: 'bitnami/kafka:latest'
+    container_name: acdc_kafka
+    user: root
+    ports:
+      - '29092:9092'
+    restart: on-failure
+    volumes:
+      - ./volumes/kafka/:/bitnami/kafka
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      #- ALLOW_PLAINTEXT_LISTENER=yes
+      #- KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=INTERNAL:SASL_PLAINTEXT,EXTERNAL:SASL_PLAINTEXT
+      #- KAFKA_CFG_LISTENERS=INTERNAL://:9093,EXTERNAL://:9094
+      #- KAFKA_CFG_ADVERTISED_LISTENERS=INTERNAL://kafka:9093,EXTERNAL://127.0.0.1:9094
+      #- KAFKA_CFG_INTER_BROKER_LISTENER_NAME=INTERNAL
+      #- KAFKA_CLIENT_USERS=acdc
+      #- KAFKA_CLIENT_PASSWORDS=acdc
+      #- KAFKA_INTER_BROKER_USER=admin
+      #- KAFKA_INTER_BROKER_PASSWORD=admin
+      #- KAFKA_CFG_SASL_MECHANISM_INTER_BROKER_PROTOCOL=SCRAM-SHA-512
+      #- KAFKA_CFG_SASL_ENABLED_MECHANISMS=SCRAM-SHA-512
+    depends_on:
+      - zookeeper
+    networks:
+      - acdcnet
+
+  # schema registry
+
+  # https://hub.docker.com/r/confluentinc/cp-schema-registry
+  # https://github.com/confluentinc/cp-docker-images/blob/5.3.3-post/debian/schema-registry/Dockerfile
+  # https://docs.confluent.io/platform/current/schema-registry/installation/config.html
+  # environment prefix: SCHEMA_REGISTRY_
+  schema_registry:
+    image: confluentinc/cp-schema-registry
+    container_name: acdc_schema_registry
+    ports:
+      - "28081:8081"
+    restart: on-failure
+    volumes:
+      - ./volumes/schema_registry:/etc/schema-registry/secrets
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+    environment:
+      - SCHEMA_REGISTRY_HOST_NAME=schema_registry
+      - SCHEMA_REGISTRY_LISTENERS=http://0.0.0.0:8081
+      - SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS=kafka:9092
+      - SCHEMA_REGISTRY_KAFKASTORE_GROUP_ID=acdc-schema-registy
+      - SCHEMA_REGISTRY_MASTER_ELIGIBILITY=true
+      - SCHEMA_REGISTRY_KAFKASTORE_SECURITY_PROTOCOL=PLAINTEXT
+      #- SCHEMA_REGISTRY_KAFKASTORE_SECURITY_PROTOCOL=SASL_PLAINTEXT
+      #- SCHEMA_REGISTRY_KAFKASTORE_SASL_MECHANISM=SCRAM-SHA-512
+      #- SCHEMA_REGISTRY_KAFKASTORE_SASL_JAAS_CONFIG=org.apache.kafka.common.security.scram.ScramLoginModule required username="admin" password="admin";
+    depends_on:
+      - kafka
+    networks:
+      - acdcnet
+
+  # schema registry ui
+  # https://github.com/lensesio/schema-registry-ui
+  # https://github.com/lensesio/schema-registry-ui/blob/master/docker/Dockerfile
+  # https://lenses.io/
+  schema_registry_ui:
+    image: landoop/schema-registry-ui
+    container_name: acdc_schema_registry_ui
+    ports:
+      - "28000:8000"
+    restart: on-failure
+    deploy:
+      resources:
+        limits:
+          cpus: '0.10'
+          memory: 500M
+    environment:
+      - SCHEMAREGISTRY_URL=http://schema_registry:8081
+    depends_on:
+      - schema_registry
+    networks:
+      - acdcnet
+
+  # source mysql connect cluster
+  connect_source_mysql:
+    image: xdfdotcn/acdc-connect:1.9.5.Final-1.0.0-Alpha-SNAPSHOT-20221201094119
+    container_name: acdc_connect_source_mysql
+    user: root
+    ports:
+      - "9606:8083"
+    restart: on-failure
+    volumes:
+      - ./volumes/connect/source-mysql/kafka/data:/kafka/data
+      - ./volumes/connect/source-mysql/kafka/logs:/kafka/logs
+      - ./volumes/connect/source-mysql/kafka/config:/kafka/config
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 2G
+    environment:
+      - BOOTSTRAP_SERVERS=kafka:9092
+      - GROUP_ID=source-mysql-cluster
+      - CONFIG_STORAGE_TOPIC=source-mysql-configs
+      - OFFSET_STORAGE_TOPIC=source-mysql-offsets
+      - STATUS_STORAGE_TOPIC=source-mysql-status
+      - CONNECT_SECURITY_PROTOCOL=PLAINTEXT
+      - CONNECT_PRODUCER_SECURITY_PROTOCOL=PLAINTEXT
+      - CONNECT_CONSUMER_SECURITY_PROTOCOL=PLAINTEXT
+      - KAFKA_OPTS=-javaagent:/kafka/etc/jmx_prometheus_javaagent.jar=8080:/kafka/etc/config.yml -Dfile.encoding=UTF-8
+      - TZ=Asia/Shanghai
+    depends_on:
+      - schema_registry_ui
+    networks:
+      - acdcnet
+
+  # sink jdbc connect cluster
+  connect_sink_mysql:
+    image: xdfdotcn/acdc-connect:1.9.5.Final-1.0.0-Alpha-SNAPSHOT-20221201094119
+    container_name: acdc_connect_sink_mysql
+    user: root
+    ports:
+      - "9607:8083"
+    restart: on-failure
+    volumes:
+      - ./volumes/connect/sink-jdbc/kafka/data:/kafka/data
+      - ./volumes/connect/sink-jdbc/kafka/logs:/kafka/logs
+      - ./volumes/connect/sink-jdbc/kafka/config:/kafka/config
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 2G
+    environment:
+      - BOOTSTRAP_SERVERS=kafka:9092
+      - GROUP_ID=sink-jdbc-cluster
+      - CONFIG_STORAGE_TOPIC=sink-jdbc-configs
+      - OFFSET_STORAGE_TOPIC=sink-jdbc-offsets
+      - STATUS_STORAGE_TOPIC=sink-jdbc-status
+      - CONNECT_SECURITY_PROTOCOL=PLAINTEXT
+      - CONNECT_PRODUCER_SECURITY_PROTOCOL=PLAINTEXT
+      - CONNECT_CONSUMER_SECURITY_PROTOCOL=PLAINTEXT
+      - KAFKA_OPTS=-javaagent:/kafka/etc/jmx_prometheus_javaagent.jar=8080:/kafka/etc/config.yml -Dfile.encoding=UTF-8
+      - TZ=Asia/Shanghai
+    depends_on:
+      - schema_registry_ui
+    networks:
+      - acdcnet
+networks:
+  acdcnet:
+    driver: bridge

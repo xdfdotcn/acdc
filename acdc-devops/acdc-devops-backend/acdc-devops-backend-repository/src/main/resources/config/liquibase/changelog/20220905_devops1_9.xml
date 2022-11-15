@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <!--
+        1. 本次更改发生于 devops 1.8 迭代
+        2. 对以下表添加逻辑删除字段：hive_table、hive_database、rdb_table、rdb_database、rdb、project、kafka_topic
+    -->
+    <changeSet id="devops-tag-1_9" author="ACDC">
+        <tagDatabase tag="devops-1_9"/>
+    </changeSet>
+
+    <changeSet id="devops-1_9_1" author="ACDC">
+
+        <addColumn tableName="hive_table">
+            <column name="is_deleted" type="bit" defaultValue="0" remarks="逻辑删除;0: 未删除 1: 已删除">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+        <addColumn tableName="hive_database">
+            <column name="is_deleted" type="bit" defaultValue="0" remarks="逻辑删除;0: 未删除 1: 已删除">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+        <addColumn tableName="rdb_table">
+            <column name="is_deleted" type="bit" defaultValue="0" remarks="逻辑删除;0: 未删除 1: 已删除">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+        <addColumn tableName="rdb_database">
+            <column name="is_deleted" type="bit" defaultValue="0" remarks="逻辑删除;0: 未删除 1: 已删除">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+        <addColumn tableName="rdb">
+            <column name="is_deleted" type="bit" defaultValue="0" remarks="逻辑删除;0: 未删除 1: 已删除">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+        <addColumn tableName="project">
+            <column name="is_deleted" type="bit" defaultValue="0" remarks="逻辑删除;0: 未删除 1: 已删除">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+        <addColumn tableName="kafka_topic">
+            <column name="is_deleted" type="bit" defaultValue="0" remarks="逻辑删除;0: 未删除 1: 已删除">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+    </changeSet>
+</databaseChangeLog>

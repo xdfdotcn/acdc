@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <!--
+        Added the entity SinkHiveTable.
+    -->
+    <changeSet id="20210913031641-1" author="jhipster">
+        <createTable tableName="sink_hive_table" remarks="Hive sink table 信息.\n@author acdc">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="varchar(32)" remarks="sink 表名">
+                <constraints nullable="false" />
+            </column>
+            <column name="filter_expression" type="varchar(500)" remarks="创建时间">
+                <constraints nullable="true" />
+            </column>
+            <column name="creation_time" type="datetime(3)" remarks="创建时间">
+                <constraints nullable="true" />
+            </column>
+            <column name="update_time" type="datetime(3)" remarks="更新时间">
+                <constraints nullable="true" />
+            </column>
+            <column name="hive_table_id" type="bigint">
+                <constraints nullable="true" unique="true" uniqueConstraintName="ux_sink_hive_table__hive_table_id" />
+            </column>
+            <column name="connector_id" type="bigint">
+                <constraints nullable="true" unique="true" uniqueConstraintName="ux_sink_hive_table__connector_id" />
+            </column>
+            <column name="kafka_topic_id" type="bigint">
+                <constraints nullable="true" unique="true" uniqueConstraintName="ux_sink_hive_table__kafka_topic_id" />
+            </column>
+            <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here -->
+        </createTable>
+        <dropDefaultValue tableName="sink_hive_table" columnName="creation_time" columnDataType="datetime(3)"/>
+        <dropDefaultValue tableName="sink_hive_table" columnName="update_time" columnDataType="datetime(3)"/>
+    </changeSet>
+
+    <changeSet id="20210913031641-1-relations" author="jhipster">
+
+        <createTable tableName="rel_sink_hive_table__connector_data_extension">
+            <column name="connector_data_extension_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sink_hive_table_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addPrimaryKey columnNames="sink_hive_table_id, connector_data_extension_id" tableName="rel_sink_hive_table__connector_data_extension"/>
+
+        <createTable tableName="rel_sink_hive_table__sink_column_mapping">
+            <column name="sink_column_mapping_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sink_hive_table_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addPrimaryKey columnNames="sink_hive_table_id, sink_column_mapping_id" tableName="rel_sink_hive_table__sink_column_mapping"/>
+    </changeSet>
+
+    <!-- jhipster-needle-liquibase-add-changeset - JHipster will add changesets here -->
+
+    <!--
+        Load sample data generated with Faker.js
+        - This data can be easily edited using a CSV editor (or even MS Excel) and
+          is located in the 'src/main/resources/config/liquibase/fake-data' directory
+        - By default this data is applied when running with the JHipster 'dev' profile.
+          This can be customized by adding or removing 'faker' in the 'spring.liquibase.contexts'
+          Spring Boot configuration key.
+    -->
+    <changeSet id="20210913031641-1-data" author="jhipster" context="faker">
+        <loadData
+                  file="config/liquibase/fake-data/sink_hive_table.csv"
+                  separator=";"
+                  tableName="sink_hive_table">
+            <column name="id" type="numeric"/>
+            <column name="name" type="string"/>
+            <column name="filter_expression" type="string"/>
+            <column name="creation_time" type="datetime(3)"/>
+            <column name="update_time" type="datetime(3)"/>
+            <!-- jhipster-needle-liquibase-add-loadcolumn - JHipster (and/or extensions) can add load columns here -->
+        </loadData>
+    </changeSet>
+</databaseChangeLog>

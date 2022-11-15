@@ -1,0 +1,51 @@
+
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+{
+  "manifestVersion": "2.0.0",
+  "signatureType": "grafana",
+  "signedByOrg": "grafana",
+  "signedByOrgName": "Grafana Labs",
+  "plugin": "grafana-piechart-panel",
+  "version": "1.6.4",
+  "time": 1667561514704,
+  "keyId": "7e4d0c6a708866e7",
+  "files": {
+    "CHANGELOG.md": "3cf9e5ba8ad605cce2750ca62db9917411cc36b7ef9d97077a91656061e375f0",
+    "LICENSE": "b46400c1ab5630edeb4e43b240a027d203375ebe5a9efb7de88c604c5c5cace0",
+    "README.md": "1b58c2c1b24e454df67413706d2f1ca9c70d9c73b2e00301f94658e48099fda5",
+    "dark.js": "fff3149cb5b5f0bf129e44556950e4d748de1568754654609fa13f0ea8fc5bf3",
+    "dark.js.map": "e117e9e155d036a51c68c7dc5830d57ed02ac7d14c469c0d29356a87e81de2cc",
+    "editor.html": "5f2eb5a452daf096fbb222a1e4232147b73bb212e40f6c43f81a787457dcc750",
+    "img/piechart-donut.png": "fb1205438704afa3fef06e7257b95ec826639e1c283698d3a02edcbec3311ade",
+    "img/piechart-legend-on-graph.png": "87897f7c19a75b0010e433c38774758667361d65edff58e11cb90edaf1b3b4b4",
+    "img/piechart-legend-rhs.png": "dd32a731b719e8dab59969c4457cda8486d30f64b900eec4a7acfea685cf889a",
+    "img/piechart-legend-under.png": "48b15d1ec0d36bf1e53bbe3a322281d7f63d691af607035aa8e846b5ce044909",
+    "img/piechart-options.png": "a85d0588d8475300dec70a1017f08b8f9f184a2f2e7afe5484c612ab8bc4c20f",
+    "img/piechart_logo_large.png": "8e327742fbdcfd07b12c6e9d98b6307b34f2e5e7db6357f6063f4181c4b3811a",
+    "img/piechart_logo_large.svg": "4daafd27c7e1ed130ead61aeaf8cb79f6c27636d477718e64fdb75cac8e621d2",
+    "img/piechart_logo_small.png": "ca3b1450b0b0c243c57aa06aea449e012eab75c448fa43dc13598628e380d231",
+    "img/piechart_logo_small.svg": "4daafd27c7e1ed130ead61aeaf8cb79f6c27636d477718e64fdb75cac8e621d2",
+    "light.js": "1d62878c5581538acfcbcc0e9c4550517a7820cf6234a954a386e6e2e365c7c5",
+    "light.js.map": "9d75b04323f2863737f4f11cd6a241bf681377b9549a76c411fefbca125a3ccb",
+    "module.html": "10d8f62fdc7359e904e04b34400d8770098d4973e7796b54f007e6a8fa284a3b",
+    "module.js": "83e720fb75c518ce3cdb27a7d67f4bbc15a59312e02d4d27548518ca04d19eb5",
+    "module.js.LICENSE.txt": "30f143a8e05630b1ab2ff90e572b97708701d7fc5f8e8fd2e44bbe9787723aea",
+    "module.js.map": "2dcb575f96e89a96eef0239d1a71d6ae93795ff84230f550e7c1c32fcc00677b",
+    "plugin.json": "12e8219a3a837b2b9360e44dafeca402130cdb4244c2424e4032b768ef9e130c",
+    "styles/dark.css": "d475f9e19c0b408b1ea5b51e26c2c42263aaa49075dd87aa9f5e0c27e8d4f0dc",
+    "styles/light.css": "a51abae38ba6e74d7aa8418f71ef28c8e66a5977cb7bd0d45e5de8d4496e5591"
+  }
+}
+-----BEGIN PGP SIGNATURE-----
+Version: OpenPGP.js v4.10.10
+Comment: https://openpgpjs.org
+
+wrcEARMKAAYFAmNk+CoAIQkQfk0ManCIZucWIQTzOyW2kQdOhGNlcPN+TQxq
+cIhm5xv9AgdeqJx1KC0+uZr/JD+S5g/dL+DVelkmNHBTCFF5xuocAbpsd3wh
+o53TkitFp3crGJ2P+XM67jSxxpVWowrWUq39yQIHcrkXuF6c6IuiP6IPqefn
+LRZKpBnfbhcPHYicSUwIy4GDNdY3nhlD7iGvM40CRGlkE0VMfPnm4wuk/kaV
+0x4BYFQ=
+=tkIc
+-----END PGP SIGNATURE-----

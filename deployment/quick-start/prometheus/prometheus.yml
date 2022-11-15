@@ -1,0 +1,31 @@
+global:
+  scrape_interval: 30s
+  scrape_timeout: 10s
+  evaluation_interval: 30s
+scrape_configs:
+  - job_name: connect_source_mysql
+    honor_timestamps: true
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    metrics_path: /metrics
+    scheme: http
+    follow_redirects: true
+    static_configs:
+      - targets:
+          - connect_source_mysql:8080
+        labels:
+          alias: acdc/
+          k8s_app: acdc-connect-source-mysql
+  - job_name: connect_sink_mysql
+    honor_timestamps: true
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    metrics_path: /metrics
+    scheme: http
+    follow_redirects: true
+    static_configs:
+      - targets:
+          - connect_sink_mysql:8080
+        labels:
+          alias: acdc/
+          k8s_app: acdc-connect-sink-jdbc

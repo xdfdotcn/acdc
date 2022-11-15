@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}" lang="en">
+  <head>
+    <title th:text="ACDC元数据检查告警">ACDC-WARNING</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  </head>
+  <body>
+    <H3>[ACDC-WARNING] INCOMPLETE METADATA</H3>
+    <div th:each="lm : ${arrayList}">
+      <p th:text="------------------------------------------------------------------------------------------------------------------------------------------------------------"></p>
+      <div th:each="entry : ${lm}">
+        <H4 th:text="${entry.key}"></H4>
+        <p th:each="instance : ${entry.value}" th:text="${instance}"></p>
+      </div>
+      </br>
+    </div>
+  </body>
+</html>

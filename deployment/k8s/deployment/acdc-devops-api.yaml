@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: acdc
+  name: acdc-api
+  labels: {}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: acdc-api
+  template:
+    metadata:
+      labels:
+        app: acdc-api
+        name: acdc-api
+        app.kubernetes.io/component: acdc-devops
+        app.kubernetes.io/name: acdc-api
+        app.kubernetes.io/part-of: acdc
+    spec:
+      containers:
+        - name: acdc-api
+          image: xdfdotcn/acdc-devops-backend-api:1.0.0-Alpha-SNAPSHOT
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          env:
+            - name: TZ
+              value: Asia/Shanghai
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:mysql://meta_db:3306/acdc
+            - name: SPRING_DATASOURCE_USERNAME
+              value: root
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: root
+            - name: SERVER_PORT
+              value: 8080
+            - name: SPRING_PROFILES_ACTIVE
+              value: prod
+            - name: ACDC_APPROVAL_POLICY
+              value: SKIP_ALL
+            - name: ACDC_UI_CONFIG_GRAFANA_URL_CONNECTIONFOROPERATOR
+              value: https://grafana/connection-connection-for-operator
+            - name: ACDC_UI_CONFIG_GRAFANA_URL_TIDBSOURCECONNECTOR
+              value: https://grafana/tidb-source-connector
+            - name: ACDC_UI_CONFIG_GRAFANA_URL_CONNECTIONFORUSER
+              value: https://grafana/connection-for-user
+            - name: ACDC_UI_CONFIG_GRAFANA_URL_MYSQLSOURCECONNECTOR
+              value: https://grafana/mysql-source-connector
+            - name: ACDC_UI_CONFIG_GRAFANA_URL_CONNECTORS
+              value: https://grafana/connectors
+          resources:
+            limits:
+              cpu: 4000m
+              memory: 16Gi
+            requests:
+              cpu: 4000m
+              memory: 8Gi
+          livenessProbe:
+            httpGet:
+              path: /api/v1/system/health-check
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 60
+            timeoutSeconds: 1
+            periodSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /api/v1/system/health-check
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 60
+            timeoutSeconds: 1
+            periodSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3

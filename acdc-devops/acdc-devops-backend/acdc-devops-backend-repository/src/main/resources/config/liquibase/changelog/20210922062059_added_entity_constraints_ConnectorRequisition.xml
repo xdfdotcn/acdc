@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+    <!--
+        Added the constraints for entity ConnectorRequisition.
+    -->
+    <changeSet id="20210922062059-2" author="jhipster">
+
+        <addForeignKeyConstraint baseColumnNames="connector_id"
+                                 baseTableName="connector_requisition"
+                                 constraintName="fk_connector_requisition__connector_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="connector"/>
+
+        <addForeignKeyConstraint baseColumnNames="status_id"
+                                 baseTableName="connector_requisition"
+                                 constraintName="fk_connector_requisition__status_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="dim_connector_requisition_status"/>
+    </changeSet>
+</databaseChangeLog>

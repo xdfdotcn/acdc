@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+    <!--
+        Added the constraints for entity Hive.
+    -->
+    <changeSet id="20210913031636-2" author="jhipster">
+
+        <addForeignKeyConstraint baseColumnNames="hdfs_id"
+                                 baseTableName="hive"
+                                 constraintName="fk_hive__hdfs_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="hdfs"/>
+
+        <addForeignKeyConstraint baseColumnNames="hive_id"
+                                 baseTableName="rel_hive__project"
+                                 constraintName="fk_rel_hive__project__hive_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="hive"/>
+
+        <addForeignKeyConstraint baseColumnNames="project_id"
+                                 baseTableName="rel_hive__project"
+                                 constraintName="fk_rel_hive__project__project_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="project"/>
+    </changeSet>
+</databaseChangeLog>

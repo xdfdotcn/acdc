@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+  <!--
+      1. 本次更改发生于 devops 1.7 迭代
+  -->
+  <changeSet id="devops-tag-1_8" author="ACDC">
+    <tagDatabase tag="devops-1_8"/>
+  </changeSet>
+
+  <changeSet id="devops-1_8_1" author="ACDC">
+    <addColumn tableName="project">
+      <column name="source" type="int" remarks="数据来源;0: 用户输入 1:pandora" afterColumn="id"/>
+      <column name="original_id" type="bigint" remarks="原始id;数据来源系统中的主键值，用于与本表主键解耦" afterColumn="source"/>
+    </addColumn>
+
+    <createIndex tableName="rdb" indexName="ux_name" unique="true">
+      <column name="name"/>
+    </createIndex>
+  </changeSet>
+</databaseChangeLog>

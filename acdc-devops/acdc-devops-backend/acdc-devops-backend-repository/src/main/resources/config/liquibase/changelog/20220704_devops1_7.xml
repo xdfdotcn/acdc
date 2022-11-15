@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <!--
+        1. 本次更改发生于 devops 1.5 迭代
+    -->
+    <changeSet id="devops-tag-1_7" author="ACDC">
+        <tagDatabase tag="devops-1_7"/>
+    </changeSet>
+
+    <changeSet id="devops-1_7_1" author="ACDC">
+        <createTable tableName="connection_requisition" remarks="链路申请单">
+
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="source_approve_result" type="varchar(255)" remarks="源数据负责人审批结果">
+                <constraints nullable="true"/>
+            </column>
+
+            <column name="source_approver_user_id" type="bigint" remarks="源数据负责人审批人">
+                <constraints nullable="true"/>
+            </column>
+
+            <column name="dba_approve_result" type="varchar(255)" remarks="dba审批结果">
+                <constraints nullable="true"/>
+            </column>
+
+            <column name="dba_approver_user_id" type="bigint" remarks="dba审批人">
+                <constraints nullable="true"/>
+            </column>
+
+            <column name="state" type="int"
+                    remarks="当前审批状态;0: 待审批 1: 待数据源负责人审批 2: 数据源负责人审批拒绝 3: 待DBA负责人审批 4: DBA 负责人审批拒绝 5: 审批通过">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="description" type="varchar(1024)" remarks="申请理由">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="update_time" type="datetime(3)" remarks="更新时间">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="creation_time" type="datetime(3)" remarks="创建时间">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="connection_requisition_connection_mapping" remarks="申请单和链路的映射关系">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="connection_requisition_id" type="bigint" remarks="申请单 id">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="connection_id" type="bigint" remarks="链路 id">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="connection_version" type="int" remarks="链路版本">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="update_time" type="datetime(3)" remarks="更新时间">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="creation_time" type="datetime(3)" remarks="创建时间">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>

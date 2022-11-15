@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <artifactId>acdc-connect</artifactId>
+        <groupId>cn.xdf.acdc</groupId>
+        <version>1.0.0-Alpha-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>acdc-connect-package</artifactId>
+    <name>${project.artifactId}</name>
+    <packaging>jar</packaging>
+
+    <dependencies>
+        <dependency>
+            <groupId>cn.xdf.acdc</groupId>
+            <artifactId>acdc-connect-connector-sink-jdbc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>cn.xdf.acdc</groupId>
+            <artifactId>acdc-connect-connector-sink-hdfs</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>cn.xdf.acdc</groupId>
+            <artifactId>acdc-connect-connector-sink-kafka</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>cn.xdf.acdc</groupId>
+            <artifactId>acdc-connect-connector-source-tidb</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>exec-maven-plugin</artifactId>
+                <groupId>org.codehaus.mojo</groupId>
+                <executions>
+                    <execution>
+                        <id>copy-connector-and-smt</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <executable>src/main/resources/shell/package-jar.sh</executable>
+                    <arguments>
+                        <argument>${basedir}/../acdc-connect-connector/acdc-connect-connector-sink-jdbc</argument>
+                        <argument>${basedir}/../acdc-connect-connector/acdc-connect-connector-source-tidb</argument>
+                        <argument>${basedir}/../acdc-connect-connector/acdc-connect-connector-sink-hdfs</argument>
+                        <argument>${basedir}/../acdc-connect-connector/acdc-connect-connector-sink-kafka</argument>
+                        <argument>${basedir}/../acdc-connect-smt/acdc-connect-smt-value-mapper</argument>
+                    </arguments>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.spotify</groupId>
+                <artifactId>dockerfile-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>acdc-docker-image</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>build</goal>
+                            <goal>push</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <repository>${container.image.registry}/${container.image.repository}/${project.parent.artifactId}</repository>
+                    <tag>${debezium.base.image.tag}-${project.version}-${maven.build.timestamp}</tag>
+                    <dockerfile>src/main/resources/docker/Dockerfile</dockerfile>
+                    <pullNewerImage>false</pullNewerImage>
+                    <buildArgs>
+                        <BASE_IMAGE>${debezium.base.image.name}:${debezium.base.image.tag}</BASE_IMAGE>
+                    </buildArgs>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

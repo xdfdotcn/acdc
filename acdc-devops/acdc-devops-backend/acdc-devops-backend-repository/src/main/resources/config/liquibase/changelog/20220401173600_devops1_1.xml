@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+
+    <!--
+        devops 1.1 迭代表结构变动
+        1. 删除 rdb_tidb 表
+        2. 删除 rdb_mysql 表
+        3. 增加 rdb_database_tidb 表
+        4. connector class 变更字段名称
+          a. 删除 dim_service_type 表
+          b. 删除 dim_connector_type 表
+        5. 增加 kafka_cluster_project_mapping 表
+        6. 删除 dim_instance_role 表
+        7. rdb_instance role 增加枚举，当前为
+          a. 1 master
+          b. 2 slave
+          c. 3 data_source
+        8. 删除 connector_class rdb_instance 所有外键
+    -->
+
+    <changeSet id="devops-tag-1_1" author="ACDC">
+        <tagDatabase tag="devops-1_1"/>
+    </changeSet>
+
+    <changeSet id="devops-1_1" author="ACDC">
+        <dropAllForeignKeyConstraints baseTableName="connector_class"/>
+        <dropAllForeignKeyConstraints baseTableName="rdb_instance"/>
+
+        <renameColumn columnDataType="int"
+                      newColumnName="data_system_type"
+                      oldColumnName="dim_service_type_id"
+                      remarks="1:mysql 2:tidb 3:jdbc 4:hive 5:kafka"
+                      tableName="connector_class"/>
+
+        <renameColumn columnDataType="int"
+                      newColumnName="connector_type"
+                      oldColumnName="connector_type_id"
+                      remarks="1:source 2:sink"
+                      tableName="connector_class"/>
+
+        <renameColumn columnDataType="int"
+                      newColumnName="role"
+                      oldColumnName="role_id"
+                      remarks="1: master 2:slave 3:data_source"
+                      tableName="rdb_instance"/>
+
+        <createTable tableName="rdb_database_tidb" remarks="tidb 数据库与 topic 映射表">
+            <column name="id" type="bigint" remarks="主键" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="rdb_database_id" type="bigint" remarks="关系型数据库 id">
+                <constraints nullable="false"/>
+            </column>
+            <column name="kafka_topic_id" type="bigint" remarks="topic id">
+                <constraints nullable="false"/>
+            </column>
+            <column name="creation_time" type="datetime(3)" remarks="创建时间">
+                <constraints nullable="true"/>
+            </column>
+            <column name="update_time" type="datetime(3)" remarks="更新时间">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+
+        <!--        <createTable tableName="kafka_cluster_project_mapping" remarks="kafka 集群与所属项目的映射">-->
+        <!--            <column name="id" type="int" remarks="主键">-->
+        <!--                <constraints primaryKey="true"/>-->
+        <!--            </column>-->
+        <!--            <column name="kafka_cluster" type="int" remarks="kafka集群">-->
+        <!--                <constraints nullable="false"/>-->
+        <!--            </column>-->
+        <!--            <column name="project" type="int" remarks="项目">-->
+        <!--                <constraints nullable="false"/>-->
+        <!--            </column>-->
+        <!--            <column name="creation_time" type="datetime(3)" remarks="创建时间">-->
+        <!--                <constraints nullable="true" />-->
+        <!--            </column>-->
+        <!--            <column name="update_time" type="datetime(3)" remarks="更新时间">-->
+        <!--                <constraints nullable="true" />-->
+        <!--            </column>-->
+        <!--        </createTable>-->
+
+        <!--        <dropDefaultValue tableName="kafka_cluster_project_mapping" columnName="creation_time" columnDataType="datetime(3)" />-->
+        <!--        <dropDefaultValue tableName="kafka_cluster_project_mapping" columnName="update_time" columnDataType="datetime(3)" />-->
+
+        <dropTable tableName="rdb_tidb"/>
+        <dropTable tableName="rdb_mysql"/>
+        <dropTable tableName="dim_service_type"/>
+        <dropTable tableName="dim_connector_type"/>
+        <dropTable tableName="dim_instance_role"/>
+        <rollback>
+            ALTER TABLE `acdc_devops`.`connector_class` CHANGE COLUMN `connector_type` `connector_type_id` int(11) NULL
+            DEFAULT NULL ;
+            ALTER TABLE `acdc_devops`.`connector_class` CHANGE COLUMN `data_system_type` `dim_service_type_id` int(11)
+            NULL
+            DEFAULT NULL ;
+            ALTER TABLE `acdc_devops`.`rdb_instance` CHANGE COLUMN `role` `role_id` int(11) NULL
+            DEFAULT NULL ;
+            DROP TABLE rdb_database_tidb;
+        </rollback>
+    </changeSet>
+</databaseChangeLog>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+    <!--
+        Added the constraints for entity KafkaTopic.
+    -->
+    <changeSet id="20210908065212-2" author="jhipster">
+
+        <addForeignKeyConstraint baseColumnNames="kafka_cluster_id"
+                                 baseTableName="kafka_topic"
+                                 constraintName="fk_kafka_topic__kafka_cluster_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="kafka_cluster"/>
+    </changeSet>
+</databaseChangeLog>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+    <!--
+        Added the constraints for entity Rdb.
+    -->
+    <changeSet id="20210908065204-2" author="jhipster">
+
+        <addForeignKeyConstraint baseColumnNames="kafka_cluster_id"
+                                 baseTableName="rdb"
+                                 constraintName="fk_rdb__kafka_cluster_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="kafka_cluster"/>
+    </changeSet>
+</databaseChangeLog>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+    <!--
+        Added the constraints for entity Connector.
+    -->
+    <changeSet id="20210908065223-2" author="jhipster">
+
+        <addForeignKeyConstraint baseColumnNames="creator_id"
+                                 baseTableName="connector"
+                                 constraintName="fk_connector__creator_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="user"/>
+
+        <addForeignKeyConstraint baseColumnNames="connector_class_id"
+                                 baseTableName="connector"
+                                 constraintName="fk_connector__connector_class_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="connector_class"/>
+
+        <addForeignKeyConstraint baseColumnNames="connect_cluster_id"
+                                 baseTableName="connector"
+                                 constraintName="fk_connector__connect_cluster_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="connect_cluster"/>
+
+        <addForeignKeyConstraint baseColumnNames="kafka_cluster_id"
+                                 baseTableName="connector"
+                                 constraintName="fk_connector__kafka_cluster_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="kafka_cluster"/>
+
+        <addForeignKeyConstraint baseColumnNames="desired_state_id"
+                                 baseTableName="connector"
+                                 constraintName="fk_connector__desired_state_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="dim_connector_status"/>
+
+        <addForeignKeyConstraint baseColumnNames="actual_state_id"
+                                 baseTableName="connector"
+                                 constraintName="fk_connector__actual_state_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="dim_connector_status"/>
+    </changeSet>
+</databaseChangeLog>

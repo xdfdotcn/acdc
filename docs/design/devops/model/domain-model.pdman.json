@@ -1,0 +1,6542 @@
+{
+  "modules": [
+    {
+      "name": "acdc",
+      "chnname": "",
+      "entities": [
+        {
+          "title": "kafka_cluster",
+          "fields": [
+            {
+              "name": "id",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "主键",
+              "autoIncrement": true,
+              "pk": true,
+              "notNull": true,
+              "relationNoShow": false
+            },
+            {
+              "name": "version",
+              "type": "DefaultString",
+              "remark": "",
+              "chnname": "kafka 版本",
+              "notNull": true
+            },
+            {
+              "name": "bootstrap_servers",
+              "type": "LongString",
+              "remark": "",
+              "chnname": "服务实例地址",
+              "relationNoShow": false,
+              "notNull": true
+            },
+            {
+              "name": "security_configuration",
+              "type": "MiddleString",
+              "remark": "",
+              "chnname": "安全认证配置"
+            },
+            {
+              "name": "description",
+              "type": "MiddleString",
+              "remark": "",
+              "chnname": "集群描述",
+              "relationNoShow": false,
+              "notNull": false
+            },
+            {
+              "name": "update_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "更新时间",
+              "notNull": true
+            },
+            {
+              "name": "creation_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "创建时间",
+              "notNull": true
+            }
+          ],
+          "indexs": [],
+          "headers": [
+            {
+              "fieldName": "chnname",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "name",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "type",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "dataType",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "remark",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "pk",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "notNull",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "autoIncrement",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "defaultValue",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "relationNoShow",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "uiHint",
+              "relationNoShow": true
+            }
+          ],
+          "chnname": "kafka_cluster"
+        },
+        {
+          "title": "kafka_topic",
+          "fields": [
+            {
+              "name": "id",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "id",
+              "pk": true,
+              "notNull": true,
+              "autoIncrement": true
+            },
+            {
+              "name": "kafka_cluster",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "所属kafka集群",
+              "pk": false,
+              "notNull": true
+            },
+            {
+              "name": "name",
+              "type": "MiddleString",
+              "remark": "",
+              "chnname": "topic名称",
+              "pk": false,
+              "notNull": true
+            },
+            {
+              "name": "update_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "更新日期",
+              "notNull": true,
+              "pk": false
+            },
+            {
+              "name": "creation_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "创建日期",
+              "notNull": true,
+              "pk": false
+            }
+          ],
+          "indexs": [],
+          "headers": [
+            {
+              "fieldName": "chnname",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "name",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "type",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "dataType",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "remark",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "pk",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "notNull",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "autoIncrement",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "defaultValue",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "relationNoShow",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "uiHint",
+              "relationNoShow": true
+            }
+          ],
+          "chnname": "kafka_topic",
+          "remark": "kafka topic 信息"
+        },
+        {
+          "title": "connect_cluster",
+          "fields": [
+            {
+              "name": "id",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "id",
+              "autoIncrement": true,
+              "pk": true,
+              "notNull": true
+            },
+            {
+              "name": "version",
+              "type": "DefaultString",
+              "remark": "",
+              "chnname": "版本",
+              "notNull": true
+            },
+            {
+              "name": "connect_rest_api_url",
+              "type": "LongString",
+              "remark": "",
+              "chnname": "connect REST API 地址",
+              "notNull": true
+            },
+            {
+              "name": "connector_class",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "connector class"
+            },
+            {
+              "name": "description",
+              "type": "MiddleString",
+              "remark": "",
+              "chnname": "集群描述",
+              "autoIncrement": false,
+              "notNull": false
+            },
+            {
+              "name": "update_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "更新时间",
+              "notNull": true
+            },
+            {
+              "name": "creation_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "创建时间",
+              "notNull": true
+            }
+          ],
+          "indexs": [],
+          "headers": [
+            {
+              "fieldName": "chnname",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "name",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "type",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "dataType",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "remark",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "pk",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "notNull",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "autoIncrement",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "defaultValue",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "relationNoShow",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "uiHint",
+              "relationNoShow": true
+            }
+          ],
+          "chnname": "connect_cluster"
+        },
+        {
+          "title": "connector_class",
+          "fields": [
+            {
+              "name": "id",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "id",
+              "pk": true,
+              "notNull": true,
+              "autoIncrement": true
+            },
+            {
+              "name": "name",
+              "type": "MiddleString",
+              "remark": "",
+              "chnname": "全限类名",
+              "notNull": true
+            },
+            {
+              "name": "simple_name",
+              "type": "ShortString",
+              "remark": "",
+              "chnname": "非全限类名",
+              "notNull": true
+            },
+            {
+              "name": "connector_type",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "connector 类型",
+              "notNull": true
+            },
+            {
+              "name": "service_type",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "servcie类型",
+              "notNull": true
+            },
+            {
+              "name": "description",
+              "type": "MiddleString",
+              "remark": "",
+              "chnname": "描述",
+              "notNull": false
+            },
+            {
+              "name": "update_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "更新时间",
+              "notNull": true
+            },
+            {
+              "name": "creation_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "创建日期",
+              "notNull": true
+            }
+          ],
+          "indexs": [],
+          "headers": [
+            {
+              "fieldName": "chnname",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "name",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "type",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "dataType",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "remark",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "pk",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "notNull",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "autoIncrement",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "defaultValue",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "relationNoShow",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "uiHint",
+              "relationNoShow": true
+            }
+          ],
+          "chnname": "connector_class",
+          "remark": "connector的java实现类"
+        },
+        {
+          "title": "connector",
+          "fields": [
+            {
+              "name": "id",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "id",
+              "pk": true,
+              "notNull": true,
+              "autoIncrement": true
+            },
+            {
+              "name": "user",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "归属用户",
+              "relationNoShow": false,
+              "notNull": true
+            },
+            {
+              "name": "connector_class",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "conncector实现类",
+              "notNull": true
+            },
+            {
+              "name": "connect_cluster",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "connect集群",
+              "notNull": true
+            },
+            {
+              "name": "kafka_cluster",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "kafka_cluster",
+              "notNull": true
+            },
+            {
+              "name": "actual_state",
+              "type": "DefaultString",
+              "remark": "",
+              "chnname": "当前实际状态"
+            },
+            {
+              "name": "desired_state",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "期望状态",
+              "notNull": true
+            },
+            {
+              "name": "update_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "更新时间",
+              "notNull": true
+            },
+            {
+              "name": "creation_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "创建时间",
+              "notNull": true
+            }
+          ],
+          "indexs": [],
+          "headers": [
+            {
+              "fieldName": "chnname",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "name",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "type",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "dataType",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "defaultValue",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "remark",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "pk",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "notNull",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "autoIncrement",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "relationNoShow",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "uiHint",
+              "relationNoShow": true
+            }
+          ],
+          "chnname": "connector",
+          "remark": "connector 实例"
+        },
+        {
+          "title": "connector_event",
+          "fields": [
+            {
+              "name": "id",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "id",
+              "pk": true,
+              "notNull": true,
+              "autoIncrement": true
+            },
+            {
+              "name": "connector",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "所属connector实例",
+              "notNull": true
+            },
+            {
+              "name": "type",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "事件类型",
+              "notNull": true
+            },
+            {
+              "name": "reason",
+              "type": "ShortString",
+              "remark": "",
+              "chnname": "事件来由",
+              "notNull": true
+            },
+            {
+              "name": "message",
+              "type": "LongString",
+              "remark": "",
+              "chnname": "事件信息",
+              "notNull": true
+            },
+            {
+              "name": "update_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "更新日期",
+              "notNull": true
+            },
+            {
+              "name": "creation_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "创建日期",
+              "notNull": true
+            }
+          ],
+          "indexs": [],
+          "headers": [
+            {
+              "fieldName": "chnname",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "name",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "type",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "dataType",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "remark",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "pk",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "notNull",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "autoIncrement",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "defaultValue",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "relationNoShow",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "uiHint",
+              "relationNoShow": true
+            }
+          ],
+          "chnname": "connector_event",
+          "remark": "记录connector的事件，新建，status的变更"
+        },
+        {
+          "title": "connector_configuration",
+          "fields": [
+            {
+              "name": "id",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "id",
+              "pk": true,
+              "notNull": true,
+              "autoIncrement": true
+            },
+            {
+              "name": "connector",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "所属connector",
+              "notNull": true
+            },
+            {
+              "name": "name",
+              "type": "ShortString",
+              "remark": "",
+              "chnname": "配置项名称",
+              "notNull": true
+            },
+            {
+              "name": "value",
+              "type": "MiddleString",
+              "remark": "",
+              "chnname": "配置项值",
+              "notNull": true
+            },
+            {
+              "name": "update_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "更新时间",
+              "notNull": true
+            },
+            {
+              "name": "creation_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "创建时间",
+              "notNull": true
+            }
+          ],
+          "indexs": [],
+          "headers": [
+            {
+              "fieldName": "chnname",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "name",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "type",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "dataType",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "remark",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "pk",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "notNull",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "autoIncrement",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "defaultValue",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "relationNoShow",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "uiHint",
+              "relationNoShow": true
+            }
+          ],
+          "chnname": "connector_configuration"
+        },
+        {
+          "title": "default_connector_configuration",
+          "fields": [
+            {
+              "name": "id",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "id",
+              "pk": true,
+              "notNull": true,
+              "autoIncrement": true
+            },
+            {
+              "name": "connector_class",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "connector实现类",
+              "notNull": true
+            },
+            {
+              "name": "name",
+              "type": "ShortString",
+              "remark": "",
+              "chnname": "配置项名称",
+              "notNull": true
+            },
+            {
+              "name": "value",
+              "type": "MiddleString",
+              "remark": "",
+              "chnname": "配置项值",
+              "notNull": true
+            },
+            {
+              "name": "update_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "更新日期",
+              "notNull": true
+            },
+            {
+              "name": "creation_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "创建日期",
+              "notNull": true
+            }
+          ],
+          "indexs": [],
+          "headers": [
+            {
+              "fieldName": "chnname",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "name",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "type",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "dataType",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "remark",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "pk",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "notNull",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "autoIncrement",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "defaultValue",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "relationNoShow",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "uiHint",
+              "relationNoShow": true
+            }
+          ],
+          "chnname": "default_connector_configuration",
+          "remark": "默认的配置项，例如schema注册中心地址，序列化方式等"
+        },
+        {
+          "title": "connector_data_extension",
+          "fields": [
+            {
+              "name": "id",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "id",
+              "pk": true,
+              "notNull": true,
+              "autoIncrement": true
+            },
+            {
+              "name": "name",
+              "type": "ShortString",
+              "remark": "",
+              "chnname": "字段名称",
+              "notNull": true
+            },
+            {
+              "name": "value",
+              "type": "MiddleString",
+              "remark": "",
+              "chnname": "字段类型",
+              "notNull": true
+            },
+            {
+              "name": "update_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "更新日期",
+              "notNull": true
+            },
+            {
+              "name": "creation_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "创建日期",
+              "notNull": true
+            }
+          ],
+          "indexs": [],
+          "headers": [
+            {
+              "fieldName": "chnname",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "name",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "type",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "dataType",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "remark",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "pk",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "notNull",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "autoIncrement",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "defaultValue",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "relationNoShow",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "uiHint",
+              "relationNoShow": true
+            }
+          ],
+          "chnname": "connector_data_extension",
+          "remark": "connector数据扩展，暂时都是string类型，或者隐含的一些关键字类型，例如${datetime}"
+        },
+        {
+          "title": "source_rdb_table",
+          "fields": [
+            {
+              "name": "id",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "id",
+              "pk": true,
+              "notNull": true,
+              "autoIncrement": true
+            },
+            {
+              "name": "connector",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "",
+              "pk": false,
+              "notNull": true
+            },
+            {
+              "name": "rdb_table",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "关联的表",
+              "pk": false,
+              "notNull": true
+            },
+            {
+              "name": "kafka_topic",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "",
+              "pk": false,
+              "notNull": true
+            },
+            {
+              "name": "excluded_columns",
+              "type": "MiddleString",
+              "remark": "",
+              "chnname": "需要排除的字段",
+              "pk": false,
+              "notNull": true
+            },
+            {
+              "name": "masked_columns",
+              "type": "MiddleString",
+              "remark": "",
+              "chnname": "需要脱敏的字段",
+              "notNull": false
+            },
+            {
+              "name": "mask_hash_algorithm",
+              "type": "ShortString",
+              "remark": "",
+              "chnname": "加密的hash算法",
+              "notNull": false
+            },
+            {
+              "name": "mask_hash_algorithm_salt",
+              "type": "MiddleString",
+              "remark": "",
+              "chnname": "hash算法的salt"
+            },
+            {
+              "name": "update_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "更新日期",
+              "notNull": true,
+              "pk": false
+            },
+            {
+              "name": "creation_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "创建日期",
+              "notNull": true,
+              "pk": false
+            }
+          ],
+          "indexs": [],
+          "headers": [
+            {
+              "fieldName": "chnname",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "name",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "type",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "dataType",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "remark",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "pk",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "notNull",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "autoIncrement",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "defaultValue",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "relationNoShow",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "uiHint",
+              "relationNoShow": true
+            }
+          ],
+          "chnname": "source_rdb_table",
+          "remark": "source表信息"
+        },
+        {
+          "title": "source_rdb_table_column_extension",
+          "fields": [
+            {
+              "name": "id",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "id",
+              "pk": true,
+              "notNull": true,
+              "autoIncrement": true
+            },
+            {
+              "name": "source_tdb_table",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "所属source_rdb_table"
+            },
+            {
+              "name": "connector_data_extension",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "对应的字段扩展"
+            },
+            {
+              "name": "update_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "更新日期",
+              "notNull": true
+            },
+            {
+              "name": "creation_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "创建日期",
+              "notNull": true
+            }
+          ],
+          "indexs": [],
+          "headers": [
+            {
+              "fieldName": "chnname",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "name",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "type",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "dataType",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "remark",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "pk",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "notNull",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "autoIncrement",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "defaultValue",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "relationNoShow",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "uiHint",
+              "relationNoShow": true
+            }
+          ],
+          "chnname": "source_rdb_table_column_extension"
+        },
+        {
+          "title": "sink_rdb_table",
+          "fields": [
+            {
+              "name": "id",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "id",
+              "pk": true,
+              "notNull": true,
+              "autoIncrement": true
+            },
+            {
+              "name": "connector",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "",
+              "pk": false,
+              "notNull": true
+            },
+            {
+              "name": "rdb_table",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "",
+              "pk": false,
+              "notNull": true
+            },
+            {
+              "name": "kafka_topic",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "",
+              "pk": false,
+              "notNull": true
+            },
+            {
+              "name": "filter_ expression",
+              "type": "MiddleString",
+              "remark": "",
+              "chnname": "",
+              "notNull": true
+            },
+            {
+              "name": "deletion_mode",
+              "type": "DefaultString",
+              "remark": "",
+              "chnname": "",
+              "pk": false,
+              "notNull": true
+            },
+            {
+              "name": "logical_deletion_column",
+              "type": "ShortString",
+              "remark": "",
+              "chnname": "",
+              "notNull": true
+            },
+            {
+              "name": "logical_deletion_column_value_deletion",
+              "type": "DefaultString",
+              "remark": "",
+              "chnname": "",
+              "notNull": true
+            },
+            {
+              "name": "logical_deletion_column_value_normal",
+              "type": "DefaultString",
+              "remark": "",
+              "chnname": "",
+              "notNull": true
+            },
+            {
+              "name": "update_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "更新日期",
+              "notNull": true,
+              "pk": false
+            },
+            {
+              "name": "creation_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "创建日期",
+              "notNull": true,
+              "pk": false
+            }
+          ],
+          "indexs": [],
+          "headers": [
+            {
+              "fieldName": "chnname",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "name",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "type",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "dataType",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "remark",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "pk",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "notNull",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "autoIncrement",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "defaultValue",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "relationNoShow",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "uiHint",
+              "relationNoShow": true
+            }
+          ],
+          "chnname": "sink_rdb_table",
+          "remark": "sink表信息"
+        },
+        {
+          "title": "sink_rdb_table_column_extension",
+          "fields": [
+            {
+              "name": "id",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "id",
+              "pk": true,
+              "notNull": true,
+              "autoIncrement": true
+            },
+            {
+              "name": "sink_rdb_table",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "所属sink_rdb_table",
+              "notNull": true
+            },
+            {
+              "name": "connector_data_extension",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "对应的字段扩展"
+            },
+            {
+              "name": "update_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "更新日期",
+              "notNull": true
+            },
+            {
+              "name": "creation_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "创建日期",
+              "notNull": true
+            }
+          ],
+          "indexs": [],
+          "headers": [
+            {
+              "fieldName": "chnname",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "name",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "type",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "dataType",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "remark",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "pk",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "notNull",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "autoIncrement",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "defaultValue",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "relationNoShow",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "uiHint",
+              "relationNoShow": true
+            }
+          ],
+          "chnname": "sink_rdb_table_column_extension"
+        },
+        {
+          "title": "sink_column_mapping",
+          "fields": [
+            {
+              "name": "id",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "id",
+              "pk": true,
+              "notNull": true,
+              "autoIncrement": true
+            },
+            {
+              "name": "source_column_name",
+              "type": "ShortString",
+              "remark": "",
+              "chnname": "",
+              "notNull": true
+            },
+            {
+              "name": "sink_column_name",
+              "type": "ShortString",
+              "remark": "",
+              "chnname": "",
+              "notNull": true
+            },
+            {
+              "name": "update_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "更新日期",
+              "notNull": true
+            },
+            {
+              "name": "creation_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "创建日期",
+              "notNull": true
+            }
+          ],
+          "indexs": [],
+          "headers": [
+            {
+              "fieldName": "chnname",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "name",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "type",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "dataType",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "remark",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "pk",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "notNull",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "autoIncrement",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "defaultValue",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "relationNoShow",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "uiHint",
+              "relationNoShow": true
+            }
+          ],
+          "chnname": "sink_column_mapping",
+          "remark": "sink字段映射"
+        },
+        {
+          "title": "sink_rdb_column_mapping",
+          "fields": [
+            {
+              "name": "id",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "id",
+              "pk": true,
+              "notNull": true,
+              "autoIncrement": true
+            },
+            {
+              "name": "sink_hive_table",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "所属sink_hive_table"
+            },
+            {
+              "name": "sink_column_mapping",
+              "type": "Integer",
+              "remark": "",
+              "chnname": ""
+            },
+            {
+              "name": "update_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "更新日期",
+              "notNull": true
+            },
+            {
+              "name": "creation_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "创建日期",
+              "notNull": true
+            }
+          ],
+          "indexs": [],
+          "headers": [
+            {
+              "fieldName": "chnname",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "name",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "type",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "dataType",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "remark",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "pk",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "notNull",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "autoIncrement",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "defaultValue",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "relationNoShow",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "uiHint",
+              "relationNoShow": true
+            }
+          ]
+        },
+        {
+          "title": "sink_hive_table",
+          "fields": [
+            {
+              "name": "id",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "id",
+              "pk": true,
+              "notNull": true,
+              "autoIncrement": true
+            },
+            {
+              "name": "connector",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "所属connector",
+              "notNull": true
+            },
+            {
+              "name": "hive_table",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "写入的hive_table",
+              "notNull": true
+            },
+            {
+              "name": "kafka_topic",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "数据来源topic",
+              "notNull": true
+            },
+            {
+              "name": "filter_expression",
+              "type": "MiddleString",
+              "remark": "",
+              "chnname": "过滤条件"
+            },
+            {
+              "name": "update_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "更新日期",
+              "notNull": true
+            },
+            {
+              "name": "creation_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "创建日期",
+              "notNull": true
+            }
+          ],
+          "indexs": [],
+          "headers": [
+            {
+              "fieldName": "chnname",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "name",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "type",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "dataType",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "remark",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "pk",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "notNull",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "autoIncrement",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "defaultValue",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "relationNoShow",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "uiHint",
+              "relationNoShow": true
+            }
+          ],
+          "chnname": "sink_hive_table"
+        },
+        {
+          "title": "sink_hive_table_column_extension",
+          "fields": [
+            {
+              "name": "id",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "id",
+              "pk": true,
+              "notNull": true,
+              "autoIncrement": true
+            },
+            {
+              "name": "sink_hive_table",
+              "type": "DefaultString",
+              "remark": "",
+              "chnname": "所属sink_hive_table"
+            },
+            {
+              "name": "sink_column_extension",
+              "type": "DefaultString",
+              "remark": "",
+              "chnname": "扩展的字段"
+            },
+            {
+              "name": "update_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "更新日期",
+              "notNull": true
+            },
+            {
+              "name": "creation_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "创建日期",
+              "notNull": true
+            }
+          ],
+          "indexs": [],
+          "headers": [
+            {
+              "fieldName": "chnname",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "name",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "type",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "dataType",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "remark",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "pk",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "notNull",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "autoIncrement",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "defaultValue",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "relationNoShow",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "uiHint",
+              "relationNoShow": true
+            }
+          ],
+          "chnname": "sink_hive_table_column_extension"
+        },
+        {
+          "title": "sink_hive_column_mapping",
+          "fields": [
+            {
+              "name": "id",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "id",
+              "pk": true,
+              "notNull": true,
+              "autoIncrement": true
+            },
+            {
+              "name": "sink_hive_table",
+              "type": "DefaultString",
+              "remark": "",
+              "chnname": "所属sink_hive_table"
+            },
+            {
+              "name": "sink_column_mapping",
+              "type": "DefaultString",
+              "remark": "",
+              "chnname": "对应的字段映射"
+            },
+            {
+              "name": "update_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "更新日期",
+              "notNull": true
+            },
+            {
+              "name": "creation_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "创建日期",
+              "notNull": true
+            }
+          ],
+          "indexs": [],
+          "headers": [
+            {
+              "fieldName": "chnname",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "name",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "type",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "dataType",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "remark",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "pk",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "notNull",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "autoIncrement",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "defaultValue",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "relationNoShow",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "uiHint",
+              "relationNoShow": true
+            }
+          ],
+          "chnname": "sink_hive_column_mapping"
+        },
+        {
+          "title": "user",
+          "fields": [
+            {
+              "name": "id",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "id",
+              "pk": true,
+              "notNull": true,
+              "autoIncrement": true
+            },
+            {
+              "name": "name",
+              "type": "DefaultString",
+              "remark": "",
+              "chnname": "中文名",
+              "notNull": true
+            },
+            {
+              "name": "domain_account",
+              "type": "MiddleString",
+              "remark": "",
+              "chnname": "域账号",
+              "notNull": true
+            },
+            {
+              "name": "update_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "更新时间",
+              "notNull": true
+            },
+            {
+              "name": "creation_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "创建时间",
+              "notNull": true
+            }
+          ],
+          "indexs": [],
+          "headers": [
+            {
+              "fieldName": "chnname",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "name",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "type",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "dataType",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "remark",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "pk",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "notNull",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "autoIncrement",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "defaultValue",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "relationNoShow",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "uiHint",
+              "relationNoShow": true
+            }
+          ],
+          "chnname": "user"
+        },
+        {
+          "title": "user_project_mapping",
+          "fields": [
+            {
+              "name": "id",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "id",
+              "pk": true,
+              "notNull": true,
+              "autoIncrement": true
+            },
+            {
+              "name": "user",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "用户",
+              "notNull": true
+            },
+            {
+              "name": "project",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "项目",
+              "notNull": true
+            },
+            {
+              "name": "update_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "更新日期",
+              "notNull": true
+            },
+            {
+              "name": "creation_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "创建日期",
+              "notNull": true
+            }
+          ],
+          "indexs": [],
+          "headers": [
+            {
+              "fieldName": "chnname",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "name",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "type",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "dataType",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "remark",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "pk",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "notNull",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "autoIncrement",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "defaultValue",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "relationNoShow",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "uiHint",
+              "relationNoShow": true
+            }
+          ],
+          "chnname": "user_project_mapping"
+        },
+        {
+          "title": "project",
+          "fields": [
+            {
+              "name": "id",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "id",
+              "pk": true,
+              "notNull": true,
+              "autoIncrement": true
+            },
+            {
+              "name": "name",
+              "type": "ShortString",
+              "remark": "",
+              "chnname": "名称",
+              "notNull": true
+            },
+            {
+              "name": "description",
+              "type": "MiddleString",
+              "remark": "",
+              "chnname": "描述"
+            },
+            {
+              "name": "owner",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "负责人",
+              "notNull": true
+            },
+            {
+              "name": "update_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "更新日期",
+              "notNull": true
+            },
+            {
+              "name": "creation_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "创建日期",
+              "notNull": true
+            }
+          ],
+          "indexs": [],
+          "headers": [
+            {
+              "fieldName": "chnname",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "name",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "type",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "dataType",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "remark",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "pk",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "notNull",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "autoIncrement",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "defaultValue",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "relationNoShow",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "uiHint",
+              "relationNoShow": true
+            }
+          ],
+          "remark": "用户和项目的映射",
+          "chnname": "project"
+        },
+        {
+          "title": "rdb",
+          "fields": [
+            {
+              "name": "id",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "id",
+              "pk": true,
+              "notNull": true,
+              "autoIncrement": true
+            },
+            {
+              "name": "rdb_type",
+              "type": "DefaultString",
+              "remark": "",
+              "chnname": "类型",
+              "notNull": true
+            },
+            {
+              "name": "name",
+              "type": "ShortString",
+              "remark": "",
+              "chnname": "数据库集群名称"
+            },
+            {
+              "name": "username",
+              "type": "MiddleString",
+              "remark": "",
+              "chnname": "用户名",
+              "notNull": true
+            },
+            {
+              "name": "password",
+              "type": "MiddleString",
+              "remark": "",
+              "chnname": "密码",
+              "notNull": true
+            },
+            {
+              "name": "kafka_cluster",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "作为datasource时，写入的kafka集群"
+            },
+            {
+              "name": "description",
+              "type": "MiddleString",
+              "remark": "",
+              "chnname": "",
+              "notNull": false
+            },
+            {
+              "name": "update_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "更新日期",
+              "notNull": true
+            },
+            {
+              "name": "creation_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "创建日期",
+              "notNull": true
+            }
+          ],
+          "indexs": [],
+          "headers": [
+            {
+              "fieldName": "chnname",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "name",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "type",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "dataType",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "remark",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "pk",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "notNull",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "autoIncrement",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "defaultValue",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "relationNoShow",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "uiHint",
+              "relationNoShow": true
+            }
+          ],
+          "chnname": "rdb",
+          "remark": "关系型数据库实例"
+        },
+        {
+          "title": "rdb_mysql",
+          "fields": [
+            {
+              "name": "id",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "id",
+              "pk": true,
+              "notNull": true,
+              "autoIncrement": true
+            },
+            {
+              "name": "rdb",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "所属rdb"
+            },
+            {
+              "name": "data_source_instance",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "数据源实例",
+              "notNull": true
+            },
+            {
+              "name": "update_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "更新日期",
+              "notNull": true
+            },
+            {
+              "name": "creation_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "创建日期",
+              "notNull": true
+            }
+          ],
+          "indexs": [],
+          "headers": [
+            {
+              "fieldName": "chnname",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "name",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "type",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "dataType",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "remark",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "pk",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "notNull",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "autoIncrement",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "defaultValue",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "relationNoShow",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "uiHint",
+              "relationNoShow": true
+            }
+          ],
+          "chnname": "rdb_mysql"
+        },
+        {
+          "title": "rdb_tidb",
+          "fields": [
+            {
+              "name": "id",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "id",
+              "pk": true,
+              "notNull": true,
+              "autoIncrement": true
+            },
+            {
+              "name": "rdb",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "所属rdb",
+              "notNull": true
+            },
+            {
+              "name": "kafka_topic",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "kafka topic",
+              "notNull": true
+            },
+            {
+              "name": "update_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "更新日期",
+              "notNull": true
+            },
+            {
+              "name": "creation_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "创建日期",
+              "notNull": true
+            }
+          ],
+          "indexs": [],
+          "headers": [
+            {
+              "fieldName": "chnname",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "name",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "type",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "dataType",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "remark",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "pk",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "notNull",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "autoIncrement",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "defaultValue",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "relationNoShow",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "uiHint",
+              "relationNoShow": true
+            }
+          ],
+          "chnname": "rdb_tidb"
+        },
+        {
+          "title": "rdb_project_mapping",
+          "fields": [
+            {
+              "name": "id",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "id",
+              "pk": true,
+              "notNull": true,
+              "autoIncrement": true
+            },
+            {
+              "name": "rdb",
+              "type": "DefaultString",
+              "remark": "",
+              "chnname": "rdb"
+            },
+            {
+              "name": "project",
+              "type": "DefaultString",
+              "remark": "",
+              "chnname": "project"
+            },
+            {
+              "name": "update_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "更新日期",
+              "notNull": true
+            },
+            {
+              "name": "creation_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "创建日期",
+              "notNull": true
+            }
+          ],
+          "indexs": [],
+          "headers": [
+            {
+              "fieldName": "chnname",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "name",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "type",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "dataType",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "remark",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "pk",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "notNull",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "autoIncrement",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "defaultValue",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "relationNoShow",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "uiHint",
+              "relationNoShow": true
+            }
+          ],
+          "chnname": "rdb_project_mapping"
+        },
+        {
+          "title": "rdb_instance",
+          "fields": [
+            {
+              "name": "id",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "id",
+              "pk": true,
+              "notNull": true,
+              "autoIncrement": true
+            },
+            {
+              "name": "rdb",
+              "type": "DefaultString",
+              "remark": "",
+              "chnname": "所属数据库",
+              "notNull": true
+            },
+            {
+              "name": "host",
+              "type": "MiddleString",
+              "remark": "",
+              "chnname": "服务地址",
+              "notNull": true
+            },
+            {
+              "name": "port",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "端口端口",
+              "notNull": true
+            },
+            {
+              "name": "vip",
+              "type": "MiddleString",
+              "remark": "",
+              "chnname": "虚拟地址"
+            },
+            {
+              "name": "role",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "实例身份",
+              "notNull": true
+            },
+            {
+              "name": "update_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "更新日期",
+              "notNull": true
+            },
+            {
+              "name": "creation_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "创建日期",
+              "notNull": true
+            }
+          ],
+          "indexs": [],
+          "headers": [
+            {
+              "fieldName": "chnname",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "name",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "type",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "dataType",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "remark",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "pk",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "notNull",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "autoIncrement",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "defaultValue",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "relationNoShow",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "uiHint",
+              "relationNoShow": true
+            }
+          ],
+          "chnname": "rdb_instance",
+          "remark": "关系型数据库服务实例"
+        },
+        {
+          "title": "rdb_database",
+          "fields": [
+            {
+              "name": "id",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "id",
+              "pk": true,
+              "notNull": true,
+              "autoIncrement": true
+            },
+            {
+              "name": "rdb",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "所属服务",
+              "notNull": true
+            },
+            {
+              "name": "name",
+              "type": "ShortString",
+              "remark": "",
+              "chnname": "数据库名称",
+              "notNull": true
+            },
+            {
+              "name": "update_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "更新日期",
+              "notNull": true
+            },
+            {
+              "name": "creation_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "创建日期",
+              "notNull": true
+            }
+          ],
+          "indexs": [],
+          "headers": [
+            {
+              "fieldName": "chnname",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "name",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "type",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "dataType",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "remark",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "pk",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "notNull",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "autoIncrement",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "defaultValue",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "relationNoShow",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "uiHint",
+              "relationNoShow": true
+            }
+          ],
+          "chnname": "rdb_database",
+          "remark": ""
+        },
+        {
+          "title": "rdb_table",
+          "fields": [
+            {
+              "name": "id",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "id",
+              "pk": true,
+              "notNull": true,
+              "autoIncrement": true
+            },
+            {
+              "name": "rdb_database",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "所属DB",
+              "notNull": true
+            },
+            {
+              "name": "name",
+              "type": "ShortString",
+              "remark": "",
+              "chnname": "",
+              "notNull": true
+            },
+            {
+              "name": "update_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "更新日期",
+              "notNull": true
+            },
+            {
+              "name": "creation_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "创建日期",
+              "notNull": true
+            }
+          ],
+          "indexs": [],
+          "headers": [
+            {
+              "fieldName": "chnname",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "name",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "type",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "dataType",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "remark",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "pk",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "notNull",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "autoIncrement",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "defaultValue",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "relationNoShow",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "uiHint",
+              "relationNoShow": true
+            }
+          ],
+          "chnname": "rdb_table",
+          "remark": "终端表，归属在rdb_database下"
+        },
+        {
+          "title": "hdfs",
+          "fields": [
+            {
+              "name": "id",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "id",
+              "pk": true,
+              "notNull": true,
+              "autoIncrement": true
+            },
+            {
+              "name": "name",
+              "type": "MiddleString",
+              "remark": "",
+              "chnname": "hdfs cluster name"
+            },
+            {
+              "name": "client_failover_proxy_provider",
+              "type": "MiddleString",
+              "remark": "",
+              "chnname": ""
+            },
+            {
+              "name": "update_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "更新日期",
+              "notNull": true
+            },
+            {
+              "name": "creation_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "创建日期",
+              "notNull": true
+            }
+          ],
+          "indexs": [],
+          "headers": [
+            {
+              "fieldName": "chnname",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "name",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "type",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "dataType",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "remark",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "pk",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "notNull",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "autoIncrement",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "defaultValue",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "relationNoShow",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "uiHint",
+              "relationNoShow": true
+            }
+          ],
+          "chnname": "hdfs"
+        },
+        {
+          "title": "hdfs_namenode",
+          "fields": [
+            {
+              "name": "id",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "id",
+              "pk": true,
+              "notNull": true,
+              "autoIncrement": true
+            },
+            {
+              "name": "name",
+              "type": "ShortString",
+              "remark": "",
+              "chnname": "",
+              "notNull": true
+            },
+            {
+              "name": "rpc_address",
+              "type": "MiddleString",
+              "remark": "",
+              "chnname": "",
+              "notNull": true
+            },
+            {
+              "name": "rpc_port",
+              "type": "Integer",
+              "remark": "",
+              "chnname": ""
+            },
+            {
+              "name": "hdfs",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "",
+              "notNull": true
+            },
+            {
+              "name": "update_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "更新日期",
+              "notNull": true
+            },
+            {
+              "name": "creation_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "创建日期",
+              "notNull": true
+            }
+          ],
+          "indexs": [],
+          "headers": [
+            {
+              "fieldName": "chnname",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "name",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "type",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "dataType",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "remark",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "pk",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "notNull",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "autoIncrement",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "defaultValue",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "relationNoShow",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "uiHint",
+              "relationNoShow": true
+            }
+          ],
+          "chnname": "hdfs_namenode"
+        },
+        {
+          "title": "hive",
+          "fields": [
+            {
+              "name": "id",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "id",
+              "pk": true,
+              "notNull": true,
+              "autoIncrement": true
+            },
+            {
+              "name": "name",
+              "type": "DefaultString",
+              "remark": "",
+              "chnname": "hive集群名称"
+            },
+            {
+              "name": "metastore_uris",
+              "type": "LongString",
+              "remark": "",
+              "chnname": "metastore_uris",
+              "notNull": true
+            },
+            {
+              "name": "hdfs",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "hdfs cluster id"
+            },
+            {
+              "name": "hdfs_user",
+              "type": "ShortString",
+              "remark": "",
+              "chnname": "hdfs user"
+            },
+            {
+              "name": "update_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "更新日期",
+              "notNull": true
+            },
+            {
+              "name": "creation_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "创建日期",
+              "notNull": true
+            }
+          ],
+          "indexs": [],
+          "headers": [
+            {
+              "fieldName": "chnname",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "name",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "type",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "dataType",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "remark",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "pk",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "notNull",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "autoIncrement",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "defaultValue",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "relationNoShow",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "uiHint",
+              "relationNoShow": true
+            }
+          ],
+          "chnname": "hive"
+        },
+        {
+          "title": "hive_project_mapping",
+          "fields": [
+            {
+              "name": "id",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "id",
+              "pk": true,
+              "notNull": true,
+              "autoIncrement": true
+            },
+            {
+              "name": "hive",
+              "type": "DefaultString",
+              "remark": "",
+              "chnname": "hive"
+            },
+            {
+              "name": "project",
+              "type": "DefaultString",
+              "remark": "",
+              "chnname": "project"
+            },
+            {
+              "name": "update_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "更新日期",
+              "notNull": true
+            },
+            {
+              "name": "creation_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "创建日期",
+              "notNull": true
+            }
+          ],
+          "indexs": [],
+          "headers": [
+            {
+              "fieldName": "chnname",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "name",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "type",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "dataType",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "remark",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "pk",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "notNull",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "autoIncrement",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "defaultValue",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "relationNoShow",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "uiHint",
+              "relationNoShow": true
+            }
+          ],
+          "chnname": "hive_project_mapping"
+        },
+        {
+          "title": "hive_database",
+          "fields": [
+            {
+              "name": "id",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "id",
+              "pk": true,
+              "notNull": true,
+              "autoIncrement": true
+            },
+            {
+              "name": "name",
+              "type": "DefaultString",
+              "remark": "",
+              "chnname": ""
+            },
+            {
+              "name": "hive",
+              "type": "Integer",
+              "remark": "",
+              "chnname": ""
+            },
+            {
+              "name": "update_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "更新日期",
+              "notNull": true
+            },
+            {
+              "name": "creation_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "创建日期",
+              "notNull": true
+            }
+          ],
+          "indexs": [],
+          "headers": [
+            {
+              "fieldName": "chnname",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "name",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "type",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "dataType",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "remark",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "pk",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "notNull",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "autoIncrement",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "defaultValue",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "relationNoShow",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "uiHint",
+              "relationNoShow": true
+            }
+          ],
+          "chnname": "hive_database"
+        },
+        {
+          "title": "hive_table",
+          "fields": [
+            {
+              "name": "id",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "id",
+              "pk": true,
+              "notNull": true,
+              "autoIncrement": true
+            },
+            {
+              "name": "name",
+              "type": "DefaultString",
+              "remark": "",
+              "chnname": "表名称"
+            },
+            {
+              "name": "hive_database",
+              "type": "Integer",
+              "remark": "",
+              "chnname": ""
+            },
+            {
+              "name": "update_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "更新日期",
+              "notNull": true
+            },
+            {
+              "name": "creation_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "创建日期",
+              "notNull": true
+            }
+          ],
+          "indexs": [],
+          "headers": [
+            {
+              "fieldName": "chnname",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "name",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "type",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "dataType",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "remark",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "pk",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "notNull",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "autoIncrement",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "defaultValue",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "relationNoShow",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "uiHint",
+              "relationNoShow": true
+            }
+          ]
+        },
+        {
+          "title": "dim_connector_type",
+          "fields": [
+            {
+              "name": "id",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "主键",
+              "pk": true,
+              "notNull": true,
+              "autoIncrement": true
+            },
+            {
+              "name": "name",
+              "type": "DefaultString",
+              "remark": "",
+              "chnname": "名称",
+              "notNull": true
+            },
+            {
+              "name": "description",
+              "type": "ShortString",
+              "remark": "",
+              "chnname": "描述"
+            }
+          ],
+          "indexs": [],
+          "headers": [
+            {
+              "fieldName": "chnname",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "name",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "type",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "dataType",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "remark",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "pk",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "notNull",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "autoIncrement",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "defaultValue",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "relationNoShow",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "uiHint",
+              "relationNoShow": true
+            }
+          ],
+          "chnname": "dim_connector_type",
+          "remark": "维表，connector 类型，mysql source，hive sink等"
+        },
+        {
+          "title": "dim_service_type",
+          "fields": [
+            {
+              "name": "id",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "id",
+              "pk": true,
+              "notNull": true,
+              "autoIncrement": true
+            },
+            {
+              "name": "name",
+              "type": "DefaultString",
+              "remark": "",
+              "chnname": "名称",
+              "notNull": true
+            },
+            {
+              "name": "description",
+              "type": "ShortString",
+              "remark": "",
+              "chnname": "描述",
+              "notNull": true
+            }
+          ],
+          "indexs": [],
+          "headers": [
+            {
+              "fieldName": "chnname",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "name",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "type",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "dataType",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "remark",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "pk",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "notNull",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "autoIncrement",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "defaultValue",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "relationNoShow",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "uiHint",
+              "relationNoShow": true
+            }
+          ],
+          "chnname": "dim_service_type",
+          "remark": "服务类型，mysql，tidb，redis，event_center等"
+        },
+        {
+          "title": "dim_connector_status",
+          "fields": [
+            {
+              "name": "id",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "id",
+              "pk": true,
+              "notNull": true,
+              "autoIncrement": true
+            },
+            {
+              "name": "name",
+              "type": "DefaultString",
+              "remark": "",
+              "chnname": "名称",
+              "notNull": true
+            },
+            {
+              "name": "description",
+              "type": "ShortString",
+              "remark": "",
+              "chnname": "描述",
+              "notNull": true
+            }
+          ],
+          "indexs": [],
+          "headers": [
+            {
+              "fieldName": "chnname",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "name",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "type",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "dataType",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "remark",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "pk",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "notNull",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "autoIncrement",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "defaultValue",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "relationNoShow",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "uiHint",
+              "relationNoShow": true
+            }
+          ],
+          "chnname": "dim_connector_status",
+          "remark": "connector状态"
+        },
+        {
+          "title": "dim_user_role",
+          "fields": [
+            {
+              "name": "id",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "id",
+              "pk": true,
+              "notNull": true,
+              "autoIncrement": true
+            },
+            {
+              "name": "value",
+              "type": "DefaultString",
+              "remark": "",
+              "chnname": "名称",
+              "notNull": true
+            },
+            {
+              "name": "description",
+              "type": "ShortString",
+              "remark": "",
+              "chnname": "描述",
+              "notNull": true
+            }
+          ],
+          "indexs": [],
+          "headers": [
+            {
+              "fieldName": "chnname",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "name",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "type",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "dataType",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "remark",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "pk",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "notNull",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "autoIncrement",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "defaultValue",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "relationNoShow",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "uiHint",
+              "relationNoShow": true
+            }
+          ],
+          "chnname": "dim_user_role"
+        },
+        {
+          "title": "dim_deletion_mode",
+          "fields": [
+            {
+              "name": "id",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "id",
+              "pk": true,
+              "notNull": true,
+              "autoIncrement": true
+            },
+            {
+              "name": "value",
+              "type": "DefaultString",
+              "remark": "",
+              "chnname": "名称",
+              "notNull": true
+            },
+            {
+              "name": "description",
+              "type": "ShortString",
+              "remark": "",
+              "chnname": "描述",
+              "notNull": true
+            }
+          ],
+          "indexs": [],
+          "headers": [
+            {
+              "fieldName": "chnname",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "name",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "type",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "dataType",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "remark",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "pk",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "notNull",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "autoIncrement",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "defaultValue",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "relationNoShow",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "uiHint",
+              "relationNoShow": true
+            }
+          ],
+          "chnname": "dim_deletion_mode",
+          "remark": "删除模式"
+        },
+        {
+          "title": "dim_event_type",
+          "fields": [
+            {
+              "name": "id",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "id",
+              "pk": true,
+              "notNull": true,
+              "autoIncrement": true
+            },
+            {
+              "name": "value",
+              "type": "DefaultString",
+              "remark": "",
+              "chnname": "名称",
+              "notNull": true
+            },
+            {
+              "name": "description",
+              "type": "ShortString",
+              "remark": "",
+              "chnname": "描述",
+              "notNull": true
+            }
+          ],
+          "indexs": [],
+          "headers": [
+            {
+              "fieldName": "chnname",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "name",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "type",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "dataType",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "remark",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "pk",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "notNull",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "autoIncrement",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "defaultValue",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "relationNoShow",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "uiHint",
+              "relationNoShow": true
+            }
+          ],
+          "chnname": "dim_event_type",
+          "remark": "事件类型：审批，通知，警告等"
+        },
+        {
+          "title": "dim_rdb_type",
+          "fields": [
+            {
+              "name": "id",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "id",
+              "pk": true,
+              "notNull": true,
+              "autoIncrement": true
+            },
+            {
+              "name": "value",
+              "type": "DefaultString",
+              "remark": "",
+              "chnname": "名称",
+              "notNull": true
+            },
+            {
+              "name": "description",
+              "type": "ShortString",
+              "remark": "",
+              "chnname": "描述",
+              "notNull": true
+            }
+          ],
+          "indexs": [],
+          "headers": [
+            {
+              "fieldName": "chnname",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "name",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "type",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "dataType",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "remark",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "pk",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "notNull",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "autoIncrement",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "defaultValue",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "relationNoShow",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "uiHint",
+              "relationNoShow": true
+            }
+          ],
+          "chnname": "dim_rdb_type",
+          "remark": "关系型数据库类型"
+        },
+        {
+          "title": "dim_instance_role",
+          "fields": [
+            {
+              "name": "id",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "主键",
+              "pk": true,
+              "notNull": true,
+              "autoIncrement": true
+            },
+            {
+              "name": "name",
+              "type": "DefaultString",
+              "remark": "",
+              "chnname": "名称",
+              "notNull": true
+            },
+            {
+              "name": "description",
+              "type": "ShortString",
+              "remark": "",
+              "chnname": "描述"
+            }
+          ],
+          "indexs": [],
+          "headers": [
+            {
+              "fieldName": "chnname",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "name",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "type",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "dataType",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "remark",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "pk",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "notNull",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "autoIncrement",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "defaultValue",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "relationNoShow",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "uiHint",
+              "relationNoShow": true
+            }
+          ],
+          "chnname": "dim_instance_role",
+          "remark": "实例身份"
+        },
+        {
+          "title": "connector_requisition",
+          "fields": [
+            {
+              "name": "id",
+              "type": "Integer",
+              "remark": "",
+              "chnname": "id",
+              "pk": true,
+              "notNull": true,
+              "autoIncrement": true
+            },
+            {
+              "name": "source_approve_result",
+              "type": "DefaultString",
+              "remark": "",
+              "chnname": "源数据负责人审批结果"
+            },
+            {
+              "name": "dba_approve_result",
+              "type": "DefaultString",
+              "remark": "",
+              "chnname": "dba审批结果"
+            },
+            {
+              "name": "connector_id",
+              "type": "BigInt",
+              "remark": "",
+              "chnname": "connectorid",
+              "notNull": true
+            },
+            {
+              "name": "status",
+              "type": "BigInt",
+              "remark": "",
+              "chnname": "当前审批状态",
+              "notNull": true,
+              "relationNoShow": false
+            },
+            {
+              "name": "update_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "更新日期",
+              "notNull": true
+            },
+            {
+              "name": "creation_time",
+              "type": "DateTime",
+              "remark": "",
+              "chnname": "创建日期",
+              "notNull": true
+            }
+          ],
+          "indexs": [],
+          "headers": [
+            {
+              "fieldName": "chnname",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "name",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "type",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "dataType",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "remark",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "pk",
+              "relationNoShow": false
+            },
+            {
+              "fieldName": "notNull",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "autoIncrement",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "defaultValue",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "relationNoShow",
+              "relationNoShow": true
+            },
+            {
+              "fieldName": "uiHint",
+              "relationNoShow": true
+            }
+          ],
+          "chnname": "connector_requisition",
+          "remark": "connector申请单"
+        }
+      ],
+      "graphCanvas": {
+        "nodes": [
+          {
+            "shape": "table",
+            "title": "default_connector_configuration",
+            "moduleName": false,
+            "x": 930,
+            "y": -120,
+            "id": "8feec95b"
+          },
+          {
+            "shape": "table",
+            "title": "connector_configuration",
+            "moduleName": false,
+            "x": 1410,
+            "y": 130,
+            "id": "62ca981e"
+          },
+          {
+            "shape": "table",
+            "title": "connector_event",
+            "moduleName": false,
+            "x": 1410,
+            "y": -280,
+            "id": "9a76e26f"
+          },
+          {
+            "shape": "table",
+            "title": "dim_event_type",
+            "moduleName": false,
+            "x": 990,
+            "y": -310,
+            "id": "62fef742"
+          },
+          {
+            "shape": "table",
+            "title": "kafka_topic",
+            "moduleName": false,
+            "x": -70,
+            "y": 570,
+            "id": "3d02db69"
+          },
+          {
+            "shape": "table",
+            "title": "rdb_table",
+            "moduleName": false,
+            "x": 1000,
+            "y": 920,
+            "id": "8ccde201"
+          },
+          {
+            "shape": "table",
+            "title": "dim_deletion_mode",
+            "moduleName": false,
+            "x": 990,
+            "y": 740,
+            "id": "006d71c5"
+          },
+          {
+            "shape": "table",
+            "title": "source_rdb_table",
+            "moduleName": false,
+            "x": 1550,
+            "y": 390,
+            "id": "173b2b71",
+            "size": [
+              483.3870723456978,
+              239.66380383301328
+            ]
+          },
+          {
+            "shape": "table",
+            "title": "sink_rdb_table",
+            "moduleName": false,
+            "x": 1570,
+            "y": 730,
+            "id": "8099205d",
+            "size": [
+              408.39486356428324,
+              235.75020756756282
+            ]
+          },
+          {
+            "shape": "table",
+            "title": "source_rdb_table_column_extension",
+            "moduleName": false,
+            "x": 2500,
+            "y": 310,
+            "id": "e5a30c99"
+          },
+          {
+            "shape": "table",
+            "title": "connector_data_extension",
+            "moduleName": false,
+            "x": 2060,
+            "y": 520,
+            "id": "b79649ab"
+          },
+          {
+            "shape": "table",
+            "title": "rdb_project_mapping",
+            "moduleName": false,
+            "x": -290,
+            "y": 780,
+            "id": "21f0e417"
+          },
+          {
+            "shape": "table",
+            "title": "user",
+            "moduleName": false,
+            "x": -760,
+            "y": 260,
+            "id": "aa568385"
+          },
+          {
+            "shape": "table",
+            "title": "project",
+            "moduleName": false,
+            "x": -660,
+            "y": 500,
+            "id": "15f9aae8"
+          },
+          {
+            "shape": "table",
+            "title": "user_project_mapping",
+            "moduleName": false,
+            "x": -220,
+            "y": 350,
+            "id": "4157f7b3"
+          },
+          {
+            "shape": "table",
+            "title": "hive_project_mapping",
+            "moduleName": false,
+            "x": -350,
+            "y": 1190,
+            "id": "ea96eb2d"
+          },
+          {
+            "shape": "table",
+            "title": "hdfs_namenode",
+            "moduleName": false,
+            "x": 130,
+            "y": 1720,
+            "id": "2e03db7f"
+          },
+          {
+            "shape": "table",
+            "title": "hdfs",
+            "moduleName": false,
+            "x": -340,
+            "y": 1550,
+            "id": "30c81163"
+          },
+          {
+            "shape": "table",
+            "title": "hive",
+            "moduleName": false,
+            "x": 160,
+            "y": 1480,
+            "id": "233df0de"
+          },
+          {
+            "shape": "table",
+            "title": "hive_database",
+            "moduleName": false,
+            "x": 500,
+            "y": 1450,
+            "id": "c9faaa10"
+          },
+          {
+            "shape": "table",
+            "title": "hive_table",
+            "moduleName": false,
+            "x": 900,
+            "y": 1380,
+            "id": "bc89202e"
+          },
+          {
+            "shape": "table",
+            "title": "connect_cluster",
+            "moduleName": false,
+            "x": 460,
+            "y": -290,
+            "id": "21e35b8b"
+          },
+          {
+            "shape": "table",
+            "title": "connector_class",
+            "moduleName": false,
+            "x": 60,
+            "y": -10,
+            "id": "0316ee2c"
+          },
+          {
+            "shape": "table",
+            "title": "dim_service_type",
+            "moduleName": false,
+            "x": -350,
+            "y": 60,
+            "id": "a59b2734"
+          },
+          {
+            "shape": "table",
+            "title": "dim_connector_type",
+            "moduleName": false,
+            "x": -370,
+            "y": -120,
+            "id": "a3ad39d5"
+          },
+          {
+            "shape": "table",
+            "title": "rdb_instance",
+            "moduleName": false,
+            "x": 750,
+            "y": 1150,
+            "id": "d66e10ab"
+          },
+          {
+            "shape": "table",
+            "title": "rdb_mysql",
+            "moduleName": false,
+            "x": 1300,
+            "y": 1080,
+            "id": "cc20748a"
+          },
+          {
+            "shape": "table",
+            "title": "dim_connector_status",
+            "moduleName": false,
+            "x": 500,
+            "y": 270,
+            "id": "9d394965"
+          },
+          {
+            "shape": "table",
+            "title": "rdb",
+            "moduleName": false,
+            "x": 180,
+            "y": 950,
+            "id": "10923a5b"
+          },
+          {
+            "shape": "table",
+            "title": "rdb_database",
+            "moduleName": false,
+            "x": 640,
+            "y": 780,
+            "id": "d1547be3"
+          },
+          {
+            "shape": "table",
+            "title": "rdb_tidb",
+            "moduleName": false,
+            "x": 1280,
+            "y": 1260,
+            "id": "75a8f0bb"
+          },
+          {
+            "shape": "table",
+            "title": "dim_instance_role",
+            "moduleName": false,
+            "x": 300,
+            "y": 1230,
+            "id": "27788609"
+          },
+          {
+            "shape": "table",
+            "title": "kafka_cluster",
+            "moduleName": false,
+            "x": 530,
+            "y": 450,
+            "id": "ce54b6b1"
+          },
+          {
+            "shape": "table",
+            "title": "sink_rdb_table_column_extension",
+            "moduleName": false,
+            "x": 2560,
+            "y": 570,
+            "id": "bd207a13"
+          },
+          {
+            "shape": "table",
+            "title": "sink_rdb_column_mapping",
+            "moduleName": false,
+            "x": 2580,
+            "y": 820,
+            "id": "91bb3a94"
+          },
+          {
+            "shape": "table",
+            "title": "sink_hive_column_mapping",
+            "moduleName": false,
+            "x": 2580,
+            "y": 1240,
+            "id": "08484a4f"
+          },
+          {
+            "shape": "table",
+            "title": "sink_hive_table_column_extension",
+            "moduleName": false,
+            "x": 2580,
+            "y": 1030,
+            "id": "020d421d"
+          },
+          {
+            "shape": "table",
+            "title": "sink_hive_table",
+            "moduleName": false,
+            "x": 1800,
+            "y": 1100,
+            "id": "905b588c"
+          },
+          {
+            "shape": "table",
+            "title": "sink_column_mapping",
+            "moduleName": false,
+            "x": 2040,
+            "y": 850,
+            "id": "dac7408f"
+          },
+          {
+            "shape": "table",
+            "title": "connector",
+            "moduleName": false,
+            "x": 940,
+            "y": 520,
+            "id": "a61adcb3"
+          },
+          {
+            "shape": "table",
+            "title": "connector_requisition",
+            "moduleName": false,
+            "x": 960,
+            "y": 250,
+            "id": "6f99b6a6",
+            "size": [
+              358.41221397335516,
+              168.46119586615765
+            ]
+          }
+        ],
+        "edges": [
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "a61adcb3",
+            "target": "ce54b6b1",
+            "id": "b27c8f7b",
+            "controlPoints": [
+              {
+                "x": 780.5322265625,
+                "y": 532.5595238095239
+              },
+              {
+                "x": 693.126953125,
+                "y": 402.22058823529414
+              }
+            ],
+            "sourceAnchor": 8,
+            "targetAnchor": 1
+          },
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "0316ee2c",
+            "target": "a59b2734",
+            "id": "31483d03",
+            "controlPoints": [
+              {
+                "x": -89.8056640625,
+                "y": 12.61842105263159
+              },
+              {
+                "x": -240.22265625,
+                "y": 52.41666666666667
+              }
+            ],
+            "sourceAnchor": 8,
+            "targetAnchor": 1
+          },
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "3d02db69",
+            "target": "ce54b6b1",
+            "id": "1bad9cdf",
+            "controlPoints": [
+              {
+                "x": 73.1201171875,
+                "y": 562.4423076923077
+              },
+              {
+                "x": 366.873046875,
+                "y": 402.22058823529414
+              }
+            ],
+            "sourceAnchor": 3,
+            "targetAnchor": 0
+          },
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "62ca981e",
+            "target": "a61adcb3",
+            "id": "b23d893f",
+            "controlPoints": [
+              {
+                "x": 1266.87109375,
+                "y": 112.38333333333334
+              },
+              {
+                "x": 1099.4677734375,
+                "y": 452.17857142857144
+              }
+            ],
+            "sourceAnchor": 2,
+            "targetAnchor": 1
+          },
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "8feec95b",
+            "target": "0316ee2c",
+            "id": "18ee82a2",
+            "controlPoints": [
+              {
+                "x": 754.876953125,
+                "y": -137.61666666666667
+              },
+              {
+                "x": 209.8056640625,
+                "y": -67.80263157894737
+              }
+            ],
+            "sourceAnchor": 2,
+            "targetAnchor": 1
+          },
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "173b2b71",
+            "target": "a61adcb3",
+            "id": "4d88eb4b",
+            "controlPoints": [
+              {
+                "x": 1281.8064638271512,
+                "y": 322.904546574631
+              },
+              {
+                "x": 1099.4677734375,
+                "y": 452.17857142857144
+              }
+            ],
+            "sourceAnchor": 2,
+            "targetAnchor": 1
+          },
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "a61adcb3",
+            "target": "aa568385",
+            "id": "af15ec3b",
+            "controlPoints": [
+              {
+                "x": 780.5322265625,
+                "y": 472.2738095238095
+              },
+              {
+                "x": -623.2080078125,
+                "y": 232.28846153846155
+              }
+            ],
+            "sourceAnchor": 2,
+            "targetAnchor": 1
+          },
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "8099205d",
+            "target": "a61adcb3",
+            "id": "970ad818",
+            "controlPoints": [
+              {
+                "x": 1339.3025682178584,
+                "y": 661.2286372959841
+              },
+              {
+                "x": 1099.4677734375,
+                "y": 452.17857142857144
+              }
+            ],
+            "sourceAnchor": 2,
+            "targetAnchor": 1
+          },
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "0316ee2c",
+            "target": "a3ad39d5",
+            "id": "6616ca22",
+            "controlPoints": [
+              {
+                "x": -89.8056640625,
+                "y": -7.48684210526315
+              },
+              {
+                "x": -257.6015625,
+                "y": -127.58333333333333
+              }
+            ],
+            "sourceAnchor": 6,
+            "targetAnchor": 1
+          },
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "173b2b71",
+            "target": "3d02db69",
+            "id": "4d322155",
+            "controlPoints": [
+              {
+                "x": 1281.8064638271512,
+                "y": 368.4157845877778
+              },
+              {
+                "x": 635.733235446369,
+                "y": 431.31036940192746
+              },
+              {
+                "x": 73.1201171875,
+                "y": 542.2884615384615
+              }
+            ],
+            "sourceAnchor": 6,
+            "targetAnchor": 1
+          },
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "8099205d",
+            "target": "3d02db69",
+            "id": "87567d8e",
+            "controlPoints": [
+              {
+                "x": 1339.3025682178584,
+                "y": 701.8890711047416
+              },
+              {
+                "x": 73.1201171875,
+                "y": 542.2884615384615
+              }
+            ],
+            "sourceAnchor": 6,
+            "targetAnchor": 1
+          },
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "8099205d",
+            "target": "006d71c5",
+            "id": "b7e0fe2b",
+            "controlPoints": [
+              {
+                "x": 1339.3025682178584,
+                "y": 742.5495049134992
+              },
+              {
+                "x": 1099.77734375,
+                "y": 732.4166666666666
+              }
+            ],
+            "sourceAnchor": 10,
+            "targetAnchor": 1
+          },
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "9a76e26f",
+            "target": "a61adcb3",
+            "id": "cafccb85",
+            "controlPoints": [
+              {
+                "x": 1254.87109375,
+                "y": -307.6617647058823
+              },
+              {
+                "x": 1099.4677734375,
+                "y": 452.17857142857144
+              }
+            ],
+            "sourceAnchor": 2,
+            "targetAnchor": 1
+          },
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "9a76e26f",
+            "target": "62fef742",
+            "id": "f4746043",
+            "controlPoints": [
+              {
+                "x": 1254.87109375,
+                "y": -287.54411764705884
+              },
+              {
+                "x": 1099.77734375,
+                "y": -317.5833333333333
+              }
+            ],
+            "sourceAnchor": 4,
+            "targetAnchor": 1
+          },
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "d66e10ab",
+            "target": "27788609",
+            "id": "57f37639",
+            "controlPoints": [
+              {
+                "x": 615.220703125,
+                "y": 1192.7236842105262
+              },
+              {
+                "x": 410.02734375,
+                "y": 1222.4166666666667
+              }
+            ],
+            "sourceAnchor": 10,
+            "targetAnchor": 1
+          },
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "8ccde201",
+            "target": "d1547be3",
+            "id": "488a56c4",
+            "controlPoints": [
+              {
+                "x": 870.541015625,
+                "y": 912.4423076923077
+              },
+              {
+                "x": 774.779296875,
+                "y": 752.2884615384615
+              }
+            ],
+            "sourceAnchor": 2,
+            "targetAnchor": 1
+          },
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "d1547be3",
+            "target": "10923a5b",
+            "id": "06c141b9",
+            "controlPoints": [
+              {
+                "x": 505.220703125,
+                "y": 772.4423076923077
+              },
+              {
+                "x": 382.806640625,
+                "y": 882.1785714285714
+              }
+            ],
+            "sourceAnchor": 2,
+            "targetAnchor": 1
+          },
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "d66e10ab",
+            "target": "10923a5b",
+            "id": "a56b2e8f",
+            "controlPoints": [
+              {
+                "x": 615.220703125,
+                "y": 1112.3026315789473
+              },
+              {
+                "x": 382.806640625,
+                "y": 882.1785714285714
+              }
+            ],
+            "sourceAnchor": 2,
+            "targetAnchor": 1
+          },
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "173b2b71",
+            "target": "8ccde201",
+            "id": "ebfe9959",
+            "controlPoints": [
+              {
+                "x": 1281.8064638271512,
+                "y": 345.6601655812044
+              },
+              {
+                "x": 1129.458984375,
+                "y": 892.2884615384615
+              }
+            ],
+            "sourceAnchor": 4,
+            "targetAnchor": 1
+          },
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "8099205d",
+            "target": "8ccde201",
+            "id": "303e7e2d",
+            "controlPoints": [
+              {
+                "x": 1339.3025682178584,
+                "y": 681.5588542003628
+              },
+              {
+                "x": 1129.458984375,
+                "y": 892.2884615384615
+              }
+            ],
+            "sourceAnchor": 4,
+            "targetAnchor": 1
+          },
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "bd207a13",
+            "target": "b79649ab",
+            "id": "fa6d3b63",
+            "controlPoints": [
+              {
+                "x": 2369.826171875,
+                "y": 582.5961538461538
+              },
+              {
+                "x": 2205.10546875,
+                "y": 492.28846153846155
+              }
+            ],
+            "sourceAnchor": 4,
+            "targetAnchor": 1
+          },
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "e5a30c99",
+            "target": "173b2b71",
+            "id": "55477a4e",
+            "controlPoints": [
+              {
+                "x": 2299.53515625,
+                "y": 302.4423076923077
+              },
+              {
+                "x": 1818.1935361728488,
+                "y": 300.1489275680577
+              }
+            ],
+            "sourceAnchor": 2,
+            "targetAnchor": 1
+          },
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "e5a30c99",
+            "target": "b79649ab",
+            "id": "74dba3ed",
+            "controlPoints": [
+              {
+                "x": 2299.53515625,
+                "y": 322.5961538461538
+              },
+              {
+                "x": 2205.10546875,
+                "y": 492.28846153846155
+              }
+            ],
+            "sourceAnchor": 4,
+            "targetAnchor": 1
+          },
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "91bb3a94",
+            "target": "dac7408f",
+            "id": "f8323a64",
+            "controlPoints": [
+              {
+                "x": 2398.17578125,
+                "y": 832.5961538461538
+              },
+              {
+                "x": 2191.794921875,
+                "y": 822.2884615384615
+              }
+            ],
+            "sourceAnchor": 4,
+            "targetAnchor": 1
+          },
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "c9faaa10",
+            "target": "233df0de",
+            "id": "47d7d7aa",
+            "controlPoints": [
+              {
+                "x": 371.220703125,
+                "y": 1462.5961538461538
+              },
+              {
+                "x": 308.126953125,
+                "y": 1432.2205882352941
+              }
+            ],
+            "sourceAnchor": 4,
+            "targetAnchor": 1
+          },
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "bc89202e",
+            "target": "c9faaa10",
+            "id": "62a85a16",
+            "controlPoints": [
+              {
+                "x": 768.2060546875,
+                "y": 1392.5961538461538
+              },
+              {
+                "x": 628.779296875,
+                "y": 1422.2884615384614
+              }
+            ],
+            "sourceAnchor": 4,
+            "targetAnchor": 1
+          },
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "21f0e417",
+            "target": "10923a5b",
+            "id": "1703f949",
+            "controlPoints": [
+              {
+                "x": -161.220703125,
+                "y": 772.4423076923077
+              },
+              {
+                "x": -22.806640625,
+                "y": 882.1785714285714
+              }
+            ],
+            "sourceAnchor": 3,
+            "targetAnchor": 0
+          },
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "21f0e417",
+            "target": "15f9aae8",
+            "id": "b488b5b3",
+            "controlPoints": [
+              {
+                "x": -418.779296875,
+                "y": 792.5961538461538
+              },
+              {
+                "x": -531.220703125,
+                "y": 462.25
+              }
+            ],
+            "sourceAnchor": 4,
+            "targetAnchor": 1
+          },
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "15f9aae8",
+            "target": "aa568385",
+            "id": "5e5185e9",
+            "controlPoints": [
+              {
+                "x": -788.779296875,
+                "y": 522.65
+              },
+              {
+                "x": -896.7919921875,
+                "y": 232.28846153846155
+              }
+            ],
+            "sourceAnchor": 6,
+            "targetAnchor": 0
+          },
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "4157f7b3",
+            "target": "aa568385",
+            "id": "8bc9d8c3",
+            "controlPoints": [
+              {
+                "x": -348.779296875,
+                "y": 342.4423076923077
+              },
+              {
+                "x": -623.2080078125,
+                "y": 232.28846153846155
+              }
+            ],
+            "sourceAnchor": 2,
+            "targetAnchor": 1
+          },
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "4157f7b3",
+            "target": "15f9aae8",
+            "id": "a81a6d36",
+            "controlPoints": [
+              {
+                "x": -348.779296875,
+                "y": 362.5961538461538
+              },
+              {
+                "x": -531.220703125,
+                "y": 462.25
+              }
+            ],
+            "sourceAnchor": 4,
+            "targetAnchor": 1
+          },
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "ea96eb2d",
+            "target": "233df0de",
+            "id": "e6f5bb44",
+            "controlPoints": [
+              {
+                "x": -221.220703125,
+                "y": 1182.4423076923076
+              },
+              {
+                "x": 11.873046875,
+                "y": 1432.2205882352941
+              }
+            ],
+            "sourceAnchor": 3,
+            "targetAnchor": 0
+          },
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "ea96eb2d",
+            "target": "15f9aae8",
+            "id": "36538aa7",
+            "controlPoints": [
+              {
+                "x": -478.779296875,
+                "y": 1202.5961538461538
+              },
+              {
+                "x": -531.220703125,
+                "y": 462.25
+              }
+            ],
+            "sourceAnchor": 4,
+            "targetAnchor": 1
+          },
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "2e03db7f",
+            "target": "30c81163",
+            "id": "a729b084",
+            "controlPoints": [
+              {
+                "x": 1.220703125,
+                "y": 1752.6911764705883
+              },
+              {
+                "x": -144.1748046875,
+                "y": 1522.2884615384614
+              }
+            ],
+            "sourceAnchor": 8,
+            "targetAnchor": 1
+          },
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "233df0de",
+            "target": "30c81163",
+            "id": "e676fdb2",
+            "controlPoints": [
+              {
+                "x": 11.873046875,
+                "y": 1492.5735294117646
+              },
+              {
+                "x": -144.1748046875,
+                "y": 1522.2884615384614
+              }
+            ],
+            "sourceAnchor": 6,
+            "targetAnchor": 1
+          },
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "bd207a13",
+            "target": "8099205d",
+            "id": "ed509010",
+            "controlPoints": [
+              {
+                "x": 2369.826171875,
+                "y": 562.4423076923077
+              },
+              {
+                "x": 1800.6974317821416,
+                "y": 640.8984203916052
+              }
+            ],
+            "sourceAnchor": 2,
+            "targetAnchor": 1
+          },
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "21e35b8b",
+            "target": "0316ee2c",
+            "id": "34eca004",
+            "controlPoints": [
+              {
+                "x": 249.611328125,
+                "y": -277.4264705882353
+              },
+              {
+                "x": 209.8056640625,
+                "y": -67.80263157894737
+              }
+            ],
+            "sourceAnchor": 6,
+            "targetAnchor": 1
+          },
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "a61adcb3",
+            "target": "21e35b8b",
+            "id": "b3bc4873",
+            "controlPoints": [
+              {
+                "x": 780.5322265625,
+                "y": 512.4642857142858
+              },
+              {
+                "x": 670.388671875,
+                "y": -337.77941176470586
+              }
+            ],
+            "sourceAnchor": 6,
+            "targetAnchor": 1
+          },
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "a61adcb3",
+            "target": "0316ee2c",
+            "id": "3d323e8d",
+            "controlPoints": [
+              {
+                "x": 780.5322265625,
+                "y": 492.3690476190476
+              },
+              {
+                "x": 209.8056640625,
+                "y": -67.80263157894737
+              }
+            ],
+            "sourceAnchor": 4,
+            "targetAnchor": 1
+          },
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "cc20748a",
+            "target": "d66e10ab",
+            "id": "28b5a9dc",
+            "controlPoints": [
+              {
+                "x": 1142.5302734375,
+                "y": 1092.5961538461538
+              },
+              {
+                "x": 884.779296875,
+                "y": 1092.1973684210527
+              }
+            ],
+            "sourceAnchor": 4,
+            "targetAnchor": 1
+          },
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "cc20748a",
+            "target": "10923a5b",
+            "id": "27383927",
+            "controlPoints": [
+              {
+                "x": 1142.5302734375,
+                "y": 1072.4423076923076
+              },
+              {
+                "x": 382.806640625,
+                "y": 882.1785714285714
+              }
+            ],
+            "sourceAnchor": 2,
+            "targetAnchor": 1
+          },
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "75a8f0bb",
+            "target": "3d02db69",
+            "id": "31b295bf",
+            "controlPoints": [
+              {
+                "x": 1146.5390625,
+                "y": 1272.5961538461538
+              },
+              {
+                "x": 73.1201171875,
+                "y": 542.2884615384615
+              }
+            ],
+            "sourceAnchor": 4,
+            "targetAnchor": 1
+          },
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "10923a5b",
+            "target": "ce54b6b1",
+            "id": "c83dbeb6",
+            "controlPoints": [
+              {
+                "x": -22.806640625,
+                "y": 982.6547619047619
+              },
+              {
+                "x": 366.873046875,
+                "y": 402.22058823529414
+              }
+            ],
+            "sourceAnchor": 10,
+            "targetAnchor": 0
+          },
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "75a8f0bb",
+            "target": "10923a5b",
+            "id": "4daaf683",
+            "controlPoints": [
+              {
+                "x": 1146.5390625,
+                "y": 1252.4423076923076
+              },
+              {
+                "x": 382.806640625,
+                "y": 882.1785714285714
+              }
+            ],
+            "sourceAnchor": 2,
+            "targetAnchor": 1
+          },
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "905b588c",
+            "target": "a61adcb3",
+            "id": "99fb303f",
+            "controlPoints": [
+              {
+                "x": 1642.1962890625,
+                "y": 1072.3382352941176
+              },
+              {
+                "x": 1099.4677734375,
+                "y": 452.17857142857144
+              }
+            ],
+            "sourceAnchor": 2,
+            "targetAnchor": 1
+          },
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "905b588c",
+            "target": "bc89202e",
+            "id": "97a32939",
+            "controlPoints": [
+              {
+                "x": 1642.1962890625,
+                "y": 1092.4558823529412
+              },
+              {
+                "x": 1031.7939453125,
+                "y": 1352.2884615384614
+              }
+            ],
+            "sourceAnchor": 4,
+            "targetAnchor": 1
+          },
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "905b588c",
+            "target": "3d02db69",
+            "id": "b72847aa",
+            "controlPoints": [
+              {
+                "x": 1642.1962890625,
+                "y": 1112.5735294117646
+              },
+              {
+                "x": 73.1201171875,
+                "y": 542.2884615384615
+              }
+            ],
+            "sourceAnchor": 6,
+            "targetAnchor": 1
+          },
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "020d421d",
+            "target": "905b588c",
+            "id": "e7fa78ee",
+            "controlPoints": [
+              {
+                "x": 2389.54296875,
+                "y": 1022.4423076923077
+              },
+              {
+                "x": 1957.8037109375,
+                "y": 1052.2205882352941
+              }
+            ],
+            "sourceAnchor": 2,
+            "targetAnchor": 1
+          },
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "020d421d",
+            "target": "b79649ab",
+            "id": "74efde38",
+            "controlPoints": [
+              {
+                "x": 2389.54296875,
+                "y": 1042.5961538461538
+              },
+              {
+                "x": 2205.10546875,
+                "y": 492.28846153846155
+              }
+            ],
+            "sourceAnchor": 4,
+            "targetAnchor": 1
+          },
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "08484a4f",
+            "target": "905b588c",
+            "id": "7b0f4d79",
+            "controlPoints": [
+              {
+                "x": 2398.17578125,
+                "y": 1232.4423076923076
+              },
+              {
+                "x": 1957.8037109375,
+                "y": 1052.2205882352941
+              }
+            ],
+            "sourceAnchor": 2,
+            "targetAnchor": 1
+          },
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "08484a4f",
+            "target": "dac7408f",
+            "id": "b136365c",
+            "controlPoints": [
+              {
+                "x": 2398.17578125,
+                "y": 1252.5961538461538
+              },
+              {
+                "x": 2191.794921875,
+                "y": 822.2884615384615
+              }
+            ],
+            "sourceAnchor": 4,
+            "targetAnchor": 1
+          },
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "91bb3a94",
+            "target": "8099205d",
+            "id": "5f5c698d",
+            "controlPoints": [
+              {
+                "x": 2398.17578125,
+                "y": 812.4423076923077
+              },
+              {
+                "x": 1800.6974317821416,
+                "y": 640.8984203916052
+              }
+            ],
+            "sourceAnchor": 2,
+            "targetAnchor": 1
+          },
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "6f99b6a6",
+            "target": "a61adcb3",
+            "id": "48033061",
+            "controlPoints": [
+              {
+                "x": 754.2938930133224,
+                "y": 262.56821191069736
+              },
+              {
+                "x": 780.5322265625,
+                "y": 452.17857142857144
+              }
+            ],
+            "sourceAnchor": 6,
+            "targetAnchor": 0
+          },
+          {
+            "shape": "erdRelation",
+            "relation": "0,n:1",
+            "source": "6f99b6a6",
+            "target": "9d394965",
+            "id": "9ec15861",
+            "controlPoints": [
+              {
+                "x": 754.2938930133224,
+                "y": 284.8981462368264
+              },
+              {
+                "x": 621.732421875,
+                "y": 262.4166666666667
+              }
+            ],
+            "sourceAnchor": 8,
+            "targetAnchor": 1
+          }
+        ]
+      },
+      "associations": [
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "connector",
+            "field": "kafka_cluster"
+          },
+          "to": {
+            "entity": "kafka_cluster",
+            "field": "id"
+          }
+        },
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "connector_class",
+            "field": "service_type"
+          },
+          "to": {
+            "entity": "dim_service_type",
+            "field": "id"
+          }
+        },
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "kafka_topic",
+            "field": "kafka_cluster"
+          },
+          "to": {
+            "entity": "kafka_cluster",
+            "field": "id"
+          }
+        },
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "connector_configuration",
+            "field": "connector"
+          },
+          "to": {
+            "entity": "connector",
+            "field": "id"
+          }
+        },
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "default_connector_configuration",
+            "field": "connector_class"
+          },
+          "to": {
+            "entity": "connector_class",
+            "field": "id"
+          }
+        },
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "source_rdb_table",
+            "field": "connector"
+          },
+          "to": {
+            "entity": "connector",
+            "field": "id"
+          }
+        },
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "connector",
+            "field": "user"
+          },
+          "to": {
+            "entity": "user",
+            "field": "id"
+          }
+        },
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "sink_rdb_table",
+            "field": "connector"
+          },
+          "to": {
+            "entity": "connector",
+            "field": "id"
+          }
+        },
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "connector_class",
+            "field": "connector_type"
+          },
+          "to": {
+            "entity": "dim_connector_type",
+            "field": "id"
+          }
+        },
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "source_rdb_table",
+            "field": "kafka_topic"
+          },
+          "to": {
+            "entity": "kafka_topic",
+            "field": "id"
+          }
+        },
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "sink_rdb_table",
+            "field": "kafka_topic"
+          },
+          "to": {
+            "entity": "kafka_topic",
+            "field": "id"
+          }
+        },
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "sink_rdb_table",
+            "field": "deletion_mode"
+          },
+          "to": {
+            "entity": "dim_deletion_mode",
+            "field": "id"
+          }
+        },
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "connector_event",
+            "field": "connector"
+          },
+          "to": {
+            "entity": "connector",
+            "field": "id"
+          }
+        },
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "connector_event",
+            "field": "type"
+          },
+          "to": {
+            "entity": "dim_event_type",
+            "field": "id"
+          }
+        },
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "rdb_instance",
+            "field": "role"
+          },
+          "to": {
+            "entity": "dim_instance_role",
+            "field": "id"
+          }
+        },
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "rdb_table",
+            "field": "rdb_database"
+          },
+          "to": {
+            "entity": "rdb_database",
+            "field": "id"
+          }
+        },
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "rdb_database",
+            "field": "rdb"
+          },
+          "to": {
+            "entity": "rdb",
+            "field": "id"
+          }
+        },
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "rdb_instance",
+            "field": "rdb"
+          },
+          "to": {
+            "entity": "rdb",
+            "field": "id"
+          }
+        },
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "source_rdb_table",
+            "field": "rdb_table"
+          },
+          "to": {
+            "entity": "rdb_table",
+            "field": "id"
+          }
+        },
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "sink_rdb_table",
+            "field": "rdb_table"
+          },
+          "to": {
+            "entity": "rdb_table",
+            "field": "id"
+          }
+        },
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "sink_rdb_table_column_extension",
+            "field": "connector_data_extension"
+          },
+          "to": {
+            "entity": "connector_data_extension",
+            "field": "id"
+          }
+        },
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "source_rdb_table_column_extension",
+            "field": "source_tdb_table"
+          },
+          "to": {
+            "entity": "source_rdb_table",
+            "field": "id"
+          }
+        },
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "source_rdb_table_column_extension",
+            "field": "connector_data_extension"
+          },
+          "to": {
+            "entity": "connector_data_extension",
+            "field": "id"
+          }
+        },
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "sink_rdb_column_mapping",
+            "field": "sink_column_mapping"
+          },
+          "to": {
+            "entity": "sink_column_mapping",
+            "field": "id"
+          }
+        },
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "hive_database",
+            "field": "hive"
+          },
+          "to": {
+            "entity": "hive",
+            "field": "id"
+          }
+        },
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "hive_table",
+            "field": "hive_database"
+          },
+          "to": {
+            "entity": "hive_database",
+            "field": "id"
+          }
+        },
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "rdb_project_mapping",
+            "field": "rdb"
+          },
+          "to": {
+            "entity": "rdb",
+            "field": "id"
+          }
+        },
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "rdb_project_mapping",
+            "field": "project"
+          },
+          "to": {
+            "entity": "project",
+            "field": "id"
+          }
+        },
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "project",
+            "field": "owner"
+          },
+          "to": {
+            "entity": "user",
+            "field": "id"
+          }
+        },
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "user_project_mapping",
+            "field": "user"
+          },
+          "to": {
+            "entity": "user",
+            "field": "id"
+          }
+        },
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "user_project_mapping",
+            "field": "project"
+          },
+          "to": {
+            "entity": "project",
+            "field": "id"
+          }
+        },
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "hive_project_mapping",
+            "field": "hive"
+          },
+          "to": {
+            "entity": "hive",
+            "field": "id"
+          }
+        },
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "hive_project_mapping",
+            "field": "project"
+          },
+          "to": {
+            "entity": "project",
+            "field": "id"
+          }
+        },
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "hdfs_namenode",
+            "field": "hdfs"
+          },
+          "to": {
+            "entity": "hdfs",
+            "field": "id"
+          }
+        },
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "hive",
+            "field": "hdfs"
+          },
+          "to": {
+            "entity": "hdfs",
+            "field": "id"
+          }
+        },
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "sink_rdb_table_column_extension",
+            "field": "sink_rdb_table"
+          },
+          "to": {
+            "entity": "sink_rdb_table",
+            "field": "id"
+          }
+        },
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "connect_cluster",
+            "field": "connector_class"
+          },
+          "to": {
+            "entity": "connector_class",
+            "field": "id"
+          }
+        },
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "connector",
+            "field": "connect_cluster"
+          },
+          "to": {
+            "entity": "connect_cluster",
+            "field": "id"
+          }
+        },
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "connector",
+            "field": "connector_class"
+          },
+          "to": {
+            "entity": "connector_class",
+            "field": "id"
+          }
+        },
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "rdb_mysql",
+            "field": "data_source_instance"
+          },
+          "to": {
+            "entity": "rdb_instance",
+            "field": "id"
+          }
+        },
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "rdb_mysql",
+            "field": "rdb"
+          },
+          "to": {
+            "entity": "rdb",
+            "field": "id"
+          }
+        },
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "rdb_tidb",
+            "field": "kafka_topic"
+          },
+          "to": {
+            "entity": "kafka_topic",
+            "field": "id"
+          }
+        },
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "rdb",
+            "field": "kafka_cluster"
+          },
+          "to": {
+            "entity": "kafka_cluster",
+            "field": "id"
+          }
+        },
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "rdb_tidb",
+            "field": "rdb"
+          },
+          "to": {
+            "entity": "rdb",
+            "field": "id"
+          }
+        },
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "sink_hive_table",
+            "field": "connector"
+          },
+          "to": {
+            "entity": "connector",
+            "field": "id"
+          }
+        },
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "sink_hive_table",
+            "field": "hive_table"
+          },
+          "to": {
+            "entity": "hive_table",
+            "field": "id"
+          }
+        },
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "sink_hive_table",
+            "field": "kafka_topic"
+          },
+          "to": {
+            "entity": "kafka_topic",
+            "field": "id"
+          }
+        },
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "sink_hive_table_column_extension",
+            "field": "sink_hive_table"
+          },
+          "to": {
+            "entity": "sink_hive_table",
+            "field": "id"
+          }
+        },
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "sink_hive_table_column_extension",
+            "field": "sink_column_extension"
+          },
+          "to": {
+            "entity": "connector_data_extension",
+            "field": "id"
+          }
+        },
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "sink_hive_column_mapping",
+            "field": "sink_hive_table"
+          },
+          "to": {
+            "entity": "sink_hive_table",
+            "field": "id"
+          }
+        },
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "sink_hive_column_mapping",
+            "field": "sink_column_mapping"
+          },
+          "to": {
+            "entity": "sink_column_mapping",
+            "field": "id"
+          }
+        },
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "sink_rdb_column_mapping",
+            "field": "sink_hive_table"
+          },
+          "to": {
+            "entity": "sink_rdb_table",
+            "field": "id"
+          }
+        },
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "connector_requisition",
+            "field": "connector_id"
+          },
+          "to": {
+            "entity": "connector",
+            "field": "id"
+          }
+        },
+        {
+          "relation": "0,n:1",
+          "from": {
+            "entity": "connector_requisition",
+            "field": "status"
+          },
+          "to": {
+            "entity": "dim_connector_status",
+            "field": "id"
+          }
+        }
+      ]
+    }
+  ],
+  "dataTypeDomains": {
+    "datatype": [
+      {
+        "name": "默认字串",
+        "code": "DefaultString",
+        "apply": {
+          "JAVA": {
+            "type": "String"
+          },
+          "MYSQL": {
+            "type": "VARCHAR(32)"
+          },
+          "ORACLE": {
+            "type": "NVARCHAR2(32)"
+          },
+          "SQLServer": {
+            "type": "NVARCHAR(32)"
+          },
+          "PostgreSQL": {
+            "type": "VARCHAR(32)"
+          }
+        }
+      },
+      {
+        "name": "标识号",
+        "code": "IdOrKey",
+        "apply": {
+          "JAVA": {
+            "type": "String"
+          },
+          "ORACLE": {
+            "type": "VARCHAR2(32)"
+          },
+          "MYSQL": {
+            "type": "VARCHAR(32)"
+          },
+          "SQLServer": {
+            "type": "VARCHAR(32)"
+          },
+          "PostgreSQL": {
+            "type": "VARCHAR(32)"
+          }
+        }
+      },
+      {
+        "name": "标识号-长",
+        "code": "LongKey",
+        "apply": {
+          "MYSQL": {
+            "type": "VARCHAR(64)"
+          },
+          "ORACLE": {
+            "type": "VARCHAR2(64)"
+          },
+          "JAVA": {
+            "type": "String"
+          },
+          "SQLServer": {
+            "type": "VARCHAR(64)"
+          },
+          "PostgreSQL": {
+            "type": "VARCHAR(64)"
+          }
+        }
+      },
+      {
+        "name": "名称",
+        "code": "Name",
+        "apply": {
+          "JAVA": {
+            "type": "String"
+          },
+          "MYSQL": {
+            "type": "VARCHAR(128)"
+          },
+          "ORACLE": {
+            "type": "NVARCHAR2(128)"
+          },
+          "SQLServer": {
+            "type": "NVARCHAR(128)"
+          },
+          "PostgreSQL": {
+            "type": "VARCHAR(128)"
+          }
+        }
+      },
+      {
+        "name": "备注说明",
+        "code": "Intro",
+        "apply": {
+          "JAVA": {
+            "type": "String"
+          },
+          "MYSQL": {
+            "type": "VARCHAR(512)"
+          },
+          "ORACLE": {
+            "type": "NVARCHAR2(512)"
+          },
+          "SQLServer": {
+            "type": "NVARCHAR(512)"
+          },
+          "PostgreSQL": {
+            "type": "VARCHAR(512)"
+          }
+        }
+      },
+      {
+        "name": "字串-短",
+        "code": "ShortString",
+        "apply": {
+          "JAVA": {
+            "type": "String"
+          },
+          "MYSQL": {
+            "type": "VARCHAR(128)"
+          },
+          "ORACLE": {
+            "type": "NVARCHAR2(128)"
+          },
+          "SQLServer": {
+            "type": "NVARCHAR(128)"
+          },
+          "PostgreSQL": {
+            "type": "VARCHAR(128)"
+          }
+        }
+      },
+      {
+        "name": "字串-中",
+        "code": "MiddleString",
+        "apply": {
+          "JAVA": {
+            "type": "String"
+          },
+          "MYSQL": {
+            "type": "VARCHAR(1024)"
+          },
+          "ORACLE": {
+            "type": "NVARCHAR2(1024)"
+          },
+          "SQLServer": {
+            "type": "NVARCHAR(1024)"
+          },
+          "PostgreSQL": {
+            "type": "VARCHAR(1024)"
+          }
+        }
+      },
+      {
+        "name": "字串-长",
+        "code": "LongString",
+        "apply": {
+          "JAVA": {
+            "type": "String"
+          },
+          "ORACLE": {
+            "type": "NVARCHAR2(3072)"
+          },
+          "MYSQL": {
+            "type": "VARCHAR(3072)"
+          },
+          "SQLServer": {
+            "type": "NVARCHAR(3072)"
+          },
+          "PostgreSQL": {
+            "type": "VARCHAR(3072)"
+          }
+        }
+      },
+      {
+        "name": "大文本",
+        "code": "LongText",
+        "apply": {
+          "JAVA": {
+            "type": "String"
+          },
+          "MYSQL": {
+            "type": "TEXT"
+          },
+          "ORACLE": {
+            "type": "CLOB"
+          },
+          "SQLServer": {
+            "type": "NTEXT"
+          },
+          "PostgreSQL": {
+            "type": "TEXT"
+          }
+        }
+      },
+      {
+        "name": "小数",
+        "code": "Double",
+        "apply": {
+          "JAVA": {
+            "type": "Double"
+          },
+          "MYSQL": {
+            "type": "DECIMAL(32,10)"
+          },
+          "ORACLE": {
+            "type": "NUMBER(32,10)"
+          },
+          "SQLServer": {
+            "type": "DECIMAL(32,10)"
+          },
+          "PostgreSQL": {
+            "type": "DECIMAL(32,10)"
+          }
+        }
+      },
+      {
+        "name": "比例",
+        "code": "Ratio",
+        "apply": {
+          "MYSQL": {
+            "type": "DECIMAL(4,2)"
+          },
+          "JAVA": {
+            "type": "Double"
+          },
+          "ORACLE": {
+            "type": "NUMBER(4,2)"
+          },
+          "SQLServer": {
+            "type": "DECIMAL(4,2)"
+          },
+          "PostgreSQL": {
+            "type": "DECIMAL(4,2)"
+          }
+        }
+      },
+      {
+        "name": "整数",
+        "code": "Integer",
+        "apply": {
+          "JAVA": {
+            "type": "Integer"
+          },
+          "MYSQL": {
+            "type": "INT"
+          },
+          "ORACLE": {
+            "type": "INT"
+          },
+          "SQLServer": {
+            "type": "INT"
+          },
+          "PostgreSQL": {
+            "type": "INT"
+          }
+        }
+      },
+      {
+        "name": "大整数",
+        "code": "BigInt",
+        "apply": {
+          "MYSQL": {
+            "type": "BIGINT"
+          },
+          "JAVA": {
+            "type": "Long"
+          },
+          "ORACLE": {
+            "type": "NUMBER"
+          },
+          "SQLServer": {
+            "type": "BIGINT"
+          },
+          "PostgreSQL": {
+            "type": "BIGINT"
+          }
+        }
+      },
+      {
+        "name": "金额",
+        "code": "Money",
+        "apply": {
+          "JAVA": {
+            "type": "Double"
+          },
+          "MYSQL": {
+            "type": "DECIMAL(32,8)"
+          },
+          "ORACLE": {
+            "type": "NUMBER(32,8)"
+          },
+          "SQLServer": {
+            "type": "DECIMAL(32,8)"
+          },
+          "PostgreSQL": {
+            "type": "DECIMAL(32,8)"
+          }
+        }
+      },
+      {
+        "name": "是否",
+        "code": "YesNo",
+        "apply": {
+          "JAVA": {
+            "type": "String"
+          },
+          "MYSQL": {
+            "type": "TINYINT(1)"
+          },
+          "ORACLE": {
+            "type": "VARCHAR2(1)"
+          },
+          "SQLServer": {
+            "type": "VARCHAR(1)"
+          },
+          "PostgreSQL": {
+            "type": "VARCHAR(1)"
+          }
+        }
+      },
+      {
+        "name": "数据字典",
+        "code": "Dict",
+        "apply": {
+          "JAVA": {
+            "type": "String"
+          },
+          "MYSQL": {
+            "type": "VARCHAR(32)"
+          },
+          "ORACLE": {
+            "type": "VARCHAR2(32)"
+          },
+          "SQLServer": {
+            "type": "VARCHAR(32)"
+          },
+          "PostgreSQL": {
+            "type": "VARCHAR(32)"
+          }
+        }
+      },
+      {
+        "name": "日期",
+        "code": "Date",
+        "apply": {
+          "JAVA": {
+            "type": "Date"
+          },
+          "MYSQL": {
+            "type": "DATE"
+          },
+          "ORACLE": {
+            "type": "DATE"
+          },
+          "SQLServer": {
+            "type": "DATE"
+          },
+          "PostgreSQL": {
+            "type": "DATE"
+          }
+        }
+      },
+      {
+        "name": "日期时间",
+        "code": "DateTime",
+        "apply": {
+          "JAVA": {
+            "type": "Date"
+          },
+          "MYSQL": {
+            "type": "DATETIME"
+          },
+          "ORACLE": {
+            "type": "DATE"
+          },
+          "SQLServer": {
+            "type": "DATE"
+          },
+          "PostgreSQL": {
+            "type": "DATE"
+          }
+        }
+      },
+      {
+        "name": "单字符",
+        "code": "Char",
+        "apply": {
+          "MYSQL": {
+            "type": "CHAR(1)"
+          },
+          "ORACLE": {
+            "type": "CHAR(1)"
+          },
+          "JAVA": {
+            "type": "String"
+          },
+          "SQLServer": {
+            "type": "CHAR(1)"
+          },
+          "PostgreSQL": {
+            "type": "CHAR(1)"
+          }
+        }
+      }
+    ],
+    "database": [
+      {
+        "code": "MYSQL",
+        "template": "DROP TABLE {{=it.entity.title}};\n$blankline\nCREATE TABLE {{=it.entity.title}}(\n{{ pkList = [] ; }}\n{{~it.entity.fields:field:index}}\n    {{? field.pk }}{{ pkList.push(field.name) }}{{?}}\n    {{=field.name}} {{=field.type}} {{= field.pk ? 'NOT NULL' : '' }} COMMENT '{{=it.func.join(field.chnname,field.remark,';')}}' {{= index < it.entity.fields.length-1 ? ',' : ( pkList.length>0 ? ',' :'' ) }}\n{{~}}\n{{? pkList.length >0 }}\n    PRIMARY KEY ({{~pkList:pkName:i}}{{= pkName }}{{= i<pkList.length-1 ? ',' : '' }}{{~}})\n{{?}}\n) COMMENT = '{{=it.func.join(it.entity.chnname,it.entity.remark,';') }}'",
+        "fileShow": true,
+        "defaultDatabase": true,
+        "createTableTemplate": "CREATE TABLE {{=it.entity.title}}(\n{{ pkList = [] ; }}\n{{~it.entity.fields:field:index}}\n    {{? field.pk }}{{ pkList.push(field.name) }}{{?}}\n    {{=field.name}} {{=field.type}} {{= field.notNull ? 'NOT NULL' : '' }} {{= field.autoIncrement ? 'AUTO_INCREMENT' : '' }} {{= field.defaultValue ? it.func.join('DEFAULT',field.defaultValue,' ') : '' }} COMMENT '{{=it.func.join(field.chnname,field.remark,' ')}}' {{= index < it.entity.fields.length-1 ? ',' : ( pkList.length>0 ? ',' :'' ) }}\n{{~}}\n{{? pkList.length >0 }}\n    PRIMARY KEY ({{~pkList:pkName:i}}{{= pkName }}{{= i<pkList.length-1 ? ',' : '' }}{{~}})\n{{?}}\n) COMMENT = '{{=it.func.join(it.entity.chnname,it.entity.remark,' ') }}'{{=it.separator}}\n$blankline\n",
+        "deleteTableTemplate": "DROP TABLE {{=it.entity.title}}{{=it.separator}}",
+        "rebuildTableTemplate": "create table PDMAN_UP_{{=it.oldEntity.title}}\nas select * from {{=it.oldEntity.title}}{{=it.separator}}\n$blankline\n\ndrop table {{=it.oldEntity.title}}{{=it.separator}}\n$blankline\n\nCREATE TABLE {{=it.newEntity.title}}(\n{{ pkList = [] ; }}\n{{~it.newEntity.fields:field:index}}\n    {{? field.pk }}{{ pkList.push(field.name) }}{{?}}\n    {{=field.name}} {{=field.type}} {{= field.notNull ? 'NOT NULL' : '' }} COMMENT '{{=it.func.join(field.chnname,field.remark,';')}}' {{= index < it.newEntity.fields.length-1 ? ',' : ( pkList.length>0 ? ',' :'' ) }}\n{{~}}\n{{? pkList.length >0 }}\n    PRIMARY KEY ({{~pkList:pkName:i}}{{= pkName }}{{= i<pkList.length-1 ? ',' : '' }}{{~}})\n{{?}}\n) COMMENT = '{{=it.func.join(it.newEntity.chnname,it.newEntity.remark,';') }}'{{=it.separator}}\n$blankline\n\n{{ sameCols = it.func.intersect(it.newEntity.fields,it.oldEntity.fields) ;}}\ninsert into {{=it.newEntity.title}}(\n{{~sameCols:field:index}}\n    {{=field.name}}{{? index<sameCols.length-1}},{{?}}\n{{~}}\n) \nselect \n{{~sameCols:field:index}}\n    {{=field.name}}{{? index<sameCols.length-1}},{{?}}\n{{~}}\nfrom PDMAN_UP_{{=it.oldEntity.title}}{{=it.separator}}\n$blankline\n\ndrop table PDMAN_UP_{{=it.oldEntity.title}}{{=it.separator}}\n$blankline\n{{~it.newEntity.indexs:index}}\nALTER TABLE {{=it.newEntity.title}} ADD {{? index.isUnique}}UNIQUE{{??}}INDEX{{?}} {{=index.name}}({{=it.func.join(...index.fields,',')}}){{=it.separator}}\n{{~}}",
+        "createFieldTemplate": "ALTER TABLE {{=it.entity.title}} ADD COLUMN {{=it.field.name}} {{=it.field.type}} {{? it.field.notNull}}NOT NULL{{?}} {{? it.field.defaultValue}}DEFAULT {{? null==it.field.defaultValue}}NULL{{??}}'{{=it.field.defaultValue}}'{{?}}{{?}} {{? it.field.autoIncrement}}AUTO_INCREMENT{{?}} {{? it.field.pk}}PRIMARY KEY{{?}} {{? it.field.chnname}}COMMENT '{{=it.field.chnname}}'{{?}} {{? it.field.addAfter}}AFTER {{=it.field.addAfter}}{{?}}{{=it.separator}}",
+        "updateFieldTemplate": "ALTER TABLE {{=it.entity.title}} MODIFY COLUMN {{=it.field.name}} {{=it.field.type}} {{? it.field.notNull}}NOT NULL{{?}} {{? it.field.defaultValue}}DEFAULT {{? null==it.field.defaultValue}}NULL{{??}}'{{=it.field.defaultValue}}'{{?}}{{?}} {{? it.field.autoIncrement}}AUTO_INCREMENT{{?}} {{? it.field.chnname}}COMMENT '{{=it.field.chnname}}'{{?}}{{=it.separator}}",
+        "deleteFieldTemplate": "ALTER TABLE {{=it.entity.title}} DROP {{=it.field.name}}{{=it.separator}}",
+        "deleteIndexTemplate": "ALTER TABLE {{=it.entity.title}} DROP INDEX {{=it.index.name}}{{=it.separator}}",
+        "createIndexTemplate": "ALTER TABLE {{=it.entity.title}} ADD {{? it.index.isUnique}}UNIQUE{{??}}INDEX{{?}} {{=it.index.name}}({{=it.func.join(...it.index.fields,',')}}){{=it.separator}}",
+        "updateTableComment": "ALTER TABLE {{=it.entity.title}} COMMENT '{{=it.entity.chnname}}'{{=it.separator}}"
+      },
+      {
+        "code": "ORACLE",
+        "template": "DROP TABLE {{=it.entity.title}}{{=it.separator}}\n$blankline\nCREATE TABLE {{=it.entity.title}}(\n{{ pkList = [] ; }}\n{{~it.entity.fields:field:index}}\n    {{? field.pk }}{{ pkList.push(field.name) }}{{?}}\n    {{=field.name}} {{=field.type}}  {{= field.pk ? 'NOT NULL' : '' }} {{= index < it.entity.fields.length-1 ? ',' : ( pkList.length>0 ? ',' :'' ) }}\n{{~}}\n{{? pkList.length >0 }}\n    PRIMARY KEY ({{~pkList:pkName:i}}{{= pkName }}{{= i<pkList.length-1 ? ',' : '' }}{{~}})\n{{?}}\n){{=it.separator}}\n$blankline\nCOMMENT ON TABLE {{=it.entity.title}} IS '{{=it.func.join(it.entity.chnname,it.entity.remark,';') }}'{{=it.separator}}\n{{~it.entity.fields:field:index}}\nCOMMENT ON COLUMN {{=it.entity.title}}.{{=field.name}} IS '{{=it.func.join(field.chnname,field.remark,';')}}'{{=it.separator}}\n{{~}}",
+        "createTableTemplate": "CREATE TABLE {{=it.entity.title}}(\n{{ pkList = [] ; }}\n{{~it.entity.fields:field:index}}\n    {{? field.pk }}{{ pkList.push(field.name) }}{{?}}\n    {{=field.name}} {{=field.type}}{{? field.defaultValue}} DEFAULT {{=field.defaultValue}}{{?}}{{= field.notNull ? ' NOT NULL' : '' }}{{= index < it.entity.fields.length-1 ? ',' : ( pkList.length>0 ? ',' :'' ) }}\n{{~}}\n{{? pkList.length >0 }}\n    PRIMARY KEY ({{~pkList:pkName:i}}{{= pkName }}{{= i<pkList.length-1 ? ',' : '' }}{{~}})\n{{?}}\n){{=it.separator}}\n$blankline\n{{? it.entity.chnname || it.entity.remark}}COMMENT ON TABLE {{=it.entity.title}} IS {{? it.entity.remark}}'{{=it.entity.remark}}'{{??}}'{{=it.entity.chnname}}'{{?}}{{=it.separator}}{{?}}\n{{~it.entity.fields:field:index}}\n{{? field.chnname || field.remark}}COMMENT ON COLUMN {{=it.entity.title}}.{{=field.name}} IS {{? field.remark}}'{{=field.remark}}'{{??}}'{{=field.chnname}}'{{?}}{{=it.separator}}{{?}}\n{{~}}",
+        "deleteTableTemplate": "DROP TABLE {{=it.entity.title}}{{=it.separator}}\r\n$blankline",
+        "rebuildTableTemplate": "CREATE TABLE PDMAN_UP_{{=it.oldEntity.title}}\nAS SELECT * FROM {{=it.oldEntity.title}}{{=it.separator}}\n$blankline\nDROP TABLE {{=it.oldEntity.title}}{{=it.separator}}\n$blankline\nCREATE TABLE {{=it.newEntity.title}}(\n{{ pkList = [] ; }}{{~it.newEntity.fields:field:index}}{{? field.pk }}{{ pkList.push(field.name) }}{{?}}    {{=field.name}} {{=field.type}}{{? field.defaultValue}} DEFAULT {{=field.defaultValue}}{{?}}{{= field.notNull ? ' NOT NULL' : '' }}{{= index < it.newEntity.fields.length-1 ? ',' : ( pkList.length>0 ? ',' :'' ) }}\n{{~}}{{? pkList.length >0 }}    PRIMARY KEY ({{~pkList:pkName:i}}{{= pkName }}{{= i<pkList.length-1 ? ',' : '' }}{{~}}){{?}}\n){{=it.separator}}\n$blankline\n{{? it.newEntity.chnname || it.newEntity.remark}}COMMENT ON TABLE {{=it.newEntity.title}} IS {{? it.newEntity.remark}}'{{=it.entity.remark}}'{{??}}'{{=it.newEntity.chnname}}'{{?}};{{?}}{{=it.separator}}\n{{~it.newEntity.fields:field:index}}\n{{? field.chnname || field.remark}}COMMENT ON COLUMN {{=it.newEntity.title}}.{{=field.name}} IS {{? field.remark}}'{{=field.remark}}'{{??}}'{{=field.chnname}}'{{?}};{{?}}{{=it.separator}}\n{{~}}\n{{ sameCols = it.func.intersect(it.newEntity.fields,it.oldEntity.fields) ;}}\n$blankline\nINSERT INTO {{=it.newEntity.title}}(\n{{~sameCols:field:index}}   {{=field.name}}{{? index<sameCols.length-1}},{{?}}\n{{~}}) \nSELECT\n{{~sameCols:field:index}}   {{=field.name}}{{? index<sameCols.length-1}},{{?}}\n{{~}}FROM PDMAN_UP_{{=it.oldEntity.title}}{{=it.separator}}\n\nDROP TABLE PDMAN_UP_{{=it.oldEntity.title}}{{=it.separator}}\n{{~it.newEntity.indexs:index}}\nCREATE{{? index.isUnique}} UNIQUE{{?}} INDEX {{=index.name}} ON {{=it.newEntity.title}}({{=it.func.join(index.fields,',')}}){{=it.separator}}\n{{~}}",
+        "createFieldTemplate": "ALTER TABLE {{=it.entity.title}} ADD({{=it.field.name}} {{=it.field.type}}{{? it.field.defaultValue}} DEFAULT {{=it.field.defaultValue}}{{?}}{{? it.field.notNull}} NOT NULL{{?}}){{=it.separator}}\r\n{{? it.field.chnname || it.field.remark}}COMMENT ON COLUMN {{=it.entity.title}}.{{=it.field.name}} IS {{? it.field.remark}}'{{=it.field.remark}}'{{??}}'{{=it.field.chnname}}'{{?}}{{=it.separator}}{{?}}\r\n$blankline",
+        "updateFieldTemplate": "ALTER TABLE {{=it.entity.title}} MODIFY({{=it.field.name}} {{=it.field.type}}{{? it.field.defaultValue}} DEFAULT {{=it.field.defaultValue}}{{?}}{{? it.field.notNull}} NOT NULL{{?}}){{=it.separator}}\r\n{{? it.field.chnname || it.field.remark}}COMMENT ON COLUMN {{=it.entity.title}}.{{=it.field.name}} IS {{? it.field.remark}}'{{=it.field.remark}}'{{??}}'{{=it.field.chnname}}'{{?}}{{=it.separator}}{{=it.separator}}{{?}}\r\n$blankline",
+        "deleteFieldTemplate": "ALTER TABLE {{=it.entity.title}} DROP({{=it.field.name}}){{=it.separator}}\r\n$blankline",
+        "deleteIndexTemplate": "DROP INDEX {{=it.entity.title}}.{{=it.index.name}}{{=it.separator}}\r\n$blankline",
+        "createIndexTemplate": "CREATE{{? it.index.isUnique}} UNIQUE{{?}} INDEX {{=it.index.name}} ON {{=it.entity.title}}({{=it.func.join(it.index.fields,',')}}){{=it.separator}}\r\n$blankline",
+        "updateTableComment": "{{? it.entity.chnname || it.entity.remark}}COMMENT ON TABLE {{=it.entity.title}} IS {{? it.entity.remark}}'{{=it.entity.remark}}'{{??}}'{{=it.entity.chnname}}'{{?}}{{=it.separator}}{{?}}\r\n$blankline"
+      },
+      {
+        "code": "SQLServer",
+        "createTableTemplate": "CREATE TABLE {{=it.entity.title}}(\n{{ pkList = [] ; }}\n{{~it.entity.fields:field:index}}\n    {{? field.pk }}{{ pkList.push(field.name) }}{{?}}\n    {{=field.name}} {{=field.type}} {{= field.notNull ? 'NOT NULL' : '' }} {{= field.autoIncrement ? 'IDENTITY(1,1)' : '' }} {{= field.defaultValue ? it.func.join('DEFAULT',field.defaultValue,' ') : '' }}  {{= index < it.entity.fields.length-1 ? ',' : ( pkList.length>0 ? ',' :'' ) }}\n{{~}}\n{{? pkList.length >0 }}\n    CONSTRAINT PK_{{=it.entity.title}} PRIMARY KEY CLUSTERED ({{~pkList:pkName:i}}{{= pkName }} ASC {{= i<pkList.length-1 ? ',' : '' }}{{~}}) ON [PRIMARY] \n{{?}}\n){{=it.separator}}\n\n$blankline\nEXECUTE sp_addextendedproperty N'MS_Description', '{{= it.entity.chnname || it.entity.remark}}', N'user', N'dbo', N'table', N'{{=it.entity.title}}', NULL, NULL{{=it.separator}}\n{{~it.entity.fields:field:index}}\n{{? field.chnname || field.remark}}EXECUTE sp_addextendedproperty N'MS_Description', {{? field.remark}}'{{=field.remark}}'{{??}}'{{=field.chnname}}'{{?}}, N'user', N'dbo', N'table', N'{{=it.entity.title}}', N'column', N'{{=field.name}}'{{=it.separator}}{{?}}\n{{~}}\n",
+        "deleteTableTemplate": "",
+        "rebuildTableTemplate": "",
+        "createFieldTemplate": "",
+        "updateFieldTemplate": "",
+        "deleteFieldTemplate": "",
+        "deleteIndexTemplate": "",
+        "createIndexTemplate": "",
+        "updateTableComment": ""
+      },
+      {
+        "code": "PostgreSQL",
+        "template": "DROP TABLE {{=it.entity.title}};\n$blankline\nCREATE TABLE {{=it.entity.title}}(\n{{ pkList = [] ; }}\n{{~it.entity.fields:field:index}}\n    {{? field.pk }}{{ pkList.push(field.name) }}{{?}}\n    {{=field.name}} {{=field.type}} {{= field.pk ? 'NOT NULL' : '' }} COMMENT '{{=it.func.join(field.chnname,field.remark,';')}}' {{= index < it.entity.fields.length-1 ? ',' : ( pkList.length>0 ? ',' :'' ) }}\n{{~}}\n{{? pkList.length >0 }}\n    PRIMARY KEY ({{~pkList:pkName:i}}{{= pkName }}{{= i<pkList.length-1 ? ',' : '' }}{{~}})\n{{?}}\n) COMMENT = '{{=it.func.join(it.entity.chnname,it.entity.remark,';') }}'",
+        "createTableTemplate": "CREATE TABLE {{=it.entity.title}}(\n{{ pkList = [] ; }}\n{{~it.entity.fields:field:index}}\n    {{? field.pk }}{{ pkList.push(field.name) }}{{?}}\n    {{=field.name}} {{=field.type}}{{? field.defaultValue}} DEFAULT {{=field.defaultValue}}{{?}}{{= field.notNull ? ' NOT NULL' : '' }}{{= index < it.entity.fields.length-1 ? ',' : ( pkList.length>0 ? ',' :'' ) }}\n{{~}}\n{{? pkList.length >0 }}\n    PRIMARY KEY ({{~pkList:pkName:i}}{{= pkName }}{{= i<pkList.length-1 ? ',' : '' }}{{~}})\n{{?}}\n){{=it.separator}}\n$blankline\n{{? it.entity.chnname || it.entity.remark}}COMMENT ON TABLE {{=it.entity.title}} IS {{? it.entity.remark}}'{{=it.entity.remark}}'{{??}}'{{=it.entity.chnname}}'{{?}}{{=it.separator}}{{?}}\n{{~it.entity.fields:field:index}}\n{{? field.chnname || field.remark}}COMMENT ON COLUMN {{=it.entity.title}}.{{=field.name}} IS {{? field.remark}}'{{=field.remark}}'{{??}}'{{=field.chnname}}'{{?}}{{=it.separator}}{{?}}\n{{~}}",
+        "deleteTableTemplate": "DROP TABLE {{=it.entity.title}}{{=it.separator}}",
+        "rebuildTableTemplate": "create table PDMAN_UP_{{=it.oldEntity.title}}\nas select * from {{=it.oldEntity.title}}{{=it.separator}}\n$blankline\n\ndrop table {{=it.oldEntity.title}}{{=it.separator}}\n$blankline\n\nCREATE TABLE {{=it.newEntity.title}}(\n{{ pkList = [] ; }}\n{{~it.newEntity.fields:field:index}}\n    {{? field.pk }}{{ pkList.push(field.name) }}{{?}}\n    {{=field.name}} {{=field.type}} {{= field.notNull ? 'NOT NULL' : '' }} COMMENT '{{=it.func.join(field.chnname,field.remark,';')}}' {{= index < it.newEntity.fields.length-1 ? ',' : ( pkList.length>0 ? ',' :'' ) }}\n{{~}}\n{{? pkList.length >0 }}\n    PRIMARY KEY ({{~pkList:pkName:i}}{{= pkName }}{{= i<pkList.length-1 ? ',' : '' }}{{~}})\n{{?}}\n) COMMENT = '{{=it.func.join(it.newEntity.chnname,it.newEntity.remark,';') }}'{{=it.separator}}\n$blankline\n\n{{ sameCols = it.func.intersect(it.newEntity.fields,it.oldEntity.fields) ;}}\ninsert into {{=it.newEntity.title}}(\n{{~sameCols:field:index}}\n    {{=field.name}}{{? index<sameCols.length-1}},{{?}}\n{{~}}\n) \nselect \n{{~sameCols:field:index}}\n    {{=field.name}}{{? index<sameCols.length-1}},{{?}}\n{{~}}\nfrom PDMAN_UP_{{=it.oldEntity.title}}{{=it.separator}}\n$blankline\n\ndrop table PDMAN_UP_{{=it.oldEntity.title}}{{=it.separator}}",
+        "createFieldTemplate": "ALTER TABLE {{=it.entity.title}} ADD COLUMN {{=it.field.name}} {{=it.field.type}} {{? it.field.notNull}}NOT NULL{{?}} {{? it.field.defaultValue}}DEFAULT {{? null==it.field.defaultValue}}NULL{{??}}'{{=it.field.defaultValue}}'{{?}}{{?}} {{? it.field.autoIncrement}}AUTO_INCREMENT{{?}} {{? it.field.pk}}PRIMARY KEY{{?}} {{? it.field.chnname}}COMMENT '{{=it.field.chnname}}'{{?}} {{? it.field.addAfter}}AFTER {{=it.field.addAfter}}{{?}}{{=it.separator}}",
+        "updateFieldTemplate": "ALTER TABLE {{=it.entity.title}} MODIFY COLUMN {{=it.field.name}} {{=it.field.type}} {{? it.field.notNull}}NOT NULL{{?}} {{? it.field.defaultValue}}DEFAULT {{? null==it.field.defaultValue}}NULL{{??}}'{{=it.field.defaultValue}}'{{?}}{{?}} {{? it.field.autoIncrement}}AUTO_INCREMENT{{?}} {{? it.field.chnname}}COMMENT '{{=it.field.chnname}}'{{?}}{{=it.separator}}",
+        "deleteFieldTemplate": "ALTER TABLE {{=it.entity.title}} DROP {{=it.field.name}}{{=it.separator}}",
+        "deleteIndexTemplate": "ALTER TABLE {{=it.entity.title}} DROP INDEX {{=it.index.name}}{{=it.separator}}",
+        "createIndexTemplate": "ALTER TABLE {{=it.entity.title}} ADD {{? it.index.isUnique}}UNIQUE{{??}}INDEX{{?}} {{=it.index.name}}({{=it.func.join(...it.index.fields,',')}}){{=it.separator}}",
+        "updateTableComment": "ALTER TABLE {{=it.entity.title}} COMMENT '{{=it.entity.chnname}}'{{=it.separator}}"
+      },
+      {
+        "code": "JAVA",
+        "template": "package group.rober.pdman.{{=it.module.name}}.entity;\n$blankline\nimport javax.persistence.*;\nimport java.io.Serializable;\nimport java.util.Date;\n$blankline\n$blankline\n\n/** {{=it.entity.chnname}} */\n@Table(name=\"{{=it.entity.title}}\")\npublic class {{=it.func.camel(it.entity.title,true) }} implements Serializable,Cloneable{\n{{~it.entity.fields:field:index}}\n    /** {{=it.func.join(field.chnname,field.remark,';')}} */\n    {{? field.pk }}\n    @Id\n    @GeneratedValue\n    {{?}}\n    private {{=field.type}} {{=it.func.camel(field.name,false)}} ;\n{{~}}\n$blankline\n{{~it.entity.fields:field:index}}\n    /** {{=it.func.join(field.chnname,field.remark,';')}} */\n    public {{=field.type}} get{{=it.func.camel(field.name,true)}}(){\n        return this.{{=it.func.camel(field.name,false)}};\n    }\n    /** {{=it.func.join(field.chnname,field.remark,';')}} */\n    public void set{{=it.func.camel(field.name,true)}}({{=field.type}} {{= it.func.camel(field.name,false) }}){\n        this.{{=it.func.camel(field.name,false)}} = {{= it.func.camel(field.name,false) }};\n    }\n{{~}}\n}",
+        "createTableTemplate": "package group.rober.pdman.{{=it.module.name}}.entity;\n$blankline\nimport javax.persistence.*;\nimport java.io.Serializable;\nimport java.util.Date;\n$blankline\n$blankline\n@Table(name=\"{{=it.entity.title}}\")\npublic class {{=it.func.camel(it.entity.title,true) }} implements Serializable,Cloneable{\n{{~it.entity.fields:field:index}}\n    /** {{=it.func.join(field.chnname,field.remark,';')}} */\n    {{? field.pk }}\n    @Id\n    @GeneratedValue\n    {{?}}\n    private {{=field.type}} {{=it.func.camel(field.name,false)}} ;\n{{~}}\n$blankline\n{{~it.entity.fields:field:index}}\n    /** {{=it.func.join(field.chnname,field.remark,';')}} */\n    public {{=field.type}} get{{=it.func.camel(field.name,true)}}(){\n        return this.{{=it.func.camel(field.name,false)}};\n    }\n    /** {{=it.func.join(field.chnname,field.remark,';')}} */\n    public void set{{=it.func.camel(field.name,true)}}({{=field.type}} {{= it.func.camel(field.name,false) }}){\n        this.{{=it.func.camel(field.name,false)}} = {{= it.func.camel(field.name,false) }};\n    }\n{{~}}\n}",
+        "deleteTableTemplate": "",
+        "rebuildTableTemplate": "",
+        "createFieldTemplate": "",
+        "updateFieldTemplate": "",
+        "deleteFieldTemplate": "",
+        "deleteIndexTemplate": "",
+        "createIndexTemplate": "",
+        "updateTableComment": ""
+      }
+    ]
+  },
+  "profile": {
+    "defaultFields": [
+      {
+        "name": "id",
+        "type": "Integer",
+        "remark": "",
+        "chnname": "id",
+        "pk": true,
+        "notNull": true,
+        "autoIncrement": true
+      },
+      {
+        "name": "update_time",
+        "type": "DateTime",
+        "remark": "",
+        "chnname": "更新日期",
+        "notNull": true
+      },
+      {
+        "name": "creation_time",
+        "type": "DateTime",
+        "remark": "",
+        "chnname": "创建日期",
+        "notNull": true
+      }
+    ],
+    "defaultFieldsType": "1",
+    "javaConfig": {},
+    "sqlConfig": ";",
+    "dbs": [],
+    "wordTemplateConfig": ""
+  }
+}
