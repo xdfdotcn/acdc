@@ -52,7 +52,7 @@ ACDC 会在数据同步、数据处理、数据服务三个方面持续发展。
 | 状态 | 数据源 | 数据目标 |
 | ---- | ---- | ---- |
 | 已实现 | MySQL <br> TiDB（with TiCDC） | JDBC 支持的数据系统（MySQL、TiDB、SQLServer、Oracle 等）<br> Hive <br> Kafka |
-| 已实现 | TiDB (with TikvClient) <br> Oracle <br> Sqlserver <br> PostgreSQL <br> Kafka <br> Hologres | Elastic Search <br> Redis <br> MacCompute <br> Hologres <br> PostgreSQL <br> StarRocks <br> IceBerg <br> Hudi |
+| 未实现 | TiDB (with TikvClient) <br> Oracle <br> Sqlserver <br> PostgreSQL <br> Kafka <br> Hologres | Elastic Search <br> Redis <br> MacCompute <br> Hologres <br> PostgreSQL <br> StarRocks <br> IceBerg <br> Hudi |
 
 数据处理方面，主要是针对数据提供一些加工、聚合能力，例如数据变换，数据过滤，数据维度打宽等。
 
