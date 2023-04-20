@@ -44,7 +44,7 @@ public class DefaultStoreConfigFactory implements StoreConfigFactory {
                 .join(HdfsSinkConstants.WAL_LOG_DIRECTORY)
                 .build().path()
             )
-            .tmpTablePath(FilePath.of(url)
+            .tempTablePath(FilePath.of(url)
                 .join(rootDir)
                 .join(HdfsSinkConstants.TEMPFILE_DIRECTORY)
                 .join(dataBase)

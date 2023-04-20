@@ -17,15 +17,16 @@ package cn.xdf.acdc.connect.hdfs.filter;
 
 import cn.xdf.acdc.connect.hdfs.HdfsSinkConstants;
 import org.apache.hadoop.fs.Path;
+import org.apache.kafka.common.TopicPartition;
 
 import java.util.regex.Matcher;
 
 public class TableCommittedFileFilter extends CommittedFileFilter {
 
-    private String tableName;
+    private String topic;
 
-    public TableCommittedFileFilter(final String tableName) {
-        this.tableName = tableName;
+    public TableCommittedFileFilter(final TopicPartition topicPartition) {
+        this.topic = topicPartition.topic();
     }
 
     @Override
@@ -39,7 +40,7 @@ public class TableCommittedFileFilter extends CommittedFileFilter {
         if (!m.matches()) {
             throw new AssertionError("match expected because of CommittedFileFilter");
         }
-        String tableName = m.group(HdfsSinkConstants.PATTERN_TABLE_GROUP);
-        return tableName.equals(this.tableName);
+        String matchedTopic = m.group(HdfsSinkConstants.PATTERN_TABLE_GROUP);
+        return matchedTopic.equals(this.topic);
     }
 }

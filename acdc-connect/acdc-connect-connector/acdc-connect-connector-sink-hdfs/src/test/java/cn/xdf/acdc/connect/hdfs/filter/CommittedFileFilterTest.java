@@ -82,7 +82,7 @@ public class CommittedFileFilterTest {
         fs.createNewFile(invalid6);
 
         TopicPartition tp = new TopicPartition("topic", 1);
-        FileStatus[] statuses = fs.listStatus(ROOT_PATH, new TableTpCommittedFileFilter(tp, "topic"));
+        FileStatus[] statuses = fs.listStatus(ROOT_PATH, new TableTopicPartitionCommittedFileFilter(tp));
         Set<String> files = new HashSet<>();
         for (FileStatus status : statuses) {
             files.add(status.getPath().getName());
@@ -94,7 +94,7 @@ public class CommittedFileFilterTest {
 
         TopicPartition tp2 = new TopicPartition("namespace.topic", 1);
         FileStatus[] statusesOtherTopic = fs.listStatus(
-            ROOT_PATH, new TableTpCommittedFileFilter(tp2, "namespace.topic"));
+                ROOT_PATH, new TableTopicPartitionCommittedFileFilter(tp2));
         assertEquals(1, statusesOtherTopic.length);
         assertEquals(validOtherTopic.getName(), statusesOtherTopic[0].getPath().getName());
 
@@ -130,7 +130,8 @@ public class CommittedFileFilterTest {
         fs.createNewFile(invalid3);
         fs.createNewFile(invalid4);
 
-        FileStatus[] statuses = fs.listStatus(ROOT_PATH, new TableCommittedFileFilter("topic"));
+        TopicPartition topicPartition1 = new TopicPartition("topic", 1);
+        FileStatus[] statuses = fs.listStatus(ROOT_PATH, new TableCommittedFileFilter(topicPartition1));
         Set<String> files = new HashSet<>();
         for (FileStatus status : statuses) {
             files.add(status.getPath().getName());
@@ -141,9 +142,9 @@ public class CommittedFileFilterTest {
         assertTrue(files.contains(valid2.getName()));
         assertTrue(files.contains(valid3.getName()));
         assertTrue(files.contains(valid4.getName()));
-
+        TopicPartition topicPartition2 = new TopicPartition("namespace.topic", 1);
         FileStatus[] statusesOtherTopic = fs.listStatus(
-            ROOT_PATH, new TableCommittedFileFilter("namespace.topic"));
+                ROOT_PATH, new TableCommittedFileFilter(topicPartition2));
         assertEquals(1, statusesOtherTopic.length);
         assertEquals(validOtherTopic.getName(), statusesOtherTopic[0].getPath().getName());
 

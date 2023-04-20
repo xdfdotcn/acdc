@@ -1,38 +1,38 @@
 package cn.xdf.acdc.devops.informer;
 
-import cn.xdf.acdc.devops.core.domain.dto.ConnectionDetailDTO;
+import cn.xdf.acdc.devops.core.domain.dto.ConnectionDTO;
 import cn.xdf.acdc.devops.core.domain.entity.enumeration.RequisitionState;
 import cn.xdf.acdc.devops.core.domain.query.ConnectionQuery;
-import cn.xdf.acdc.devops.service.process.connection.ConnectionProcessService;
+import cn.xdf.acdc.devops.service.process.connection.ConnectionService;
 import org.springframework.scheduling.TaskScheduler;
 
-import java.time.Instant;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
-public class ConnectionInformer extends AbstractInformer<ConnectionDetailDTO> {
+public class ConnectionInformer extends AbstractInformer<ConnectionDTO> {
 
-    private final ConnectionProcessService connectionProcessService;
+    private final ConnectionService connectionService;
 
-    public ConnectionInformer(final TaskScheduler taskScheduler, final ConnectionProcessService connectionProcessService) {
+    public ConnectionInformer(final TaskScheduler taskScheduler, final ConnectionService connectionService) {
         super(taskScheduler);
-        this.connectionProcessService = connectionProcessService;
+        this.connectionService = connectionService;
     }
 
     @Override
-    List<ConnectionDetailDTO> query() {
+    List<ConnectionDTO> query() {
         ConnectionQuery query = ConnectionQuery.builder().beginUpdateTime(super.getLastUpdateTime())
                 .requisitionState(RequisitionState.APPROVED).build();
-        return connectionProcessService.query(query);
+        return connectionService.query(query);
     }
 
     @Override
-    Long getKey(final ConnectionDetailDTO element) {
+    Long getKey(final ConnectionDTO element) {
         return element.getId();
     }
 
     @Override
-    boolean equals(final ConnectionDetailDTO e1, final ConnectionDetailDTO e2) {
+    boolean equals(final ConnectionDTO e1, final ConnectionDTO e2) {
         return Objects.equals(e1.getDesiredState(), e2.getDesiredState())
                 && Objects.equals(e1.getActualState(), e2.getActualState())
                 && Objects.equals(e1.getSinkConnectorId(), e2.getSinkConnectorId())
@@ -40,12 +40,12 @@ public class ConnectionInformer extends AbstractInformer<ConnectionDetailDTO> {
     }
 
     @Override
-    boolean isDeleted(final ConnectionDetailDTO older, final ConnectionDetailDTO newer) {
-        return !older.getDeleted() && newer.getDeleted();
+    boolean isDeleted(final ConnectionDTO older, final ConnectionDTO newer) {
+        return !older.isDeleted() && newer.isDeleted();
     }
 
     @Override
-    Instant getUpdateTime(final ConnectionDetailDTO connectionDetailDTO) {
+    Date getUpdateTime(final ConnectionDTO connectionDetailDTO) {
         return connectionDetailDTO.getUpdateTime();
     }
 

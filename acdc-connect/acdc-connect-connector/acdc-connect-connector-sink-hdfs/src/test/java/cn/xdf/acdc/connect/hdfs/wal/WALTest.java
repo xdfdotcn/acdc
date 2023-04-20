@@ -31,8 +31,6 @@ public class WALTest extends TestWithMiniDFSCluster {
 
     private static final String EXTENSION = ".avro";
 
-    private static final String ZERO_PAD_FMT = "%010d";
-
     private HdfsStorage storage;
 
     private boolean closed;
@@ -42,47 +40,40 @@ public class WALTest extends TestWithMiniDFSCluster {
         setUp();
         StoreConfig storeConfig = defaultStoreContext.getStoreConfig();
         FileUtils.jointPath(
-            storeConfig.tablePath(),
-            String.valueOf(TOPIC_PARTITION.partition())
-        );
-        fs.delete(new Path(
-            FileUtils.jointPath(
                 storeConfig.tablePath(),
                 String.valueOf(TOPIC_PARTITION.partition())
-            )
+        );
+        fs.delete(new Path(
+                FileUtils.jointPath(
+                        storeConfig.tablePath(),
+                        String.valueOf(TOPIC_PARTITION.partition())
+                )
         ), true);
 
         @SuppressWarnings("unchecked")
         Class<? extends HdfsStorage> storageClass = (Class<? extends HdfsStorage>) connectorConfig
-            .getClass(StorageCommonConfig.STORAGE_CLASS_CONFIG);
+                .getClass(StorageCommonConfig.STORAGE_CLASS_CONFIG);
         storage = new HdfsStorage(connectorConfig, url);
         final WAL wal1 = storage.wal(storeConfig, TOPIC_PARTITION);
         final FSWAL wal2 = (FSWAL) storage.wal(storeConfig, TOPIC_PARTITION);
 
         String directory = storeConfig.table() + "/" + String.valueOf(PARTITION);
-        final String tempfile =
-            FileUtils.jointPath(
-                storeConfig.tablePath(),
-                directory,
-                FileUtils.tempFileName(extension)
-            );
+        final String tempFile =
+                FileUtils.jointPath(
+                        storeConfig.tablePath(),
+                        directory,
+                        defaultStoreContext.getFileOperator().generateTempFileName(extension)
+                );
         final String committedFile =
-            FileUtils.jointPath(
-                storeConfig.tablePath(),
-                directory,
-                FileUtils.committedFileName(
-                    storeConfig.table(),
-                    TOPIC_PARTITION,
-                    0,
-                    10,
-                    extension,
-                    ZERO_PAD_FMT
-                )
-            );
-        fs.createNewFile(new Path(tempfile));
+                FileUtils.jointPath(
+                        storeConfig.tablePath(),
+                        directory,
+                        defaultStoreContext.getFileOperator().generateCommittedFileName(TOPIC_PARTITION, 0, 10, extension)
+                );
+        fs.createNewFile(new Path(tempFile));
         wal1.acquireLease();
         wal1.append(WAL.beginMarker, "");
-        wal1.append(tempfile, committedFile);
+        wal1.append(tempFile, committedFile);
         wal1.append(WAL.endMarker, "");
 
         Thread thread = new Thread(new Runnable() {
@@ -107,7 +98,7 @@ public class WALTest extends TestWithMiniDFSCluster {
         wal2.close();
 
         assertTrue(fs.exists(new Path(committedFile)));
-        assertFalse(fs.exists(new Path(tempfile)));
+        assertFalse(fs.exists(new Path(tempFile)));
         storage.close();
     }
 }

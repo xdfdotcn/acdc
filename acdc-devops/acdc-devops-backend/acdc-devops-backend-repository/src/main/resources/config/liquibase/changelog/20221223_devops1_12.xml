@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <!--
+        1. 数据系统模型重构，各数据系统改为 data_system_resource 表
+        2. connector 层面模型简化，删除若干表
+        3. connection 中的 data set 改名为 data_system_resource_id
+    -->
+    <changeSet id="devops-tag-1_12" author="ACDC">
+        <tagDatabase tag="devops-1_12"/>
+    </changeSet>
+
+    <!-- 暂时 rename 掉不需要的表，因为还要割接数据，下个迭代中删除这些表 -->
+    <changeSet id="devops-1_12_1" author="ACDC">
+        <renameTable oldTableName="source_rdb_table" newTableName="tobe_deleted_source_rdb_table"/>
+        <renameTable oldTableName="rel_source_rdb_table__connector_data_extension"
+                     newTableName="tobe_deleted_rel_source_rdb_table__connector_data_extension"/>
+        <renameTable oldTableName="sink_connector" newTableName="tobe_deleted_sink_connector"/>
+        <renameTable oldTableName="jdbc_sink_connector" newTableName="tobe_deleted_jdbc_sink_connector"/>
+        <renameTable oldTableName="sink_connector_connector_data_extension_mapping"
+                     newTableName="tobe_deleted_sink_connector_connector_data_extension_mapping"/>
+        <renameTable oldTableName="sink_connector_column_mapping"
+                     newTableName="tobe_deleted_sink_connector_column_mapping"/>
+        <renameTable oldTableName="hive_sink_connector" newTableName="tobe_deleted_hive_sink_connector"/>
+        <renameTable oldTableName="kafka_sink_connector" newTableName="tobe_deleted_kafka_sink_connector"/>
+        <renameTable oldTableName="rdb" newTableName="tobe_deleted_rdb"/>
+        <renameTable oldTableName="rel_project__rdb" newTableName="tobe_deleted_rel_project__rdb"/>
+        <renameTable oldTableName="rdb_instance" newTableName="tobe_deleted_rdb_instance"/>
+        <renameTable oldTableName="rdb_database" newTableName="tobe_deleted_rdb_database"/>
+        <renameTable oldTableName="rdb_database_tidb" newTableName="tobe_deleted_rdb_database_tidb"/>
+        <renameTable oldTableName="rdb_table" newTableName="tobe_deleted_rdb_table"/>
+        <renameTable oldTableName="hdfs" newTableName="tobe_deleted_hdfs"/>
+        <renameTable oldTableName="hdfs_namenode" newTableName="tobe_deleted_hdfs_namenode"/>
+        <renameTable oldTableName="hive" newTableName="tobe_deleted_hive"/>
+        <renameTable oldTableName="rel_hive__project" newTableName="tobe_deleted_rel_hive__project"/>
+        <renameTable oldTableName="hive_database" newTableName="tobe_deleted_hive_database"/>
+        <renameTable oldTableName="hive_table" newTableName="tobe_deleted_hive_table"/>
+        <renameTable oldTableName="kafka_cluster_project_mapping"
+                     newTableName="tobe_deleted_kafka_cluster_project_mapping"/>
+        <renameTable oldTableName="connector_data_extension" newTableName="tobe_deleted_connector_data_extension"/>
+    </changeSet>
+
+    <!-- 创建 data system resource 相关 4 张表 -->
+    <changeSet id="devops-1_12_2" author="ACDC">
+        <createTable tableName="data_system_resource" remarks="数据系统资源">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="parent_resource_id" type="bigint" remarks="父资源 id">
+                <constraints nullable="true"/>
+            </column>
+            <column name="name" type="varchar(256)" remarks="资源名称">
+                <constraints nullable="true"/>
+            </column>
+            <column name="data_system_type" type="int" remarks="数据系统类型">
+                <constraints nullable="false"/>
+            </column>
+            <column name="resource_type" type="int" remarks="resource 类型">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="varchar(1024)" remarks="描述">
+                <constraints nullable="true"/>
+            </column>
+            <column name="is_deleted" type="bit" defaultValue="0" remarks="逻辑删除;0: 未删除 1: 已删除">
+                <constraints nullable="false"/>
+            </column>
+            <column name="update_time" type="datetime(3)" remarks="更新时间">
+                <constraints nullable="false"/>
+            </column>
+            <column name="creation_time" type="datetime(3)" remarks="创建时间">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="data_system_resource_configuration" remarks="数据系统资源配置">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="data_system_resource_id" type="bigint" remarks="关联的数据系统资源">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="varchar(256)" remarks="配置名称">
+                <constraints nullable="false"/>
+            </column>
+            <column name="value" type="varchar(1024)" remarks="配置值">
+                <constraints nullable="false"/>
+            </column>
+            <column name="update_time" type="datetime(3)" remarks="更新时间">
+                <constraints nullable="false"/>
+            </column>
+            <column name="creation_time" type="datetime(3)" remarks="创建时间">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="project_data_system_resource_mapping" remarks="项目与数据系统资源的映射关系">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="project_id" type="bigint" remarks="项目">
+                <constraints nullable="false"/>
+            </column>
+            <column name="data_system_resource_id" type="bigint" remarks="数据系统资源">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="source_data_system_resource_kafka_topic_mapping" remarks="源数据系统资源与 kafka topic 的映射">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="kafka_topic_id" type="bigint" remarks="kafka topic">
+                <constraints nullable="false"/>
+            </column>
+            <column name="source_data_system_resource_id" type="bigint" remarks="源数据系统资源">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- rename、add 若干字段 -->
+    <changeSet id="devops-1_12_3" author="ACDC">
+        <addColumn tableName="connector">
+            <column name="data_system_resource_id" type="bigint" afterColumn="kafka_cluster_id"
+                    remarks="本 connector 对应的 data system resource">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+        <addColumn tableName="connection_column_configuration">
+            <column name="source_column_type" type="varchar(128)" afterColumn="source_column_name" remarks="源字段类型">
+                <constraints nullable="true"/>
+            </column>
+            <column name="source_column_unique_index_names" type="varchar(1024)" afterColumn="source_column_type"
+                    remarks="源字段唯一索引名称">
+                <constraints nullable="true"/>
+            </column>
+            <column name="sink_column_type" type="varchar(128)" afterColumn="sink_column_name" remarks="目标字段类型">
+                <constraints nullable="true"/>
+            </column>
+            <column name="sink_column_unique_index_names" type="varchar(1024)" afterColumn="sink_column_type"
+                    remarks="目标字段唯一索引名称">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+
+        <renameColumn tableName="connection" columnDataType="bigint" newColumnName="source_data_collection_id"
+                      oldColumnName="source_data_set_id"
+                      remarks="更新时间"/>
+
+        <renameColumn tableName="connection" columnDataType="bigint" newColumnName="sink_data_collection_id"
+                      oldColumnName="sink_data_set_id"
+                      remarks="更新时间"/>
+        <dropNotNullConstraint tableName="connection_column_configuration" columnName="source_column_name" columnDataType="varchar(128)" />
+    </changeSet>
+</databaseChangeLog>

@@ -1,10 +1,11 @@
 package cn.xdf.acdc.devops.service.process.connection.approval.event;
 
-import cn.xdf.acdc.devops.service.BaseTest;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.Test;
 
-@RunWith(MockitoJUnitRunner.class)
-public class SkipAllApprovalEventGeneratorTest extends BaseTest {
+public class SkipAllApprovalEventGeneratorTest {
 
+    @Test
+    public void testDoGenerateApprovalEvent() {
+        // TODO
+    }
 }

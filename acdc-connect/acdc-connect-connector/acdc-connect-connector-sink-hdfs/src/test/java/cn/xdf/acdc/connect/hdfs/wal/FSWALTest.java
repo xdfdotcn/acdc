@@ -43,26 +43,25 @@ public class FSWALTest extends TestWithMiniDFSCluster {
         HdfsStorage storage = new HdfsStorage(connectorConfig, url);
         TopicPartition tp = new TopicPartition("mytopic", 123);
         StoreConfig storeConfig = defaultStoreContext.getStoreConfig();
-        HdfsFileOperator hdfsFileOperator = defaultStoreContext.getFileOperator();
         FSWAL wal = new FSWAL(storeConfig, tp, storage);
         String logFile = FileUtils.jointPath(
-            storeConfig.walLogPath(),
-            storeConfig.table(),
-            String.valueOf(tp.partition()),
-            FileUtils.logFileName());
+                storeConfig.walLogPath(),
+                storeConfig.table(),
+                String.valueOf(tp.partition()),
+                FileUtils.logFileName());
         wal.append("a", "b");
         assertTrue("WAL file should exist after append",
-            storage.exists(logFile));
+                storage.exists(logFile));
         wal.truncate();
         assertFalse("WAL file should not exist after truncate",
-            storage.exists(logFile));
+                storage.exists(logFile));
         assertTrue("Rotated WAL file should exist after truncate",
-            storage.exists(logFile + ".1"));
+                storage.exists(logFile + ".1"));
         wal.append("c", "d");
         assertTrue("WAL file should be recreated after truncate + append",
-            storage.exists(logFile));
+                storage.exists(logFile));
         assertTrue("Rotated WAL file should exist after truncate + append",
-            storage.exists(logFile + ".1"));
+                storage.exists(logFile + ".1"));
     }
 
     @Test
@@ -71,12 +70,11 @@ public class FSWALTest extends TestWithMiniDFSCluster {
         HdfsStorage storage = new HdfsStorage(connectorConfig, url);
         TopicPartition tp = new TopicPartition("mytopic", 123);
         StoreConfig storeConfig = defaultStoreContext.getStoreConfig();
-        HdfsFileOperator hdfsFileOperator = defaultStoreContext.getFileOperator();
         String logFile = FileUtils.jointPath(
-            storeConfig.walLogPath(),
-            storeConfig.table(),
-            String.valueOf(tp.partition()),
-            FileUtils.logFileName());
+                storeConfig.walLogPath(),
+                storeConfig.table(),
+                String.valueOf(tp.partition()),
+                FileUtils.logFileName());
 
         fs.create(new Path(logFile), true);
         FSWAL wal = new FSWAL(storeConfig, tp, storage);
@@ -91,10 +89,10 @@ public class FSWALTest extends TestWithMiniDFSCluster {
         HdfsFileOperator fileOperator = defaultStoreContext.getFileOperator();
         TopicPartition tp = new TopicPartition("mytopic", 123);
         String logFile = FileUtils.jointPath(
-            storeConfig.walLogPath(),
-            storeConfig.table(),
-            String.valueOf(tp.partition()),
-            FileUtils.logFileName());
+                storeConfig.walLogPath(),
+                storeConfig.table(),
+                String.valueOf(tp.partition()),
+                FileUtils.logFileName());
 
         OutputStream o = fs.create(new Path(logFile), true);
         o.write(47);
@@ -106,11 +104,11 @@ public class FSWALTest extends TestWithMiniDFSCluster {
     @Test
     public void testExtractOffsetsFromPath() {
         List<String> filepaths = Arrays.asList(
-            "hdfs://namenode:8020/topics/test_hdfs/f1=value1/test_hdfs+0+0000000000+0000000000.avro",
-            "hdfs://namenode:8020/topics/test_hdfs/f1=value6/test_hdfs+0+0000000005+0000000005.avro",
-            "hdfs://namenode:8020/topics/test_hdfs/f1=value1/test_hdfs+0+0000000006+0000000009.avro",
-            "hdfs://namenode:8020/topics/test_hdfs/f1=value1/test_hdfs+0+0000001034+0000001333.avro",
-            "hdfs://namenode:8020/topics/test_hdfs/f1=value1/test_hdfs+0+0123132133+0213314343.avro"
+                "hdfs://namenode:8020/topics/test_hdfs/f1=value1/test_hdfs+0+0000000000+0000000000.avro",
+                "hdfs://namenode:8020/topics/test_hdfs/f1=value6/test_hdfs+0+0000000005+0000000005.avro",
+                "hdfs://namenode:8020/topics/test_hdfs/f1=value1/test_hdfs+0+0000000006+0000000009.avro",
+                "hdfs://namenode:8020/topics/test_hdfs/f1=value1/test_hdfs+0+0000001034+0000001333.avro",
+                "hdfs://namenode:8020/topics/test_hdfs/f1=value1/test_hdfs+0+0123132133+0213314343.avro"
         );
         long[] expectedOffsets = {0, 5, 9, 1333, 213314343};
 
@@ -203,21 +201,18 @@ public class FSWALTest extends TestWithMiniDFSCluster {
         wal.append(WAL.beginMarker, "");
 
         String tempfile =
-            FileUtils.jointPath(
-                storeConfig.tablePath(),
-                getEncodingPartition(PARTITION),
-                FileUtils.tempFileName(extension)
-            );
+                FileUtils.jointPath(
+                        storeConfig.tablePath(),
+                        getEncodingPartition(PARTITION),
+                        defaultStoreContext.getFileOperator().generateTempFileName(extension)
+                );
         fs.createNewFile(new Path(tempfile));
         String committedFile =
-            FileUtils.jointPath(
-                storeConfig.tablePath(),
-                getEncodingPartition(PARTITION),
-                FileUtils.committedFileName(
-                    storeConfig.table(),
-                    TOPIC_PARTITION, 9,
-                    expectedOffset, extension, zeroPadFormat)
-            );
+                FileUtils.jointPath(
+                        storeConfig.tablePath(),
+                        getEncodingPartition(PARTITION),
+                        defaultStoreContext.getFileOperator().generateCommittedFileName(TOPIC_PARTITION, 9, expectedOffset, extension)
+                );
         wal.append(tempfile, committedFile);
 
         wal.append(WAL.endMarker, "");
@@ -331,10 +326,10 @@ public class FSWALTest extends TestWithMiniDFSCluster {
         setUp();
         StoreConfig storeConfig = defaultStoreContext.getStoreConfig();
         fs.delete(new Path(
-            FileUtils.jointPath(
-                storeConfig.tablePath(),
-                String.valueOf(TOPIC_PARTITION.partition())
-            )));
+                FileUtils.jointPath(
+                        storeConfig.tablePath(),
+                        String.valueOf(TOPIC_PARTITION.partition())
+                )));
         HdfsWriterCoordinator hdfsWriter = new HdfsWriterCoordinator(connectorConfig, context);
         partitioner = hdfsWriter.getPartitioner();
     }
@@ -353,19 +348,16 @@ public class FSWALTest extends TestWithMiniDFSCluster {
             StoreConfig storeConfig = defaultStoreContext.getStoreConfig();
             // CHECKSTYLE:OFF
             String tempfile = (
-                FileUtils.jointPath(
-                    storeConfig.tablePath(),
-                    getEncodingPartition(PARTITION),
-                    FileUtils.tempFileName(extension)
-                ));
+                    FileUtils.jointPath(
+                            storeConfig.tablePath(),
+                            getEncodingPartition(PARTITION),
+                            defaultStoreContext.getFileOperator().generateTempFileName(extension)
+                    ));
             fs.createNewFile(new Path(tempfile));
             String committedFile = FileUtils.jointPath(
-                storeConfig.tablePath(),
-                getEncodingPartition(PARTITION),
-                FileUtils.committedFileName(
-                    storeConfig.table(),
-                    TOPIC_PARTITION, startOffset,
-                    endOffset, extension, zeroPadFormat)
+                    storeConfig.tablePath(),
+                    getEncodingPartition(PARTITION),
+                    defaultStoreContext.getFileOperator().generateCommittedFileName(TOPIC_PARTITION, startOffset, endOffset, extension)
             );
             wal.append(tempfile, committedFile);
         }
@@ -381,13 +373,13 @@ public class FSWALTest extends TestWithMiniDFSCluster {
         TopicPartition tp = new TopicPartition("mytopic", 123);
         FSWAL wal = new FSWAL(storeConfig, tp, storage);
         String logFile = FileUtils.jointPath(
-            storeConfig.walLogPath(),
-            storeConfig.table(),
-            String.valueOf(tp.partition()),
-            FileUtils.logFileName());
+                storeConfig.walLogPath(),
+                storeConfig.table(),
+                String.valueOf(tp.partition()),
+                FileUtils.logFileName());
         wal.append("a", "b");
         assertTrue("WAL file should exist after append",
-            storage.exists(logFile));
+                storage.exists(logFile));
         wal.apply();
         wal.append("x", "y");
         wal.apply();

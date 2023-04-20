@@ -62,7 +62,7 @@ public class HiveMetaStoreConfigFactory implements StoreConfigFactory {
                 .build().path()
 
             )
-            .tmpTablePath(FilePath.of(url)
+            .tempTablePath(FilePath.of(url)
                 .join(rootPath)
                 .join(HdfsSinkConstants.TEMPFILE_DIRECTORY)
                 .join(dataBase)

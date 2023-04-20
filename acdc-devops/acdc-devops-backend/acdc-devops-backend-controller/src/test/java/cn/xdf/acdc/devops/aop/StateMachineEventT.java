@@ -1,6 +1,6 @@
 package cn.xdf.acdc.devops.aop;
 
-import cn.xdf.acdc.devops.core.domain.dto.ConnectorInfoDTO;
+import cn.xdf.acdc.devops.dto.Connector;
 import cn.xdf.acdc.devops.core.domain.entity.ConnectorEventDO;
 import cn.xdf.acdc.devops.core.domain.entity.enumeration.EventLevel;
 import cn.xdf.acdc.devops.core.domain.entity.enumeration.EventReason;
@@ -36,11 +36,11 @@ public class StateMachineEventT {
 
     @Test
     public void testEventAnnotationWithProperties() {
-        ConnectorInfoDTO connectorInfoDTO = new ConnectorInfoDTO();
-        connectorInfoDTO.setId(1L);
-        connectorInfoDTO.setRemark("exception xxx");
+        Connector connector = new Connector();
+        connector.setId(1L);
+        connector.setRemark("exception xxx");
         eventAspectAopTest.testStateMachineEventAdapterAndEventAnnotationWithProperties(ConnectorState.PENDING, ConnectorState.CREATION_FAILED,
-                cn.xdf.acdc.devops.core.domain.enumeration.ConnectorEvent.CREATE_FAILURE, connectorInfoDTO);
+                cn.xdf.acdc.devops.core.domain.enumeration.ConnectorEvent.CREATE_FAILURE, connector);
         ArgumentCaptor<ConnectorEventDO> eventCaptor = ArgumentCaptor.forClass(ConnectorEventDO.class);
         Mockito.verify(connectorEventService).save(eventCaptor.capture());
         ConnectorEventDO event = eventCaptor.getValue();
@@ -54,15 +54,15 @@ public class StateMachineEventT {
     @Component
     static class EventAspectAopTest {
 
-        @Event(connectorId = "#connectorInfoDTO.id", reason = EventReason.CONNECTOR_ACTUAL_STATUS_CHANGED, source = EventSource.ACDC_SCHEDULER,
+        @Event(connectorId = "#connector.id", reason = EventReason.CONNECTOR_ACTUAL_STATUS_CHANGED, source = EventSource.ACDC_SCHEDULER,
                 level = UpdateStateToDbAction.EVENT_LEVEL_EXPRESSION, message = UpdateStateToDbAction.EVENT_MESSAGE_EXPRESSION)
         void testStateMachineEventAdapterAndEventAnnotationWithProperties(final ConnectorState from, final ConnectorState to,
-                final cn.xdf.acdc.devops.core.domain.enumeration.ConnectorEvent event, final ConnectorInfoDTO connectorInfoDTO) {
+                final cn.xdf.acdc.devops.core.domain.enumeration.ConnectorEvent event, final Connector connector) {
         }
     }
 
     @Configuration
-    @ComponentScan(basePackages = "cn.xdf.acdc.devops.aop",
+    @ComponentScan(basePackages = {"cn.xdf.acdc.devops.aop", "cn.xdf.acdc.devops.service.aop"},
             excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = SchedulerExceptionAlertAspect.class))
     @EnableAspectJAutoProxy
     static class AopConfig {

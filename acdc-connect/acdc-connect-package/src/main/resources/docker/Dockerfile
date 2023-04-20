@@ -19,4 +19,7 @@ COPY target/connector-package/acdc-connect-connector-sink-hdfs /kafka/connect/ac
 COPY target/connector-package/acdc-connect-connector-sink-kafka /kafka/connect/acdc-connect-connector-sink-kafka
 
 # smt
-COPY target/connector-package/acdc-connect-smt-value-mapper /kafka/connect/acdc-connect-smt-value-mapper
+COPY target/connector-package/acdc-connect-plugins-converter-schemaless-json /kafka/connect/acdc-connect-plugins-converter-schemaless-json
+COPY target/connector-package/acdc-connect-transforms-format /kafka/connect/acdc-connect-transforms-format
+COPY target/connector-package/acdc-connect-transforms-value-mapper /kafka/connect/acdc-connect-transforms-value-mapper
+COPY target/connector-package/acdc-internal-connect-plugins-converter-xdf /kafka/connect/acdc-internal-connect-plugins-converter-xdf

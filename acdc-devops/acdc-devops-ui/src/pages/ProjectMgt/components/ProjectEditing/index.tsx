@@ -4,6 +4,7 @@ import {useModel} from 'umi';
 import {EditOutlined} from '@ant-design/icons';
 import {message, Modal} from 'antd';
 import {createProject, editProject, getProject, queryUser} from '@/services/a-cdc/api';
+import {ActionType} from "@ant-design/pro-table";
 const {confirm} = Modal;
 
 type UserSelectItem = {
@@ -11,7 +12,7 @@ type UserSelectItem = {
 	label?: string;
 };
 
-const ProjectEditor: React.FC = () => {
+const ProjectEditor: React.FC<{tableRef: ActionType}> = ({tableRef}) => {
 	// 项目添加抽屉
 	const {projectEditingModel, setProjectEditingModel} = useModel('ProjectEditingModel')
 
@@ -78,6 +79,7 @@ const ProjectEditor: React.FC = () => {
 						ownerEmail: formObj!.ownerEmail,
 					}
 					await editProject(editBody)
+          await tableRef.reload(false)
 					message.info("修改成功")
 				}
 				else {
@@ -87,6 +89,7 @@ const ProjectEditor: React.FC = () => {
 						ownerEmail: formObj!.ownerEmail,
 					}
 					await createProject(createBody)
+          await tableRef.reload(false)
 					message.info("创建成功")
 				}
 

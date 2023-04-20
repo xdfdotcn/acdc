@@ -1,4 +1,4 @@
-import {useModel} from '@/.umi/plugin-model/useModel';
+import {useModel} from 'umi';
 import {ConfigKeyConstant} from '@/services/a-cdc/constant/ConfigKeyConstant';
 import React from 'react';
 

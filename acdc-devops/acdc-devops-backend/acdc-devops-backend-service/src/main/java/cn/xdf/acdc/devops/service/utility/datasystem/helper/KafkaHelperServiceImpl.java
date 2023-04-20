@@ -1,19 +1,17 @@
 package cn.xdf.acdc.devops.service.utility.datasystem.helper;
 
-import cn.xdf.acdc.devops.service.error.exceptions.ClientErrorException;
 import cn.xdf.acdc.devops.service.error.exceptions.ServerErrorException;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.cache.RemovalListener;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.CreateAclsResult;
 import org.apache.kafka.clients.admin.CreateTopicsResult;
 import org.apache.kafka.clients.admin.DeleteAclsResult;
 import org.apache.kafka.clients.admin.DeleteTopicsResult;
-import org.apache.kafka.clients.admin.ListTopicsOptions;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.common.KafkaException;
 import org.apache.kafka.common.acl.AccessControlEntry;
@@ -28,7 +26,6 @@ import org.apache.kafka.common.resource.PatternType;
 import org.apache.kafka.common.resource.ResourcePattern;
 import org.apache.kafka.common.resource.ResourcePatternFilter;
 import org.apache.kafka.common.resource.ResourceType;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -50,17 +47,24 @@ public class KafkaHelperServiceImpl implements KafkaHelperService {
 
     private static final String PATTERN_ANY = "*";
 
+    private static final long ADMIN_CLIENT_TTL_MINUTES = 10;
+
     private final LoadingCache<Map<String, Object>, AdminClient> adminClientCache = CacheBuilder.newBuilder()
-            .expireAfterWrite(10, TimeUnit.MINUTES)
+            .expireAfterWrite(ADMIN_CLIENT_TTL_MINUTES, TimeUnit.MINUTES)
+            .removalListener((RemovalListener<Map<String, Object>, AdminClient>) notification -> {
+                log.info("closing kafka admin client with config: {}", notification.getKey());
+                notification.getValue().close();
+            })
             .build(new CacheLoader<Map<String, Object>, AdminClient>() {
                 @Override
-                public AdminClient load(@NotNull final Map<String, Object> config) {
+                public AdminClient load(final Map<String, Object> config) {
+                    log.info("creating kafka admin client with config: {}", config);
                     return AdminClient.create(config);
                 }
             });
 
     /**
-     * Close client.
+     * Close admin client.
      */
     @PreDestroy
     public void closeAdminClient() {
@@ -143,21 +147,15 @@ public class KafkaHelperServiceImpl implements KafkaHelperService {
         Set<String> topics;
         try {
             topics = getAdminClient(adminConfig).listTopics().names().get();
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (KafkaException | InterruptedException | ExecutionException e) {
             throw new ServerErrorException(e);
         }
         return topics.stream().filter(topic -> !topic.startsWith("_")).collect(Collectors.toSet());
     }
 
     @Override
-    public void checkConfig(final String bootstrapServers, final Map<String, Object> config) {
-        config.put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        try (AdminClient adminClient = AdminClient.create(config)) {
-            // just for check.
-            adminClient.listTopics(new ListTopicsOptions().timeoutMs(2000)).names().get();
-        } catch (KafkaException | ExecutionException | InterruptedException e) {
-            throw new ClientErrorException(e);
-        }
+    public void checkAdminClientConfig(final Map<String, Object> adminConfig) {
+        this.listTopics(adminConfig);
     }
 
     private String userPrincipal(final String userName) {
@@ -173,5 +171,4 @@ public class KafkaHelperServiceImpl implements KafkaHelperService {
         }
         return adminClient;
     }
-
 }

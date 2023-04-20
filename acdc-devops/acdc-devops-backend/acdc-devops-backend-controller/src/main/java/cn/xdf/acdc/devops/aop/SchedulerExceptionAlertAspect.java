@@ -20,7 +20,7 @@ import java.util.Map;
 @Slf4j
 public class SchedulerExceptionAlertAspect {
 
-    private static final String SCHEDULER_EXCEPTION_TITLE = "调度任务执行异常";
+    private static final String SCHEDULER_EXCEPTION_TITLE = "元数据同步定时任务执行异常";
 
     @Autowired
     private DefaultEmailSender emailSender;
@@ -28,7 +28,7 @@ public class SchedulerExceptionAlertAspect {
     /**
      * A point cut.
      */
-    @Pointcut("execution(* cn.xdf.acdc.devops.metadata.Synchronizer.*(..))")
+    @Pointcut("execution(* cn.xdf.acdc.devops.service.process.sync.SynchronizerInOrder.*(..))")
     public void all() {
     }
 

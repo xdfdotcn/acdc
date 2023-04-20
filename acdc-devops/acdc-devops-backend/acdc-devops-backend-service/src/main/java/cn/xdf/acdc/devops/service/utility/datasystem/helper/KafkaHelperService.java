@@ -34,6 +34,8 @@ public interface KafkaHelperService {
     /**
      * Add topic acl for user.
      *
+     * <p>support for idempotent calls.
+     *
      * @param topic        topic name
      * @param userName     user name
      * @param aclOperation AclOperation.WRITE, AclOperation.READ, AclOperation.CREATE, AclOperation.DELETE etc.
@@ -60,11 +62,9 @@ public interface KafkaHelperService {
     Set<String> listTopics(Map<String, Object> adminConfig);
 
     /**
-     * check kafka client config.
+     * check admin client config.
      *
-     * @param bootstrapServers bootstrap server addresses
-     * @param config           config
-     * @date 2022/9/16 4:43 下午
+     * @param adminConfig kafka admin config
      */
-    void checkConfig(String bootstrapServers, Map<String, Object> config);
+    void checkAdminClientConfig(Map<String, Object> adminConfig);
 }

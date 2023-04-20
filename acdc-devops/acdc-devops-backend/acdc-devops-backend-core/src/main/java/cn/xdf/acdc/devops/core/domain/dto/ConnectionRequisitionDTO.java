@@ -1,15 +1,16 @@
 package cn.xdf.acdc.devops.core.domain.dto;
 
+import cn.xdf.acdc.devops.core.constant.SystemConstant;
 import cn.xdf.acdc.devops.core.domain.entity.ConnectionRequisitionDO;
 import cn.xdf.acdc.devops.core.domain.entity.enumeration.ApprovalState;
-import cn.xdf.acdc.devops.core.util.DateUtil;
-import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-// CHECKSTYLE:OFF
+import java.util.Date;
+import java.util.Objects;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -30,41 +31,44 @@ public class ConnectionRequisitionDTO {
 
     private String dbaApproverEmail;
 
-    private Instant updateTime;
+    private String thirdPartyId;
 
-    private String updateTimeFormat;
+    private Date updateTime;
 
-    private Instant creationTime;
+    private Date creationTime;
 
-    private String creationTimeFormat;
+    public ConnectionRequisitionDTO(final ConnectionRequisitionDO requisition) {
+        this.id = requisition.getId();
+        this.state = requisition.getState();
+        this.description = requisition.getDescription();
+        this.updateTime = requisition.getUpdateTime();
+        this.creationTime = requisition.getCreationTime();
+        this.sourceApproveResult = requisition.getSourceApproveResult();
+        this.dbaApproveResult = requisition.getDbaApproveResult();
+        this.thirdPartyId = requisition.getThirdPartyId();
 
-    public static ConnectionRequisitionDTO toConnectionRequisitionDTO(final ConnectionRequisitionDO requisition) {
-        return ConnectionRequisitionDTO.builder()
-            .id(requisition.getId())
-            .state(requisition.getState())
-            .description(requisition.getDescription())
-            .updateTime(requisition.getUpdateTime())
-            .creationTime(requisition.getCreationTime())
-            .build();
+        this.sourceApproverEmail = Objects.isNull(requisition.getSourceApproverUser())
+                ? SystemConstant.EMPTY_STRING
+                : requisition.getSourceApproverUser().getEmail();
+
+        this.dbaApproverEmail = Objects.isNull(requisition.getDbaApproverUser())
+                ? SystemConstant.EMPTY_STRING
+                : requisition.getDbaApproverUser().getEmail();
     }
 
-    public static ConnectionRequisitionDTO toConnectionRequisitionDTO(
-        final ConnectionRequisitionDO requisition,
-        final String sourceApproverEmail,
-        final String dbaApproverEmail
+    public ConnectionRequisitionDTO(
+            final ConnectionRequisitionDO requisition,
+            final String sourceApproverEmail,
+            final String dbaApproverEmail
     ) {
-        return ConnectionRequisitionDTO.builder()
-            .id(requisition.getId())
-            .state(requisition.getState())
-            .description(requisition.getDescription())
-            .updateTime(requisition.getUpdateTime())
-            .updateTimeFormat(DateUtil.formatToString(requisition.getUpdateTime()))
-            .creationTime(requisition.getCreationTime())
-            .creationTimeFormat(DateUtil.formatToString(requisition.getCreationTime()))
-            .sourceApproveResult(requisition.getSourceApproveResult())
-            .sourceApproverEmail(sourceApproverEmail)
-            .dbaApproverEmail(dbaApproverEmail)
-            .dbaApproveResult(requisition.getDbaApproveResult())
-            .build();
+        this.id = requisition.getId();
+        this.state = requisition.getState();
+        this.description = requisition.getDescription();
+        this.updateTime = requisition.getUpdateTime();
+        this.creationTime = requisition.getCreationTime();
+        this.sourceApproveResult = requisition.getSourceApproveResult();
+        this.dbaApproveResult = requisition.getDbaApproveResult();
+        this.sourceApproverEmail = sourceApproverEmail;
+        this.dbaApproverEmail = dbaApproverEmail;
     }
 }

@@ -31,7 +31,6 @@ const KafkaClusterConfig: React.FC = () => {
 		})
 	}
 
-
 	return (
 		<div>
 			<Drawer

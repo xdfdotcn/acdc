@@ -20,6 +20,8 @@ import java.util.Map;
 @Slf4j
 public class KafkaSinkTask extends SinkTask {
 
+    private static final String DOT = ".";
+
     private KafkaSinkConfig kafkaSinkConfig;
 
     private KafkaWriter kafkaWriter;
@@ -85,7 +87,7 @@ public class KafkaSinkTask extends SinkTask {
         String converterClassName = kafkaSinkConfig.getString(configName);
 
         Converter converter = (Converter) newInstance(converterClassName);
-        converter.configure(kafkaSinkConfig.originalsWithPrefix(configName), isKey);
+        converter.configure(kafkaSinkConfig.originalsWithPrefix(configName + DOT), isKey);
 
         return converter;
     }

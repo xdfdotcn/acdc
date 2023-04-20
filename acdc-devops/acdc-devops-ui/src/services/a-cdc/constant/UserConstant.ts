@@ -1,4 +1,3 @@
-
 /**
 用户相关常量
 */
@@ -16,4 +15,3 @@ let UserConstant = {
 export {
 	UserConstant,
 }
-

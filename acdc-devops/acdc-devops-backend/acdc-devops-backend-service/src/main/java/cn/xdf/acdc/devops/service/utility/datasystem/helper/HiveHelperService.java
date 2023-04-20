@@ -1,8 +1,6 @@
 package cn.xdf.acdc.devops.service.utility.datasystem.helper;
 
-import cn.xdf.acdc.devops.core.domain.dto.FieldDTO;
-import cn.xdf.acdc.devops.core.domain.dto.HiveDbMetaDTO;
-import cn.xdf.acdc.devops.service.config.HiveJdbcConfig;
+import cn.xdf.acdc.devops.service.config.HiveJdbcProperties;
 import cn.xdf.acdc.devops.service.error.exceptions.ServerErrorException;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
@@ -11,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -22,61 +19,64 @@ import java.util.List;
  */
 @Service
 @Slf4j
-public class HiveHelperService extends AbstractMysqlHelperService {
+public class HiveHelperService {
 
-    private static final String DB_META_SQL = "SELECT d.DB_ID,d.NAME,t.TBL_ID,t.TBL_NAME FROM DBS d JOIN TBLS t ON d.DB_ID=t.DB_ID";
+    private static final String SQL_SHOW_DATABASES = " SELECT d.NAME FROM DBS d";
 
-    private static final String COLUMN_META_SQL =
-        "SELECT c.COLUMN_NAME,c.TYPE_NAME FROM DBS d JOIN TBLS t ON d.DB_ID=t.DB_ID JOIN SDS s ON t.SD_ID=s.SD_ID JOIN COLUMNS_V2 c ON s.cd_id=c.cd_id WHERE d.NAME=? AND t.tbl_name=?";
+    private static final String SQL_SHOW_TABLES = " SELECT t.TBL_NAME FROM DBS d JOIN TBLS t ON d.DB_ID=t.DB_ID and  d.NAME=?";
+
+    private static final String SQL_DESC_TABLE =
+            "SELECT c.COLUMN_NAME,c.TYPE_NAME FROM DBS d JOIN TBLS t ON d.DB_ID=t.DB_ID JOIN SDS s ON t.SD_ID=s.SD_ID JOIN COLUMNS_V2 c ON s.cd_id=c.cd_id WHERE d.NAME=? AND t.tbl_name=?";
 
     @Autowired
-    private HiveJdbcConfig config;
+    private MysqlHelperService mysqlHelperService;
+
+    @Autowired
+    private HiveJdbcProperties config;
 
     /**
-     * 拉取 hive 元数据,库表信息.
-     * @return List
+     * Get hive databases .
+     *
+     * @return databases
      */
-    public List<HiveDbMetaDTO> fetchHiveDbMeta() {
-        return executeQuery(getConnection(), DB_META_SQL, this::mappingDbMetaSql);
+    public List<String> showDatabases() {
+        return mysqlHelperService.executeQuery(
+                config.getUrl(),
+                new UsernameAndPassword(config.getUser(), config.getPassword()),
+                SQL_SHOW_DATABASES,
+                this::doSingleStringColumnResultMapping);
     }
 
     /**
-     * 查询表结构.
-     * @param database  database
-     * @param table  table
-     * @return List
+     * Get hive tables for specified database .
+     *
+     * @param database database
+     * @return tables
      */
-    public List<FieldDTO> descTable(final String database, final String table) {
-        return executeQuery(
-            getConnection(),
-            COLUMN_META_SQL,
-            stmt -> setColumnMetaSql(stmt, database, table),
-            this::mappingColumnMetaSql
+    public List<String> showTables(final String database) {
+        return mysqlHelperService.executeQuery(
+                config.getUrl(),
+                new UsernameAndPassword(config.getUser(), config.getPassword()),
+                SQL_SHOW_TABLES, stmt -> doShowTablesPreparedStatement(stmt, database), this::doSingleStringColumnResultMapping
         );
     }
 
-    private List<HiveDbMetaDTO> mappingDbMetaSql(final ResultSet rs) {
-        try {
-            List<HiveDbMetaDTO> dbMetaList = Lists.newArrayList();
-            while (rs.next()) {
-                HiveDbMetaDTO meta = HiveDbMetaDTO.builder()
-                    .dbId(rs.getLong(1))
-                    .db(rs.getString(2))
-                    .tableId(rs.getLong(3))
-                    .table(rs.getString(4))
-                    .build();
-                dbMetaList.add(meta);
-            }
-
-            Preconditions.checkArgument(!CollectionUtils.isEmpty(dbMetaList), "Not exist database meta data");
-            return dbMetaList;
-        } catch (SQLException e) {
-            log.warn("Execute sql exception ", e);
-            throw new ServerErrorException(e);
-        }
+    /**
+     * Get hive table structure.
+     *
+     * @param database database
+     * @param table    table
+     * @return table structure
+     */
+    public List<RelationalDatabaseTableField> descTable(final String database, final String table) {
+        return mysqlHelperService.executeQuery(
+                config.getUrl(),
+                new UsernameAndPassword(config.getUser(), config.getPassword()),
+                SQL_DESC_TABLE, stmt -> doDescTablePreparedStatement(stmt, database, table), this::doDescTableResultMapping
+        );
     }
 
-    private void setColumnMetaSql(final PreparedStatement stmt, final String database, final String table) {
+    private void doDescTablePreparedStatement(final PreparedStatement stmt, final String database, final String table) {
         try {
             stmt.setString(1, database);
             stmt.setString(2, table);
@@ -85,13 +85,13 @@ public class HiveHelperService extends AbstractMysqlHelperService {
         }
     }
 
-    private List<FieldDTO> mappingColumnMetaSql(final ResultSet rs) {
-        List<FieldDTO> fieldList = Lists.newArrayList();
+    private List<RelationalDatabaseTableField> doDescTableResultMapping(final ResultSet rs) {
+        List<RelationalDatabaseTableField> fieldList = Lists.newArrayList();
         try {
             while (rs.next()) {
-                FieldDTO field = FieldDTO.builder()
-                    .name(rs.getString(1))
-                    .dataType(rs.getString(2)).build();
+                RelationalDatabaseTableField field = RelationalDatabaseTableField.builder()
+                        .name(rs.getString(1))
+                        .type(rs.getString(2)).build();
                 fieldList.add(field);
             }
 
@@ -103,7 +103,25 @@ public class HiveHelperService extends AbstractMysqlHelperService {
         }
     }
 
-    private Connection getConnection() {
-        return createConnection(config.getUrl(), config.getUser(), config.getPassword());
+    private void doShowTablesPreparedStatement(final PreparedStatement stmt, final String database) {
+        try {
+            stmt.setString(1, database);
+        } catch (SQLException e) {
+            throw new ServerErrorException(e);
+        }
+    }
+
+    private List<String> doSingleStringColumnResultMapping(final ResultSet rs) {
+        try {
+            List<String> databases = Lists.newArrayList();
+            while (rs.next()) {
+                databases.add(rs.getString(1));
+            }
+
+            return databases;
+        } catch (SQLException e) {
+            log.warn("Execute sql exception ", e);
+            throw new ServerErrorException(e);
+        }
     }
 }

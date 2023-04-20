@@ -43,39 +43,40 @@ public abstract class AbstractSchemaFileReader implements SchemaReader {
     private Schema curSchema;
 
     public AbstractSchemaFileReader(
-        final HdfsSinkConfig hdfsSinkConfig,
-        final StoreConfig storeConfig,
-        final HdfsFileOperator fileOperator
+            final HdfsSinkConfig hdfsSinkConfig,
+            final StoreConfig storeConfig,
+            final HdfsFileOperator fileOperator
     ) {
         this.hdfsSinkConfig = hdfsSinkConfig;
         this.storeConfig = storeConfig;
         this.fileOperator = fileOperator;
         this.compatibility = StorageSchemaCompatibility.getCompatibility(
-            this.hdfsSinkConfig.getString(StorageSinkConnectorConfig.SCHEMA_COMPATIBILITY_CONFIG)
+                this.hdfsSinkConfig.getString(StorageSinkConnectorConfig.SCHEMA_COMPATIBILITY_CONFIG)
         );
     }
 
     /**
      * Get schema by file path .
-     * @param path  file path
+     *
+     * @param path file path
      * @return schema
      */
     public abstract Schema getSchema(Path path);
 
     @Override
-    public ProjectedResult projectRecord(final TopicPartition tp, final SinkRecord sinkRecord) {
-        boolean shouldChangeSchema = shouldChangeSchema(tp, sinkRecord);
+    public ProjectedResult projectRecord(final TopicPartition topicPartition, final SinkRecord sinkRecord) {
+        boolean shouldChangeSchema = shouldChangeSchema(topicPartition, sinkRecord);
         return ProjectedResult.builder()
-            .projectedRecord(compatibility.project(sinkRecord, null, curSchema))
-            .currentSchema(curSchema)
-            .needChangeSchema(shouldChangeSchema)
-            .build();
+                .projectedRecord(compatibility.project(sinkRecord, null, curSchema))
+                .currentSchema(curSchema)
+                .needChangeSchema(shouldChangeSchema)
+                .build();
     }
 
     protected boolean shouldChangeSchema(final TopicPartition tp, final SinkRecord sinkRecord) {
         // If  compatibility not is NONE,read Hdfs file's schema
         if (null == curSchema && compatibility != StorageSchemaCompatibility.NONE) {
-            Optional<FileStatus> fileStatus = fileOperator.findMaxVerFileByTp(tp);
+            Optional<FileStatus> fileStatus = fileOperator.findCommittedFileWithMaxVersionForTopicPartitionInTablePath(tp);
             if (fileStatus.isPresent()) {
                 curSchema = getSchema(fileStatus.get().getPath());
             }
@@ -94,14 +95,14 @@ public abstract class AbstractSchemaFileReader implements SchemaReader {
     }
 
     @Override
-    public TableSchemaAndDataStatus getTableSchemaAndDataStatus() {
-        Optional<FileStatus> fileStatus = fileOperator.findTableMaxVerFile();
+    public TableSchemaAndDataStatus getTableSchemaAndDataStatus(final TopicPartition topicPartition) {
+        Optional<FileStatus> fileStatus = fileOperator.findCommittedFileWithMaxVersionInTablePath(topicPartition);
         if (!fileStatus.isPresent()) {
             return TableSchemaAndDataStatus.builder()
-                .existData(false)
-                .build();
+                    .existData(false)
+                    .build();
         }
-        FileStatus[] fileStatuses = fileOperator.getTableDataPartitions().orElseGet(() -> new FileStatus[] {});
+        FileStatus[] fileStatuses = fileOperator.getTableDataPartitions().orElseGet(() -> new FileStatus[]{});
         List<String> dataPartitions = new ArrayList<>();
         for (FileStatus status : fileStatuses) {
             String location = status.getPath().toString();
@@ -110,10 +111,10 @@ public abstract class AbstractSchemaFileReader implements SchemaReader {
         }
 
         return TableSchemaAndDataStatus.builder()
-            .existData(true)
-            .schema(getSchema(fileStatus.get().getPath()))
-            .dataPartitions(dataPartitions)
-            .build();
+                .existData(true)
+                .schema(getSchema(fileStatus.get().getPath()))
+                .dataPartitions(dataPartitions)
+                .build();
     }
 
     private String getPartitionValue(final String path) {

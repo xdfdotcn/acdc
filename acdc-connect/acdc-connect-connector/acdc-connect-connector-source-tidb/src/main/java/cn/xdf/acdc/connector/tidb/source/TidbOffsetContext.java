@@ -1,11 +1,12 @@
 package cn.xdf.acdc.connector.tidb.source;
 
 import io.debezium.config.CommonConnectorConfig;
+import io.debezium.connector.AbstractSourceInfo;
 import io.debezium.pipeline.spi.OffsetContext;
 import io.debezium.pipeline.txmetadata.TransactionContext;
+import io.debezium.relational.TableId;
 import io.debezium.schema.DataCollectionId;
 import org.apache.kafka.connect.data.Schema;
-import org.apache.kafka.connect.data.SchemaBuilder;
 import org.apache.kafka.connect.data.Struct;
 
 import java.time.Instant;
@@ -14,8 +15,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class TidbOffsetContext implements OffsetContext {
-
-    public static final Struct EMPTY_SOURCE_STRUCT = new Struct(SchemaBuilder.struct().build());
 
     public static final String SERVER_PARTITION_KEY = "server";
 
@@ -29,12 +28,13 @@ public class TidbOffsetContext implements OffsetContext {
 
     private final Map<String, String> partition;
 
-    private Map<String, Object> offset = new HashMap<>();
+    private final Struct sourceInfo;
 
-    private Struct defaultSourceStruct = EMPTY_SOURCE_STRUCT;
+    private Map<String, Object> offset = new HashMap<>();
 
     public TidbOffsetContext(final CommonConnectorConfig connectorConfig) {
         partition = Collections.singletonMap(SERVER_PARTITION_KEY, connectorConfig.getLogicalName());
+        sourceInfo = new TidbSourceInfoStructMaker().struct(null);
     }
 
     /**
@@ -58,12 +58,12 @@ public class TidbOffsetContext implements OffsetContext {
 
     @Override
     public Schema getSourceInfoSchema() {
-        return null;
+        return sourceInfo.schema();
     }
 
     @Override
     public Struct getSourceInfo() {
-        return defaultSourceStruct;
+        return sourceInfo;
     }
 
     @Override
@@ -93,7 +93,8 @@ public class TidbOffsetContext implements OffsetContext {
 
     @Override
     public void event(final DataCollectionId collectionId, final Instant timestamp) {
-
+        TableId tableId = (TableId) collectionId;
+        sourceInfo.put(AbstractSourceInfo.TABLE_NAME_KEY, tableId.table());
     }
 
     @Override

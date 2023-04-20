@@ -78,7 +78,7 @@ public class ExactlyOnceTopicPartitionWriter implements TopicPartitionWriter {
 
     private final Map<String, RecordWriter> writers;
 
-    private final TopicPartition tp;
+    private final TopicPartition topicPartition;
 
     private final Partitioner partitioner;
 
@@ -142,11 +142,11 @@ public class ExactlyOnceTopicPartitionWriter implements TopicPartitionWriter {
     public ExactlyOnceTopicPartitionWriter(
         final SinkTaskContext context,
         final Time time,
-        final TopicPartition tp,
+        final TopicPartition topicPartition,
         final StoreContext storeContext
     ) {
         this.time = time;
-        this.tp = tp;
+        this.topicPartition = topicPartition;
         this.context = context;
         this.fileOperator = storeContext.getFileOperator();
         this.storage = fileOperator.storage();
@@ -172,7 +172,7 @@ public class ExactlyOnceTopicPartitionWriter implements TopicPartitionWriter {
         timeoutMs = Long.valueOf(String.valueOf(hdfsSinkConfig.getInt(HdfsSinkConfig.RETRY_BACKOFF_MS)));
         compatibility = StorageSchemaCompatibility.getCompatibility(
             hdfsSinkConfig.getString(StorageSinkConnectorConfig.SCHEMA_COMPATIBILITY_CONFIG));
-        wal = fileOperator.storage().wal(storeConfig, tp);
+        wal = fileOperator.storage().wal(storeConfig, topicPartition);
         buffer = new LinkedList<>();
         writers = new HashMap<>();
         tempFiles = new HashMap<>();
@@ -205,32 +205,32 @@ public class ExactlyOnceTopicPartitionWriter implements TopicPartitionWriter {
         try {
             switch (state) {
                 case RECOVERY_STARTED:
-                    log.info("Started recovery for topic partition {}", tp);
+                    log.info("Started recovery for topic partition {}", topicPartition);
                     pause();
                     nextState();
                 case RECOVERY_PARTITION_PAUSED:
-                    log.debug("Start recovery state: Apply WAL for topic partition {}", tp);
+                    log.debug("Start recovery state: Apply WAL for topic partition {}", topicPartition);
                     applyWAL();
                     nextState();
                 case WAL_APPLIED:
-                    log.debug("Start recovery state: Reset Offsets for topic partition {}", tp);
+                    log.debug("Start recovery state: Reset Offsets for topic partition {}", topicPartition);
                     resetOffsets();
                     nextState();
                 case OFFSET_RESET:
-                    log.debug("Start recovery state: Truncate WAL for topic partition {}", tp);
+                    log.debug("Start recovery state: Truncate WAL for topic partition {}", topicPartition);
                     truncateWAL();
                     nextState();
                 case WAL_TRUNCATED:
-                    log.debug("Start recovery state: Resume for topic partition {}", tp);
+                    log.debug("Start recovery state: Resume for topic partition {}", topicPartition);
                     resume();
                     nextState();
-                    log.info("Finished recovery for topic partition {}", tp);
+                    log.info("Finished recovery for topic partition {}", topicPartition);
                     break;
                 default:
                     log.error(
                         "{} is not a valid state to perform recovery for topic partition {}.",
                         state,
-                        tp
+                            topicPartition
                     );
             }
         } catch (ConnectException e) {
@@ -251,7 +251,7 @@ public class ExactlyOnceTopicPartitionWriter implements TopicPartitionWriter {
         if (log.isDebugEnabled() && rotateIntervalMs > 0) {
             log.debug(
                 "Update last rotation timer. Next rotation for {} will be in {}ms",
-                tp,
+                    topicPartition,
                 rotateIntervalMs
             );
         }
@@ -264,7 +264,7 @@ public class ExactlyOnceTopicPartitionWriter implements TopicPartitionWriter {
             if (log.isDebugEnabled()) {
                 log.debug(
                     "Update scheduled rotation timer. Next rotation for {} will be at {}",
-                    tp,
+                        topicPartition,
                     new DateTime(nextScheduledRotate).withZone(timeZone).toString()
                 );
             }
@@ -297,7 +297,7 @@ public class ExactlyOnceTopicPartitionWriter implements TopicPartitionWriter {
                         SinkRecord record = buffer.peek();
                         currentRecord = record;
                         // compatibility
-                        ProjectedResult projectedResult = schemaReader.projectRecord(tp, record);
+                        ProjectedResult projectedResult = schemaReader.projectRecord(topicPartition, record);
                         if (projectedResult.isNeedChangeSchema()) {
                             doChangeSchema(projectedResult.getCurrentSchema());
                             if (recordCounter > 0) {
@@ -310,7 +310,7 @@ public class ExactlyOnceTopicPartitionWriter implements TopicPartitionWriter {
                                 log.info(
                                     "Starting commit and rotation for topic partition {} with start offsets {} "
                                         + "and end offsets {}",
-                                    tp,
+                                        topicPartition,
                                     startOffsets,
                                     endOffsets
                                 );
@@ -336,12 +336,12 @@ public class ExactlyOnceTopicPartitionWriter implements TopicPartitionWriter {
                         setState(State.WRITE_PARTITION_PAUSED);
                         break;
                     default:
-                        log.error("{} is not a valid state to write record for topic partition {}.", state, tp);
+                        log.error("{} is not a valid state to write record for topic partition {}.", state, topicPartition);
                 }
             } catch (SchemaProjectorException | IllegalWorkerStateException | HiveMetaStoreException e) {
                 throw new RuntimeException(e);
             } catch (ConnectException e) {
-                log.error("Exception on topic partition {}: ", tp, e);
+                log.error("Exception on topic partition {}: ", topicPartition, e);
                 failureTime = time.milliseconds();
                 setRetryTimeout(timeoutMs);
                 break;
@@ -378,10 +378,10 @@ public class ExactlyOnceTopicPartitionWriter implements TopicPartitionWriter {
                     case FILE_COMMITTED:
                         break;
                     default:
-                        log.error("{} is not a valid state to empty batch for topic partition {}.", state, tp);
+                        log.error("{} is not a valid state to empty batch for topic partition {}.", state, topicPartition);
                 }
             } catch (ConnectException e) {
-                log.error("Exception on topic partition {}: ", tp, e);
+                log.error("Exception on topic partition {}: ", topicPartition, e);
                 failureTime = time.milliseconds();
                 setRetryTimeout(timeoutMs);
                 return;
@@ -395,13 +395,13 @@ public class ExactlyOnceTopicPartitionWriter implements TopicPartitionWriter {
 
     @Override
     public void close() throws ConnectException {
-        log.debug("Closing TopicPartitionWriter {}", tp);
+        log.debug("Closing TopicPartitionWriter {}", topicPartition);
         List<Exception> exceptions = new ArrayList<>();
         for (String encodedPartition : tempFiles.keySet()) {
             log.debug(
                 "Discarding in progress tempfile {} for {} {}",
                 tempFiles.get(encodedPartition),
-                tp,
+                    topicPartition,
                 encodedPartition
             );
 
@@ -411,7 +411,7 @@ public class ExactlyOnceTopicPartitionWriter implements TopicPartitionWriter {
                 log.error(
                     "Error closing temp file {} for {} {} when closing TopicPartitionWriter:",
                     tempFiles.get(encodedPartition),
-                    tp,
+                        topicPartition,
                     encodedPartition,
                     e
                 );
@@ -423,7 +423,7 @@ public class ExactlyOnceTopicPartitionWriter implements TopicPartitionWriter {
                 log.error(
                     "Error deleting temp file {} for {} {} when closing TopicPartitionWriter:",
                     tempFiles.get(encodedPartition),
-                    tp,
+                        topicPartition,
                     encodedPartition,
                     e
                 );
@@ -481,7 +481,7 @@ public class ExactlyOnceTopicPartitionWriter implements TopicPartitionWriter {
 
     @Override
     public TopicPartition topicPartition() {
-        return tp;
+        return topicPartition;
     }
 
     private void nextState() {
@@ -553,7 +553,7 @@ public class ExactlyOnceTopicPartitionWriter implements TopicPartitionWriter {
         // Use the recursive filename scan approach
         log.debug("Could not use WAL approach for recovering offsets, "
             + "searching for latest offsets on HDFS.");
-        Optional<FileStatus> fileStatus = fileOperator.findMaxVerFileByTp(tp);
+        Optional<FileStatus> fileStatus = fileOperator.findCommittedFileWithMaxVersionForTopicPartitionInTablePath(topicPartition);
         if (fileStatus.isPresent()) {
             long lastCommittedOffsetToHdfs = HdfsFileOperator.extractVersion(
                 fileStatus.get().getPath().getName());
@@ -565,11 +565,11 @@ public class ExactlyOnceTopicPartitionWriter implements TopicPartitionWriter {
     }
 
     private void pause() {
-        context.pause(tp);
+        context.pause(topicPartition);
     }
 
     private void resume() {
-        context.resume(tp);
+        context.resume(topicPartition);
     }
 
     @SuppressWarnings("checkstyle:IllegalCatch")
@@ -594,7 +594,7 @@ public class ExactlyOnceTopicPartitionWriter implements TopicPartitionWriter {
         if (tempFiles.containsKey(encodedPartition)) {
             tempFile = tempFiles.get(encodedPartition);
         } else {
-            tempFile = fileOperator.createTempFileByPartition(encodedPartition, extension);
+            tempFile = fileOperator.createTempFileInTempTablePartitionPath(encodedPartition, extension);
             tempFiles.put(encodedPartition, tempFile);
         }
         return tempFile;
@@ -621,15 +621,15 @@ public class ExactlyOnceTopicPartitionWriter implements TopicPartitionWriter {
             // just want to start at offset 0 or reset to the earliest offset, we specify that
             // explicitly to forcibly override any committed offsets.
             if (offset > 0) {
-                log.debug("Resetting offset for {} to {}", tp, offset);
-                context.offset(tp, offset);
+                log.debug("Resetting offset for {} to {}", topicPartition, offset);
+                context.offset(topicPartition, offset);
             } else {
                 // The offset was not found, so rather than forcibly set the offset to 0 we let the
                 // consumer decide where to start based upon standard consumer offsets (if available)
                 // or the consumer's `auto.offset.reset` configuration
                 log.debug("Resetting offset for {} based upon existing consumer group offsets or, if "
                         + "there are none, the consumer's 'auto.offset.reset' value.",
-                    tp);
+                        topicPartition);
             }
             recovered = true;
         }
@@ -699,8 +699,8 @@ public class ExactlyOnceTopicPartitionWriter implements TopicPartitionWriter {
                 buffer.clear();
             }
 
-            log.debug("Resetting offset for {} to {}", tp, offset);
-            context.offset(tp, offset);
+            log.debug("Resetting offset for {} to {}", topicPartition, offset);
+            context.offset(topicPartition, offset);
 
             recordCounter = 0;
             throw connectException;
@@ -717,9 +717,9 @@ public class ExactlyOnceTopicPartitionWriter implements TopicPartitionWriter {
         }
         long startOffset = startOffsets.get(encodedPartition);
         long endOffset = endOffsets.get(encodedPartition);
-        String committedFile = fileOperator.createCommitFileByPartitionAndTp(
+        String committedFile = fileOperator.createCommittedFileInTablePartitionPath(
             encodedPartition,
-            tp,
+                topicPartition,
             startOffset,
             endOffset,
             extension
@@ -770,23 +770,23 @@ public class ExactlyOnceTopicPartitionWriter implements TopicPartitionWriter {
         long startOffset = startOffsets.get(encodedPartition);
         long endOffset = endOffsets.get(encodedPartition);
         String tempFile = tempFiles.get(encodedPartition);
-        String committedFile = fileOperator.createCommitFileByPartitionAndTp(
+        String committedFile = fileOperator.createCommittedFileInTablePartitionPath(
             encodedPartition,
-            tp,
+                topicPartition,
             startOffset,
             endOffset,
             extension
         );
 
-        String commitFilePartition = fileOperator.createPartitionOfCommitFile(encodedPartition);
-        if (!storage.exists(commitFilePartition)) {
-            storage.create(commitFilePartition);
+        String tablePartitionPath = fileOperator.createTablePartitionPath(encodedPartition);
+        if (!storage.exists(tablePartitionPath)) {
+            storage.create(tablePartitionPath);
         }
         storage.commit(tempFile, committedFile);
         startOffsets.remove(encodedPartition);
         endOffsets.remove(encodedPartition);
         recordCounter = 0;
-        log.info("Committed {} for {}", committedFile, tp);
+        log.info("Committed {} for {}", committedFile, topicPartition);
 
         return endOffset;
     }

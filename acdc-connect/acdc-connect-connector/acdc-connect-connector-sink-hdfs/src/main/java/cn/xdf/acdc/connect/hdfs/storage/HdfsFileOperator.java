@@ -19,7 +19,7 @@ import cn.xdf.acdc.connect.hdfs.HdfsSinkConfig;
 import cn.xdf.acdc.connect.hdfs.HdfsSinkConstants;
 import cn.xdf.acdc.connect.hdfs.filter.CommittedFileFilter;
 import cn.xdf.acdc.connect.hdfs.filter.TableCommittedFileFilter;
-import cn.xdf.acdc.connect.hdfs.filter.TableTpCommittedFileFilter;
+import cn.xdf.acdc.connect.hdfs.filter.TableTopicPartitionCommittedFileFilter;
 import cn.xdf.acdc.connect.hdfs.initialize.StoreConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.math.NumberUtils;
@@ -45,20 +45,21 @@ public class HdfsFileOperator {
     private final String zeroPadFormat;
 
     public HdfsFileOperator(
-        final HdfsStorage hdfsStorage,
-        final StoreConfig storeConfig,
-        final HdfsSinkConfig hdfsSinkConfig
+            final HdfsStorage hdfsStorage,
+            final StoreConfig storeConfig,
+            final HdfsSinkConfig hdfsSinkConfig
     ) {
         this.hdfsStorage = hdfsStorage;
         this.storeConfig = storeConfig;
         this.hdfsSinkConfig = hdfsSinkConfig;
         zeroPadFormat = "%0"
-            + this.hdfsSinkConfig.getInt(HdfsSinkConfig.FILENAME_OFFSET_ZERO_PAD_WIDTH_CONFIG)
-            + "d";
+                + this.hdfsSinkConfig.getInt(HdfsSinkConfig.FILENAME_OFFSET_ZERO_PAD_WIDTH_CONFIG)
+                + "d";
     }
 
     /**
      * Get the hdfs storage.
+     *
      * @return HdfsStorage
      */
     public HdfsStorage storage() {
@@ -66,24 +67,23 @@ public class HdfsFileOperator {
     }
 
     /**
-     * Generate name of commit file.
-     * @param tableName  table name
-     * @param tp  kafka topic partition
-     * @param startVersion start version
-     * @param endVersion end version
-     * @param extension  file extension
-     * @return name of commit file
+     * Generate name of committed file.
+     *
+     * @param topicPartition kafka topic partition
+     * @param startVersion   start version
+     * @param endVersion     end version
+     * @param extension      file extension
+     * @return name of committed file
      */
-    public String commitFileName(
-        final String tableName,
-        final TopicPartition tp,
-        long startVersion,
-        long endVersion,
-        final String extension
+    public String generateCommittedFileName(
+            final TopicPartition topicPartition,
+            long startVersion,
+            long endVersion,
+            final String extension
     ) {
-        int partition = tp.partition();
+        int partition = topicPartition.partition();
         StringBuilder sb = new StringBuilder();
-        sb.append(tableName);
+        sb.append(topicPartition.topic());
         sb.append(HdfsSinkConstants.COMMMITTED_FILENAME_SEPARATOR);
         sb.append(partition);
         sb.append(HdfsSinkConstants.COMMMITTED_FILENAME_SEPARATOR);
@@ -96,155 +96,163 @@ public class HdfsFileOperator {
     }
 
     /**
-     * Create commit file's partition.
+     * Create hive table partition path in hdfs.
+     *
      * @param encodePartition the partition
-     * @return full path of the commit file
+     * @return full path of the table partition path in hdfs
      */
-    public String createPartitionOfCommitFile(final String encodePartition) {
+    public String createTablePartitionPath(final String encodePartition) {
         return FilePath.of(storeConfig.tablePath())
-            .join(encodePartition)
-            .build().path();
+                .join(encodePartition)
+                .build().path();
     }
 
     /**
      * Generate name of temp file.
+     *
      * @param extension file  extension
      * @return name of temp file
      */
-    public String tempFileName(final String extension) {
+    public String generateTempFileName(final String extension) {
         UUID id = UUID.randomUUID();
-        String name = id.toString() + "_" + "tmp" + extension;
+        String name = id + "_" + "temp" + extension;
         return name;
     }
 
     /**
-     * Create commit file by partition and tp.
+     * Create committed file in hive table partition path.
+     *
      * @param encodePartition the partition
-     * @param tp  kafka topic partition
-     * @param startVersion  startVersion
-     * @param endVersion endVersion
-     * @param extension  file extension
-     * @return full path of the commit file
+     * @param topicPartition  kafka topic partition
+     * @param startVersion    startVersion
+     * @param endVersion      endVersion
+     * @param extension       file extension
+     * @return full path of the committed file
      */
-    public String createCommitFileByPartitionAndTp(
-        final String encodePartition,
-        final TopicPartition tp,
-        long startVersion,
-        long endVersion,
-        final String extension
+    public String createCommittedFileInTablePartitionPath(
+            final String encodePartition,
+            final TopicPartition topicPartition,
+            long startVersion,
+            long endVersion,
+            final String extension
     ) {
         return FilePath.of(storeConfig.tablePath())
-            .join(encodePartition)
-            .join(commitFileName(
-                storeConfig.table(),
-                tp,
-                startVersion,
-                endVersion,
-                extension)
-            )
-            .build().path();
+                .join(encodePartition)
+                .join(generateCommittedFileName(
+                        topicPartition,
+                        startVersion,
+                        endVersion,
+                        extension)
+                )
+                .build().path();
     }
 
     /**
-     * Create commit file by rotation.
+     * Create rotation committed file in hive table partition path.
+     *
      * @param encodePartition the partition
-     * @param tp  kafka topic partition
-     * @param extension  file extension
-     * @return full path of the commit file
+     * @param topicPartition  kafka topic partition
+     * @param extension       file extension
+     * @return full path of the committed file
      */
-    public String createCommitFileByRotation(
-        final String encodePartition,
-        final TopicPartition tp,
-        final String extension
+    public String createRotationCommittedFileInTablePartitionPath(
+            final String encodePartition,
+            final TopicPartition topicPartition,
+            final String extension
 
     ) {
-        Optional<FileStatus> fileStatus = findMaxVerFileByPartitionAndTp(tp, encodePartition);
+        Optional<FileStatus> fileStatus = findCommittedFileWithMaxVersionForTopicPartitionInTablePartitionPath(topicPartition, encodePartition);
         long startVersion = NumberUtils.LONG_ZERO;
         long endVersion = fileStatus.isPresent()
-            ? extractVersion(fileStatus.get().getPath().getName())
-            : NumberUtils.LONG_ZERO;
+                ? extractVersion(fileStatus.get().getPath().getName())
+                : NumberUtils.LONG_ZERO;
 
         return FilePath.of(storeConfig.tablePath())
-            .join(encodePartition)
-            .join(commitFileName(
-                storeConfig.table(),
-                tp,
-                startVersion,
-                endVersion + 1,
-                extension)
-            )
-            .build().path();
+                .join(encodePartition)
+                .join(generateCommittedFileName(
+                        topicPartition,
+                        startVersion,
+                        endVersion + 1,
+                        extension)
+                )
+                .build().path();
     }
 
     /**
-     * Create temp file by partition .
+     * Create temp file in temp table partition path.
+     *
      * @param encodePartition the partition
-     * @param extension  file extension
+     * @param extension       file extension
      * @return full path of the temp file
      */
-    public String createTempFileByPartition(final String encodePartition, final String extension) {
-        return FilePath.of(storeConfig.tmpTablePath())
-            .join(encodePartition)
-            .join(tempFileName(extension))
-            .build().path();
-    }
-
-    /**
-     * Get max version file by specified tp .
-     * @param tp the kafka topic partition
-     * @return the max version file
-     * */
-    public Optional<FileStatus> findMaxVerFileByTp(final TopicPartition tp) {
-        CommittedFileFilter filter = new TableTpCommittedFileFilter(
-            tp,
-            storeConfig.table()
-        );
-
-        Path path = new Path(
-            FilePath.of(storeConfig.tablePath())
-                .build().path()
-        );
-
-        FileStatus fileStatus = findMaxVersionFile(path, filter);
-        return Optional.ofNullable(fileStatus);
-    }
-
-    /**
-     * Get max version file by specified partition and tp .
-     * @param tp the kafka topic partition
-     * @param encodePartition encodePartition
-     * @return the max version file
-     */
-    public Optional<FileStatus> findMaxVerFileByPartitionAndTp(
-        final TopicPartition tp,
-        final String encodePartition
-    ) {
-        CommittedFileFilter filter = new TableTpCommittedFileFilter(
-            tp,
-            storeConfig.table()
-        );
-        Path path = new Path(
-            FilePath.of(storeConfig.tablePath())
+    public String createTempFileInTempTablePartitionPath(final String encodePartition, final String extension) {
+        return FilePath.of(storeConfig.tempTablePath())
                 .join(encodePartition)
-                .build().path()
-        );
-        FileStatus fileStatus = findMaxVersionFile(path, filter);
-        return Optional.ofNullable(fileStatus);
+                .join(generateTempFileName(extension))
+                .build().path();
     }
 
     /**
-     * Get max version file by specified table.
-     * @return the max version file
+     * Get committed file with max version for topic partition in hive table path.
+     *
+     * @param topicPartition the kafka topic partition
+     * @return the committed file with max version
      */
-    public Optional<FileStatus> findTableMaxVerFile() {
-        TableCommittedFileFilter filter = new TableCommittedFileFilter(storeConfig.table());
-        Path path = new Path(storeConfig.tablePath());
-        FileStatus fileStatus = findMaxVersionFile(path, filter);
+    public Optional<FileStatus> findCommittedFileWithMaxVersionForTopicPartitionInTablePath(final TopicPartition topicPartition) {
+        CommittedFileFilter filter = new TableTopicPartitionCommittedFileFilter(topicPartition);
+
+        Path path = new Path(
+                FilePath.of(storeConfig.tablePath())
+                        .build().path()
+        );
+
+        FileStatus fileStatus = findCommittedFileWithMaxVersionInPath(path, filter);
         return Optional.ofNullable(fileStatus);
     }
 
     /**
-     * Obtain the offset of the last record that was written to the specified HDFS file.
+     * Get committed file with max version for topic partition in hive table partition path.
+     *
+     * @param topicPartition  the kafka topic partition
+     * @param encodePartition encodePartition
+     * @return the committed file with max version
+     */
+    public Optional<FileStatus> findCommittedFileWithMaxVersionForTopicPartitionInTablePartitionPath(
+            final TopicPartition topicPartition,
+            final String encodePartition
+    ) {
+        CommittedFileFilter filter = new TableTopicPartitionCommittedFileFilter(topicPartition);
+
+        Path path = new Path(
+                FilePath.of(storeConfig.tablePath())
+                        .join(encodePartition)
+                        .build().path()
+        );
+        FileStatus fileStatus = findCommittedFileWithMaxVersionInPath(path, filter);
+        return Optional.ofNullable(fileStatus);
+    }
+
+    /**
+     * Get committed file with max version in hive table path.
+     *
+     * @param topicPartition topic partition
+     * @return the committed file with max version
+     */
+    public Optional<FileStatus> findCommittedFileWithMaxVersionInTablePath(final TopicPartition topicPartition) {
+        TableCommittedFileFilter filter = new TableCommittedFileFilter(topicPartition);
+        Path path = new Path(storeConfig.tablePath());
+        FileStatus fileStatus = findCommittedFileWithMaxVersionInPath(path, filter);
+        return Optional.ofNullable(fileStatus);
+    }
+
+    /**
+     * Obtain the version of the last record that was written to the specified HDFS file.
+     *
+     * <p>version: rotation number or kafka message offset
+     *
+     * <p>rotation number: used by {@link cn.xdf.acdc.connect.hdfs.writer.AtLeastOnceTopicPartitionWriter}
+     *
+     * <p>kafka message offset: used by {@link cn.xdf.acdc.connect.hdfs.writer.ExactlyOnceTopicPartitionWriter}
      *
      * @param filename the name of the HDFS file; may not be null
      * @return the offset of the last record written to the specified file in HDFS
@@ -260,24 +268,24 @@ public class HdfsFileOperator {
     }
 
     // CHECKSTYLE:OFF
-    private FileStatus findMaxVersionFile(
-        final Path path,
-        final CommittedFileFilter filter
+    private FileStatus findCommittedFileWithMaxVersionInPath(
+            final Path path,
+            final CommittedFileFilter filter
     ) {
         if (!this.hdfsStorage.exists(path.toString())) {
             return null;
         }
         long maxVersion = -1L;
-        FileStatus maxVerFile = null;
+        FileStatus maxVersionFile = null;
         List<FileStatus> statuses = this.hdfsStorage.list(path.toString());
         for (FileStatus status : statuses) {
             if (status.isDirectory()) {
-                FileStatus fileStatus = findMaxVersionFile(status.getPath(), filter);
+                FileStatus fileStatus = findCommittedFileWithMaxVersionInPath(status.getPath(), filter);
                 if (fileStatus != null) {
                     long version = extractVersion(fileStatus.getPath().getName());
                     if (version > maxVersion) {
                         maxVersion = version;
-                        maxVerFile = fileStatus;
+                        maxVersionFile = fileStatus;
                     }
                 }
             } else {
@@ -287,12 +295,12 @@ public class HdfsFileOperator {
                     long version = extractVersion(filename);
                     if (version > maxVersion) {
                         maxVersion = version;
-                        maxVerFile = status;
+                        maxVersionFile = status;
                     }
                 }
             }
         }
-        return maxVerFile;
+        return maxVersionFile;
     }
     // CHECKSTYLE:ON
 
@@ -319,7 +327,8 @@ public class HdfsFileOperator {
     }
 
     /**
-     * Get hive table all partition file dir .
+     * Get hive table all partition file dir.
+     *
      * @return all dirs of hdfs,in table path
      */
     public Optional<FileStatus[]> getTableDataPartitions() {

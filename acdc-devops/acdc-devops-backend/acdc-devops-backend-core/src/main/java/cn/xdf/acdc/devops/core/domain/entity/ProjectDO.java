@@ -1,11 +1,11 @@
 package cn.xdf.acdc.devops.core.domain.entity;
 
-import cn.xdf.acdc.devops.core.domain.entity.enumeration.ProjectSourceType;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import cn.xdf.acdc.devops.core.domain.entity.enumeration.MetadataSourceType;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.experimental.SuperBuilder;
 
@@ -13,6 +13,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -20,6 +21,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.HashSet;
@@ -27,7 +29,8 @@ import java.util.Set;
 
 @Entity
 @Table(name = "project")
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
@@ -53,18 +56,13 @@ public class ProjectDO extends SoftDeletableDO implements Serializable {
     @ApiModelProperty("数据来源")
     @Column(name = "source")
     @Enumerated(EnumType.ORDINAL)
-    private ProjectSourceType source;
+    private MetadataSourceType source;
 
     @ApiModelProperty("原始id")
     @Column(name = "original_id")
     private Long originalId;
 
-    @ManyToMany
-    @JoinTable(name = "rel_project__rdb", joinColumns = @JoinColumn(name = "project_id"), inverseJoinColumns = @JoinColumn(name = "rdb_id"))
-    @JsonIgnoreProperties(value = {"rdbDatabases", "rdbInstances", "kafkaCluster", "projects"}, allowSetters = true)
-    private Set<RdbDO> rdbs = new HashSet<>();
-
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "rel_project__user",
             joinColumns = @JoinColumn(name = "project_id"),
@@ -72,17 +70,14 @@ public class ProjectDO extends SoftDeletableDO implements Serializable {
     )
     private Set<UserDO> users = new HashSet<>();
 
-    @ManyToMany(mappedBy = "projects")
-    @JsonIgnoreProperties(value = {"hiveDatabases", "hdfs", "projects"}, allowSetters = true)
-    private Set<HiveDO> hives = new HashSet<>();
+    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "projects")
+    private Set<DataSystemResourceDO> dataSystemResources = new HashSet<>();
 
-    @ManyToMany
-    @JoinTable(
-            name = "kafka_cluster_project_mapping",
-            joinColumns = @JoinColumn(name = "project_id"),
-            inverseJoinColumns = @JoinColumn(name = "kafka_cluster_id")
-    )
-    private Set<KafkaClusterDO> kafkaClusters = new HashSet<>();
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "sourceProject")
+    private Set<ConnectionDO> connectionsWithThisAsSourceProject = new HashSet<>();
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "sinkProject")
+    private Set<ConnectionDO> connectionsWithThisAsSinkProject = new HashSet<>();
 
     public ProjectDO(final Long id) {
         this.id = id;
@@ -91,16 +86,6 @@ public class ProjectDO extends SoftDeletableDO implements Serializable {
     // functions for jpa union features
     // CHECKSTYLE:OFF
 
-    public void setHives(Set<HiveDO> hives) {
-        if (this.hives != null) {
-            this.hives.forEach(i -> i.removeProject(this));
-        }
-        if (hives != null) {
-            hives.forEach(i -> i.addProject(this));
-        }
-        this.hives = hives;
-    }
-
     public ProjectDO addUser(UserDO user) {
         this.users.add(user);
         return this;
@@ -108,18 +93,6 @@ public class ProjectDO extends SoftDeletableDO implements Serializable {
 
     public ProjectDO removeUser(UserDO user) {
         this.users.remove(user);
-        return this;
-    }
-
-    public ProjectDO addRdb(RdbDO rdb) {
-        this.rdbs.add(rdb);
-        rdb.getProjects().add(this);
-        return this;
-    }
-
-    public ProjectDO removeRdb(RdbDO rdb) {
-        this.rdbs.remove(rdb);
-        rdb.getProjects().remove(this);
         return this;
     }
 

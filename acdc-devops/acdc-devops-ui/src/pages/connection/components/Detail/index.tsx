@@ -1,12 +1,16 @@
 import React from 'react';
 import ProCard from "@ant-design/pro-card";
-import ColumnConfiguration from "@/pages/connection/components/ColumnConfiguration";
+import ConnectionColumnConf from '../ConnectionColumnConf';
+//import ColumnConfiguration from "@/pages/connection/components/ColumnConfiguration";
 
 const ConnectionDetail: React.FC<{connectionDetail: API.ConnectionDetail, index: number, from: string}> = ({connectionDetail, index,from}) => {
   return (
     <ProCard split="horizontal">
       <ProCard split="vertical">
         <ProCard title="源项目">
+          {connectionDetail.sourceProjectName}
+        </ProCard>
+        <ProCard title="源数据系统">
           {connectionDetail.sourceDataSystemType}
         </ProCard>
         <ProCard title="数集群">
@@ -16,9 +20,12 @@ const ConnectionDetail: React.FC<{connectionDetail: API.ConnectionDetail, index:
           {connectionDetail.sourceDatabaseName}
         </ProCard>
         <ProCard title="源 table">
-          {connectionDetail.sourceDatasetName}
+          {connectionDetail.sourceDataCollectionName}
         </ProCard>
         <ProCard title="目标项目">
+          {connectionDetail.sinkProjectName}
+        </ProCard>
+        <ProCard title="目标数据系统">
           {connectionDetail.sinkDataSystemType}
         </ProCard>
         <ProCard title="目标集群">
@@ -28,13 +35,19 @@ const ConnectionDetail: React.FC<{connectionDetail: API.ConnectionDetail, index:
           {connectionDetail.sinkDatabaseName}
         </ProCard>
         <ProCard title="目标数据集（table、topic）">
-          {connectionDetail.sinkDatasetName}
+          {connectionDetail.sinkDataCollectionName}
         </ProCard>
       </ProCard>
       <ProCard title="字段映射及过滤规则">
-				<ColumnConfiguration
-					connectionColumnConfigurations={connectionDetail.connectionColumnConfigurations}
-					from={from} />
+        <ConnectionColumnConf
+          columnConfProps={{
+            displayDataSource: connectionDetail.connectionColumnConfigurations,
+            originalDataSource: connectionDetail.connectionColumnConfigurations!,
+            sinkDataSystemType: connectionDetail.sinkDataSystemType,
+            canEdit: false,
+            canDelete: false,
+          }}
+        />
       </ProCard>
     </ProCard>
   );

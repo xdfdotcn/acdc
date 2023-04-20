@@ -27,19 +27,23 @@ import cn.xdf.acdc.connect.hdfs.rotation.RotationPolicyType;
 import cn.xdf.acdc.connect.hdfs.storage.FilePath;
 import cn.xdf.acdc.connect.hdfs.storage.HdfsFileOperator;
 import cn.xdf.acdc.connect.hdfs.storage.StorageSinkConnectorConfig;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.kafka.connect.errors.ConnectException;
 import org.apache.kafka.connect.sink.SinkRecord;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
 
 /**
- {@link AtLeastOnceTopicPartitionWriter}.
+ * {@link AtLeastOnceTopicPartitionWriter}.
  */
 public class AtLeastOnceTopicPartitionWriterTest extends HiveTestBase {
 
@@ -53,7 +57,7 @@ public class AtLeastOnceTopicPartitionWriterTest extends HiveTestBase {
     protected Map<String, String> createProps() {
         Map<String, String> props = super.createProps();
         localProps.put(PartitionerConfig.PARTITIONER_CLASS_CONFIG,
-            "cn.xdf.acdc.connect.hdfs.partitioner.TimeBasedPartitioner");
+                "cn.xdf.acdc.connect.hdfs.partitioner.TimeBasedPartitioner");
         localProps.put(PartitionerConfig.PATH_FORMAT_CONFIG, "'dt'=yyyMMdd");
         localProps.put(PartitionerConfig.TIMEZONE_CONFIG, "Asia/Shanghai");
         localProps.put(PartitionerConfig.PARTITION_DURATION_MS_CONFIG, "1000");
@@ -71,6 +75,7 @@ public class AtLeastOnceTopicPartitionWriterTest extends HiveTestBase {
 
     /**
      * should be omitted in order to be able to add properties per test.
+     *
      * @throws Exception exception on set up
      */
     public void setUp() throws Exception {
@@ -79,9 +84,9 @@ public class AtLeastOnceTopicPartitionWriterTest extends HiveTestBase {
         super.createDefaultTable();
         this.storeContext = defaultStoreContext;
         this.tpWriter = new AtLeastOnceTopicPartitionWriter(
-            null,
-            TOPIC_PARTITION,
-            this.storeContext
+                null,
+                TOPIC_PARTITION,
+                this.storeContext
         );
     }
 
@@ -92,8 +97,8 @@ public class AtLeastOnceTopicPartitionWriterTest extends HiveTestBase {
         recordList.forEach(record -> tpWriter.buffer(record));
         tpWriter.write();
         List<FileStatus> fileStatuses = storeContext.getFileOperator()
-            .storage()
-            .list(storeContext.getStoreConfig().tablePath());
+                .storage()
+                .list(storeContext.getStoreConfig().tablePath());
         assertTrue(fileStatuses.size() != 0);
         for (FileStatus fileStatus : fileStatuses) {
             assertTrue(fileStatus.getLen() == 0);
@@ -109,11 +114,11 @@ public class AtLeastOnceTopicPartitionWriterTest extends HiveTestBase {
         tpWriter.commit();
         Partitioner partitioner = storeContext.getPartitioner();
         List<FileStatus> notCloseFileList = storeContext.getFileOperator()
-            .storage()
-            .list(FilePath.of(storeContext.getStoreConfig().tablePath())
-                .join(partitioner.encodePartition(null))
-                .build().path()
-            );
+                .storage()
+                .list(FilePath.of(storeContext.getStoreConfig().tablePath())
+                        .join(partitioner.encodePartition(null))
+                        .build().path()
+                );
         for (FileStatus fileStatus : notCloseFileList) {
 //            assertTrue(fileStatus.getLen() == 0);
             assertTrue(fileStatus.getLen() != 0);
@@ -137,9 +142,9 @@ public class AtLeastOnceTopicPartitionWriterTest extends HiveTestBase {
 //        tpWriter.commit();
         // this case is not be happen if  not invoke close method
         tpWriter = new AtLeastOnceTopicPartitionWriter(
-            null,
-            TOPIC_PARTITION,
-            storeContext
+                null,
+                TOPIC_PARTITION,
+                storeContext
         );
 
         recordList = createSinkRecords(2);
@@ -155,14 +160,13 @@ public class AtLeastOnceTopicPartitionWriterTest extends HiveTestBase {
         HdfsFileOperator fileOperator = storeContext.getFileOperator();
         StoreConfig storeConfig = storeContext.getStoreConfig();
         String expectCommitFile = FilePath.of(storeConfig.tablePath())
-            .join(partitioner.encodePartition(null))
-            .join(fileOperator.commitFileName(
-                storeConfig.table(),
-                TOPIC_PARTITION,
-                0,
-                1,
-                ".txt"
-            )).build().path();
+                .join(partitioner.encodePartition(null))
+                .join(fileOperator.generateCommittedFileName(
+                        TOPIC_PARTITION,
+                        0,
+                        1,
+                        ".txt"
+                )).build().path();
         // write 1
         recordList.forEach(record -> tpWriter.buffer(record));
         tpWriter.write();
@@ -239,22 +243,22 @@ public class AtLeastOnceTopicPartitionWriterTest extends HiveTestBase {
         String partition = partitioner.encodePartition(null);
         List<String> expectFileList = new ArrayList<>();
         expectFileList.add(
-            FilePath.of(storeConfig.tablePath())
-                .join(partition)
-                .join(fileOperator.commitFileName(storeConfig.table(), TOPIC_PARTITION, 0, 1, ".txt"))
-                .build().path()
+                FilePath.of(storeConfig.tablePath())
+                        .join(partition)
+                        .join(fileOperator.generateCommittedFileName(TOPIC_PARTITION, 0, 1, ".txt"))
+                        .build().path()
         );
         expectFileList.add(
-            FilePath.of(storeConfig.tablePath())
-                .join(partition)
-                .join(fileOperator.commitFileName(storeConfig.table(), TOPIC_PARTITION, 0, 2, ".txt"))
-                .build().path()
+                FilePath.of(storeConfig.tablePath())
+                        .join(partition)
+                        .join(fileOperator.generateCommittedFileName(TOPIC_PARTITION, 0, 2, ".txt"))
+                        .build().path()
         );
         expectFileList.add(
-            FilePath.of(storeConfig.tablePath())
-                .join(partition)
-                .join(fileOperator.commitFileName(storeConfig.table(), TOPIC_PARTITION, 0, 3, ".txt"))
-                .build().path()
+                FilePath.of(storeConfig.tablePath())
+                        .join(partition)
+                        .join(fileOperator.generateCommittedFileName(TOPIC_PARTITION, 0, 3, ".txt"))
+                        .build().path()
         );
         recordList.forEach(record -> tpWriter.buffer(record));
         tpWriter.write();
@@ -267,9 +271,9 @@ public class AtLeastOnceTopicPartitionWriterTest extends HiveTestBase {
 
         // expect file name
         long containExpectFileCount = fileOperator.storage().list(
-            FilePath.of(storeConfig.tablePath())
-                .join(partition)
-                .build().path()
+                FilePath.of(storeConfig.tablePath())
+                        .join(partition)
+                        .build().path()
         ).stream().filter(file -> expectFileList.contains(file.getPath().toString())).count();
         assertEquals(3L, containExpectFileCount);
 
@@ -278,17 +282,17 @@ public class AtLeastOnceTopicPartitionWriterTest extends HiveTestBase {
 
         // file count
         int fileCount = fileOperator.storage().list(
-            FilePath.of(storeConfig.tablePath())
-                .join(partition)
-                .build().path()
+                FilePath.of(storeConfig.tablePath())
+                        .join(partition)
+                        .build().path()
         ).size();
         assertEquals(15, fileCount);
 
         // close file count because rotation will create new file and close previous file.
         long fileSizeOfGreaterThanZeroCount = fileOperator.storage().list(
-            FilePath.of(storeConfig.tablePath())
-                .join(partition)
-                .build().path()
+                FilePath.of(storeConfig.tablePath())
+                        .join(partition)
+                        .build().path()
         ).stream().filter(file -> file.getLen() > 0).count();
 //        assertEquals(14L, fileSizeOfGreaterThanZeroCount);
         assertEquals(14L, fileSizeOfGreaterThanZeroCount);
@@ -296,9 +300,9 @@ public class AtLeastOnceTopicPartitionWriterTest extends HiveTestBase {
 
         // commit the last file can't trigger rotation,because no new messages arrived
         fileSizeOfGreaterThanZeroCount = fileOperator.storage().list(
-            FilePath.of(storeConfig.tablePath())
-                .join(partition)
-                .build().path()
+                FilePath.of(storeConfig.tablePath())
+                        .join(partition)
+                        .build().path()
         ).stream().filter(file -> file.getLen() > 0).count();
 //        assertEquals(14L, fileSizeOfGreaterThanZeroCount);
         assertEquals(15L, fileSizeOfGreaterThanZeroCount);
@@ -309,9 +313,9 @@ public class AtLeastOnceTopicPartitionWriterTest extends HiveTestBase {
         assertEquals(5L, tpWriter.offset());
 
         fileSizeOfGreaterThanZeroCount = fileOperator.storage().list(
-            FilePath.of(storeConfig.tablePath())
-                .join(partition)
-                .build().path()
+                FilePath.of(storeConfig.tablePath())
+                        .join(partition)
+                        .build().path()
         ).stream().filter(file -> file.getLen() > 0).count();
         assertEquals(15L, fileSizeOfGreaterThanZeroCount);
         System.out.println();

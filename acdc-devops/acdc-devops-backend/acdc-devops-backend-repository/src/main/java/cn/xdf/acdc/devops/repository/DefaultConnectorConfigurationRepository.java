@@ -2,6 +2,7 @@ package cn.xdf.acdc.devops.repository;
 
 import cn.xdf.acdc.devops.core.domain.entity.DefaultConnectorConfigurationDO;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -13,8 +14,8 @@ import java.util.Optional;
 
 @SuppressWarnings("unused")
 @Repository
-
-public interface DefaultConnectorConfigurationRepository extends JpaRepository<DefaultConnectorConfigurationDO, Long> {
+public interface DefaultConnectorConfigurationRepository extends JpaRepository<DefaultConnectorConfigurationDO, Long>,
+        JpaSpecificationExecutor<DefaultConnectorConfigurationDO> {
 
     /**
      * 根据 connector class ID 查询.

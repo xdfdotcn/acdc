@@ -19,7 +19,7 @@ import java.io.IOException;
 
 public class JwtLogoutFilter extends GenericFilterBean {
 
-    private static final AntPathRequestMatcher DEFAULT_ANT_PATH_REQUEST_MATCHER = new AntPathRequestMatcher("/logout",
+    private static final AntPathRequestMatcher DEFAULT_ANT_PATH_REQUEST_MATCHER = new AntPathRequestMatcher("/api/logout",
             "POST");
 
     private final LogoutHandler handler;

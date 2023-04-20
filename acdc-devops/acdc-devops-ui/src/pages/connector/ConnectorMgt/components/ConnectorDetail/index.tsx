@@ -1,16 +1,31 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import ProCard from '@ant-design/pro-card';
 import {Descriptions} from 'antd';
 import Field from '@ant-design/pro-field';
 import ProTable from '@ant-design/pro-table';
 import type {ProColumns} from '@ant-design/pro-table';
 import {ProFormField} from '@ant-design/pro-form';
-import {querySinks} from '@/services/a-cdc/api';
-import {useModel} from 'umi';
+import {getConnectionDetail, getConnectorDetail, queryConnection} from '@/services/a-cdc/api';
 import FieldMappingList from '@/pages/connector/components/FieldMapping';
 import EventList from './eventList';
-const SinkJdbcDetail: React.FC = () => {
-	const {connectorModel} = useModel('ConnectorModel')
+import ConnectionColumnConf from '@/pages/connection/components/ConnectionColumnConf';
+
+const SinkDetail: React.FC<{connectorDetail: API.ConnectorDetail}> = ({connectorDetail}) => {
+
+  const [connectionDetail, setConnectionDetail] = useState<API.ConnectionDetail>({});
+
+  const doGetConnectionDetail = async () => {
+    const connectionQuery: API.ConnectionQuery = {
+      sinkConnectorId: connectorDetail.id
+    }
+    const queriedConnections = await queryConnection({...connectionQuery});
+    const resultConnectionDetail = await getConnectionDetail(queriedConnections.data[0].id)
+    setConnectionDetail(resultConnectionDetail)
+  }
+
+  useEffect(() => {
+    doGetConnectionDetail();
+  }, [connectorDetail.id])
 
 	return (
 		<>
@@ -22,16 +37,16 @@ const SinkJdbcDetail: React.FC = () => {
 			>
 				<Descriptions column={2}>
 					<Descriptions.Item label="集群">
-						<Field text={connectorModel.sinkConnectorInfo?.srcCluster} mode="read" />
+						<Field text={connectionDetail?.sourceDataSystemClusterName} mode="read" />
 					</Descriptions.Item>
 					<Descriptions.Item label="数据库类型">
-						<Field text={connectorModel.sinkConnectorInfo?.srcDataSystemType} mode="read" />
+						<Field text={connectionDetail?.sourceDataSystemType} mode="read" />
 					</Descriptions.Item>
 					<Descriptions.Item label="数据库">
-						<Field text={connectorModel.sinkConnectorInfo?.srcDatabase} mode="read" />
+						<Field text={connectionDetail?.sourceDatabaseName} mode="read" />
 					</Descriptions.Item>
 					<Descriptions.Item label="数据表">
-						<Field text={connectorModel.sinkConnectorInfo?.srcDataSet} mode="read" />
+						<Field text={connectionDetail?.sourceDataCollectionName} mode="read" />
 					</Descriptions.Item>
 				</Descriptions>
 			</ProCard>
@@ -43,16 +58,16 @@ const SinkJdbcDetail: React.FC = () => {
 			>
 				<Descriptions column={2}>
 					<Descriptions.Item label="集群">
-						<Field text={connectorModel.sinkConnectorInfo?.sinkCluster} mode="read" />
+						<Field text={connectionDetail?.sinkDataSystemClusterName} mode="read" />
 					</Descriptions.Item>
 					<Descriptions.Item label="数据库类型">
-						<Field text={connectorModel.sinkConnectorInfo?.sinkDataSystemType} mode="read" />
+						<Field text={connectionDetail?.sinkDataSystemType} mode="read" />
 					</Descriptions.Item>
 					<Descriptions.Item label="数据库">
-						<Field text={connectorModel.sinkConnectorInfo?.sinkDatabase} mode="read" />
+						<Field text={connectionDetail?.sinkDatabaseName} mode="read" />
 					</Descriptions.Item>
 					<Descriptions.Item label="数据表">
-						<Field text={connectorModel.sinkConnectorInfo?.sinkDataSet} mode="read" />
+						<Field text={connectionDetail?.sinkDataCollectionName} mode="read" />
 					</Descriptions.Item>
 				</Descriptions>
 
@@ -64,158 +79,44 @@ const SinkJdbcDetail: React.FC = () => {
 				defaultCollapsed
 				onCollapse={(collapse) => {}}
 			>
-				<FieldMappingList />
-
+        <ConnectionColumnConf
+          columnConfProps={{
+            displayDataSource: connectionDetail.connectionColumnConfigurations,
+            originalDataSource: connectionDetail.connectionColumnConfigurations!,
+            sinkDataSystemType: connectionDetail.sinkDataSystemType,
+            canEdit: false,
+            canDelete: false,
+          }}
+        />
 			</ProCard>
 		</>
 	);
 };
 
-const SinkHiveDetail: React.FC = () => {
-	const {connectorModel} = useModel('ConnectorModel')
+const SourceDetail: React.FC<{connectorDetail: API.ConnectorDetail}> = ({connectorDetail}) => {
+  const [ticdcTopicName, setTicdcTopicName] = useState<string>("");
 
-	return (
-		<>
-			<ProCard
-				title="源端信息"
-				headerBordered
-				collapsible
-				onCollapse={(collapse) => {}}
-			>
-				<Descriptions column={2}>
-					<Descriptions.Item label="集群">
-						<Field text={connectorModel.sinkConnectorInfo?.srcCluster} mode="read" />
-					</Descriptions.Item>
-					<Descriptions.Item label="数据库类型">
-						<Field text={connectorModel.sinkConnectorInfo?.srcDataSystemType} mode="read" />
-					</Descriptions.Item>
-					<Descriptions.Item label="数据库">
-						<Field text={connectorModel.sinkConnectorInfo?.srcDatabase} mode="read" />
-					</Descriptions.Item>
-					<Descriptions.Item label="数据表">
-						<Field text={connectorModel.sinkConnectorInfo?.srcDataSet} mode="read" />
-					</Descriptions.Item>
-				</Descriptions>
-			</ProCard>
-			<ProCard
-				title="目标端信息"
-				headerBordered
-				collapsible
-				onCollapse={(collapse) => {}}
-			>
-				<Descriptions column={2}>
-					<Descriptions.Item label="HIVE 集群">
-						<Field text={connectorModel.sinkConnectorInfo?.sinkCluster} mode="read" />
-					</Descriptions.Item>
-					<Descriptions.Item label="HIVE 数据库">
-						<Field text={connectorModel.sinkConnectorInfo?.sinkDatabase} mode="read" />
-					</Descriptions.Item>
-					<Descriptions.Item label="HIVE 数据表">
-						<Field text={connectorModel.sinkConnectorInfo?.sinkDataSet} mode="read" />
-					</Descriptions.Item>
-				</Descriptions>
+  useEffect(() => {
+    if (connectorDetail.dataSystemType == "TIDB") {
+      for (let i = 0; i < connectorDetail.connectorConfigurations?.length; i++) {
+        if (connectorDetail.connectorConfigurations[i].name == "source.kafka.topic") {
+          setTicdcTopicName(connectorDetail.connectorConfigurations[i].value)
+          break;
+        }
+      }
+    }
+  }, [connectorDetail.id])
 
-			</ProCard>
-			<ProCard
-				title="字段映射"
-				headerBordered
-				collapsible
-				defaultCollapsed
-				onCollapse={(collapse) => {}}
-			>
-				<FieldMappingList />
-
-			</ProCard>
-		</>
-	);
-};
-
-const SinkKafkaDetail: React.FC = () => {
-	const {connectorModel} = useModel('ConnectorModel')
-
-	return (
-		<>
-			<ProCard
-				title="源端信息"
-				headerBordered
-				collapsible
-				onCollapse={(collapse) => {}}
-			>
-				<Descriptions column={2}>
-					<Descriptions.Item label="集群">
-						<Field text={connectorModel.sinkConnectorInfo?.srcCluster} mode="read" />
-					</Descriptions.Item>
-					<Descriptions.Item label="数据库类型">
-						<Field text={connectorModel.sinkConnectorInfo?.srcDataSystemType} mode="read" />
-					</Descriptions.Item>
-					<Descriptions.Item label="数据库">
-						<Field text={connectorModel.sinkConnectorInfo?.srcDatabase} mode="read" />
-					</Descriptions.Item>
-					<Descriptions.Item label="数据表">
-						<Field text={connectorModel.sinkConnectorInfo?.srcDataSet} mode="read" />
-					</Descriptions.Item>
-				</Descriptions>
-			</ProCard>
-			<ProCard
-				title="目标端信息"
-				headerBordered
-				collapsible
-				onCollapse={(collapse) => {}}
-			>
-				<Descriptions column={2}>
-					<Descriptions.Item label="集群">
-						<Field text={connectorModel.sinkConnectorInfo?.sinkCluster} mode="read" />
-					</Descriptions.Item>
-					<Descriptions.Item label="topic">
-						<Field text={connectorModel.sinkConnectorInfo?.sinkDataSet} mode="read" />
-					</Descriptions.Item>
-				</Descriptions>
-
-			</ProCard>
-			<ProCard
-				title="字段映射"
-				headerBordered
-				collapsible
-				defaultCollapsed
-				onCollapse={(collapse) => {}}
-			>
-				<FieldMappingList />
-
-			</ProCard>
-		</>
-	);
-};
-
-const SourceRdbDetail: React.FC = () => {
-	const {connectorModel}  = useModel('ConnectorModel')
-	const sinkJdbcColumns: ProColumns<API.SinkConnectorListItem>[] = [
+	const columns: ProColumns<API.Connection>[] = [
 		{
-			title: '名称', width: "24%", dataIndex: 'name',
+			title: '名称', width: "24%", dataIndex: 'sinkConnectorName',
 			render: (dom, entity) => {return (<a > {dom} </a>);},
 		},
-		{title: '消费主题', width: "18%", dataIndex: 'kafkaTopic'},
-		{width: "18%", title: '集群', dataIndex: 'sinkCluster'},
-		{title: '数据库', width: "10%", dataIndex: 'sinkDatabase', },
-		{title: '数据表', width: "10%", dataIndex: 'sinkDataSet', },
-	];
-	const sinkHiveColumns: ProColumns<API.SinkConnectorListItem>[] = [
-		{
-			title: '名称', width: "24%", dataIndex: 'name',
-			render: (dom, entity) => {return (<a > {dom} </a>);},
-		},
-		{title: '消费主题', width: "18%", dataIndex: 'kafkaTopic'},
-		{width: "18%", title: '集群', dataIndex: 'sinkCluster'},
-		{title: '数据库', width: "10%", dataIndex: 'sinkDatabase', },
-		{title: '数据表', width: "10%", dataIndex: 'sinkDataSet', },
-	];
-	const sinkKafkaColumns: ProColumns<API.SinkConnectorListItem>[] = [
-		{
-			title: '名称', width: "24%", dataIndex: 'name',
-			render: (dom, entity) => {return (<a > {dom} </a>);},
-		},
-		{width: "18%", title: '集群', dataIndex: 'sinkDataSet'},
-		{title: '消费主题', width: "18%", dataIndex: 'kafkaTopic'},
-		{title: '存储主题', width: "10%", dataIndex: 'sinkDataSet', },
+    {title: '源数据集', width: "10%", dataIndex: 'sourceDataCollectionName'},
+    {title: '数据数据系统类型', width: "18%", dataIndex: 'sinkDataSystemType'},
+    {title: '数据目标项目', width: "18%", dataIndex: 'sinkProjectName'},
+		{title: '数据目标路径', width: "18%", dataIndex: 'sinkDataCollectionPath'},
+		{title: '目标数据集', width: "18%", dataIndex: 'sinkDataCollectionName'},
 	];
 
 	return (
@@ -228,18 +129,18 @@ const SourceRdbDetail: React.FC = () => {
 			>
 				<Descriptions column={2}>
 					<Descriptions.Item label="集群">
-						<Field text={connectorModel.sourceConnectorInfo?.srcCluster} mode="read" />
+						<Field text={connectorDetail.dataSystemClusterName} mode="read" />
 					</Descriptions.Item>
 					<Descriptions.Item label="数据库类型">
-						<Field text={connectorModel.sourceConnectorInfo?.srcDataSystemType} mode="read" />
+						<Field text={connectorDetail.dataSystemType} mode="read" />
 					</Descriptions.Item>
-					<Descriptions.Item label="数据库">
-						<Field text={connectorModel.sourceConnectorInfo?.srcDatabase} mode="read" />
+					<Descriptions.Item label="源数据资源名称（database/topic）">
+						<Field text={connectorDetail.dataSystemResourceName} mode="read" />
 					</Descriptions.Item>
 					{
-						connectorModel!.sourceConnectorInfo!.srcDataSystemType == 'tidb' ?
+            connectorDetail.dataSystemType == 'TIDB' ?
 							<Descriptions.Item label="消费主题">
-								<Field text={connectorModel.sourceConnectorInfo?.kafkaTopic} mode="read" />
+								<Field text={ticdcTopicName} mode="read" />
 							</Descriptions.Item>
 							: <></>
 					}
@@ -249,70 +150,21 @@ const SourceRdbDetail: React.FC = () => {
 				title="目标端信息"
 				headerBordered
 				onCollapse={(collapse) => {}}
-				tabs={{
-					type: 'card',
-					//onChange:(key)=>{message.info(key)}
-				}}
-
 			>
-					<ProCard.TabPane key="tab1" tab="JDBC">
-						<ProTable<API.SinkConnectorListItem, API.SinkConnectorQuery>
-							params={{
-								sourceConnectorId: connectorModel.sourceConnectorInfo?.connectorId,
-								sinkDataSystemType:'mysql'
-							}}
-							request={querySinks}
-							columns={sinkJdbcColumns}
-							pagination={{
-								showSizeChanger: false,
-								pageSize: 8
-							}}
-							options={false}
-							rowKey="id"
-							search={false}
-						/>
-
-					</ProCard.TabPane>
-
-					<ProCard.TabPane key="tab2" tab="HIVE">
-						<ProTable<API.SinkConnectorListItem, API.SinkConnectorQuery>
-							params={{
-								sourceConnectorId: connectorModel.sourceConnectorInfo?.connectorId,
-								sinkDataSystemType:'hive'
-							}}
-							request={querySinks}
-							columns={sinkHiveColumns}
-							pagination={{
-								showSizeChanger: false,
-								pageSize: 8
-							}}
-							options={false}
-							rowKey="id"
-							search={false}
-						/>
-
-
-					</ProCard.TabPane>
-
-					<ProCard.TabPane key="tab3" tab="KAFKA">
-
-						<ProTable<API.SinkConnectorListItem, API.SinkConnectorQuery>
-							params={{
-								sourceConnectorId: connectorModel.sourceConnectorInfo?.connectorId,
-								sinkDataSystemType: 'kafka'
-							}}
-							request={querySinks}
-							columns={sinkKafkaColumns}
-							pagination={{
-								showSizeChanger: false,
-								pageSize: 8
-							}}
-							options={false}
-							rowKey="id"
-							search={false}
-						/>
-
-					</ProCard.TabPane>
+        <ProTable<API.Connection, API.ConnectionQuery>
+          params={{
+            sourceConnectorId: connectorDetail.id
+          }}
+          request={queryConnection}
+          columns={columns}
+          pagination={{
+            showSizeChanger: false,
+            pageSize: 10
+          }}
+          options={false}
+          rowKey="id"
+          search={false}
+        />
 			</ProCard>
 
 		</>
@@ -320,49 +172,47 @@ const SourceRdbDetail: React.FC = () => {
 };
 
 
-const ConnectorDetail: React.FC = () => {
-	const {connectorModel, setConnectorModel} = useModel('ConnectorModel')
-	const getSinkLinkPage = () => {
+const ConnectorDetail: React.FC<{connectorId: number}> = ({connectorId}) => {
 
-		let conenctorType = connectorModel.connectorType
+  const [connectorDetail, setConnectorDetail] = useState<API.ConnectorDetail>({})
 
-		// sink
-		if (conenctorType == 'SINK') {
-			if (connectorModel!.sinkConnectorInfo!.sinkDataSystemType == 'mysql') {
-				return <SinkJdbcDetail />
+  const [connectorConfiguration, setConnectorConfiguration] = useState<string>("")
 
-			}
+  const showConnectorDetail = async () => {
+    const connector = await getConnectorDetail(connectorId)
+    setConnectorDetail(connector)
 
-			if (connectorModel!.sinkConnectorInfo!.sinkDataSystemType == 'tidb') {
-				return <SinkJdbcDetail />
+    let configurationStr = "{\n"
+    connector.connectorConfigurations.forEach((element) => {
+      configurationStr += "  " + element.name + ": " + element.value + ",\n"
+    })
+    configurationStr = configurationStr.slice(0, configurationStr.length - 2)
+    configurationStr += "\n}"
+    setConnectorConfiguration(configurationStr)
+  }
 
-			}
+  const getConnectorDetailPage = () => {
+    if (!connectorDetail.id) {
+      return <></>
+    }
+    if (connectorDetail.connectorType == 'SINK') {
+      return <SinkDetail connectorDetail={connectorDetail} />
+    }
+    return <SourceDetail connectorDetail={connectorDetail} />
+  }
 
-			if (connectorModel!.sinkConnectorInfo!.sinkDataSystemType == 'hive') {
-				return <SinkHiveDetail />
-
-			}
-			if (connectorModel!.sinkConnectorInfo!.sinkDataSystemType == 'kafka') {
-				return <SinkKafkaDetail />
-			}
-		}
-
-		// source
-		if (conenctorType == 'SOURCE') {
-			return <SourceRdbDetail />
-		}
-	}
-
+  useEffect(() => {
+    showConnectorDetail();
+  },[connectorId]);
 
 	return (
 		<ProCard
 			tabs={{
 				type: 'card',
-				//onChange:(key)=>{message.info(key)}
 			}}
 		>
 			<ProCard.TabPane key="tab1" tab="链路详情">
-				{getSinkLinkPage()}
+        {getConnectorDetailPage()}
 			</ProCard.TabPane>
 
 			<ProCard.TabPane key="tab2" tab="链路配置">
@@ -377,16 +227,15 @@ const ConnectorDetail: React.FC = () => {
 						}}
 						mode="read"
 						valueType="jsonCode"
-						text={JSON.stringify(connectorModel.connectorConfig)}
+						text={connectorConfiguration}
 					/>
 				</ProCard>
 
 			</ProCard.TabPane>
 			{
-				connectorModel.connectorId?
 				<ProCard.TabPane key="tab3" tab="事件列表">
-					<EventList connectorId = {connectorModel.connectorId}/>
-				</ProCard.TabPane> : null
+					<EventList connectorId = {connectorId}/>
+				</ProCard.TabPane>
 			}
 
 		</ProCard>

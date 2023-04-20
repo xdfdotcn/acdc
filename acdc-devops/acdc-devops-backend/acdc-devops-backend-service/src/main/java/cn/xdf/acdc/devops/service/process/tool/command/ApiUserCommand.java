@@ -4,9 +4,8 @@ import cn.xdf.acdc.devops.core.domain.dto.UserDTO;
 import cn.xdf.acdc.devops.core.domain.dto.UserDetailDTO;
 import cn.xdf.acdc.devops.core.domain.entity.enumeration.AuthorityRoleType;
 import cn.xdf.acdc.devops.core.domain.query.UserQuery;
-import cn.xdf.acdc.devops.service.entity.UserService;
 import cn.xdf.acdc.devops.service.process.tool.command.ApiUserCommand.CommandEntity.Operation;
-import cn.xdf.acdc.devops.service.process.user.impl.UserAuthorityService;
+import cn.xdf.acdc.devops.service.process.user.UserService;
 import cn.xdf.acdc.devops.service.util.UIError;
 import cn.xdf.acdc.devops.service.utility.i18n.I18nKey;
 import cn.xdf.acdc.devops.service.utility.i18n.I18nService;
@@ -28,16 +27,13 @@ import java.util.stream.Collectors;
 @Component
 public class ApiUserCommand implements Command<ApiUserCommand.CommandEntity> {
 
+    private final Map<CommandEntity.Operation, Function<CommandEntity, Map<String, Object>>> commandExecutors = new HashMap<>();
+
     @Autowired
     private I18nService i18n;
 
     @Autowired
     private UserService userService;
-
-    @Autowired
-    private UserAuthorityService userAuthorityService;
-
-    private final Map<CommandEntity.Operation, Function<CommandEntity, Map<String, Object>>> commandExecutors = new HashMap<>();
 
     public ApiUserCommand() {
         commandExecutors.put(Operation.CREATE, this::doCreate);
@@ -58,13 +54,12 @@ public class ApiUserCommand implements Command<ApiUserCommand.CommandEntity> {
         Set<AuthorityRoleType> roleTypeSet = CollectionUtils.isEmpty(entity.roles) ? Collections.EMPTY_SET
                 : entity.roles.stream().collect(Collectors.toSet());
 
-        UserDTO user = userService.createUser(
-                UserDetailDTO.builder()
-                        .name(entity.username)
-                        .email(entity.email)
-                        .password(entity.password)
-                        .authoritySet(roleTypeSet)
-                        .build()
+        UserDetailDTO user = userService.create(
+                new UserDetailDTO()
+                        .setName(entity.username)
+                        .setEmail(entity.email)
+                        .setPassword(entity.password)
+                        .setAuthoritySet(roleTypeSet)
         );
 
         Map<String, Object> result = new LinkedHashMap<>();
@@ -76,17 +71,15 @@ public class ApiUserCommand implements Command<ApiUserCommand.CommandEntity> {
     }
 
     private Map<String, Object> doDelete(final CommandEntity entity) {
-        userService.deleteUserByEmail(entity.email);
+        userService.deleteByEmail(entity.email);
         Map<String, Object> result = new LinkedHashMap<>();
         return result;
     }
 
     private Map<String, Object> doUpdate(final CommandEntity entity) {
-        UserDTO user = userService.updateUser(
-                UserDetailDTO.builder()
-                        .name(entity.username)
-                        .email(entity.email)
-                        .build()
+        UserDTO user = userService.updateUserNameByEmail(
+                entity.username,
+                entity.email
         );
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("id", user.getId());
@@ -97,7 +90,7 @@ public class ApiUserCommand implements Command<ApiUserCommand.CommandEntity> {
     }
 
     private Map<String, Object> doGet(final CommandEntity entity) {
-        UserDetailDTO user = userService.getUserDetail(entity.email);
+        UserDetailDTO user = userService.getDetailByEmail(entity.email);
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("id", user.getId());
         result.put("email", user.getEmail());
@@ -111,7 +104,7 @@ public class ApiUserCommand implements Command<ApiUserCommand.CommandEntity> {
         UserQuery userQuery = new UserQuery();
         userQuery.setCurrent(entity.begin);
         userQuery.setPageSize(entity.pagesize);
-        Page<UserDTO> page = userService.pageQuery(userQuery);
+        Page<UserDTO> page = userService.pagedQuery(userQuery);
 
         List<Map<String, Object>> users = page.getContent().stream().map(it -> {
             Map<String, Object> user = new LinkedHashMap<>();
@@ -147,10 +140,6 @@ public class ApiUserCommand implements Command<ApiUserCommand.CommandEntity> {
 
     // CHECKSTYLE:OFF
     public static class CommandEntity {
-
-        public enum Operation {
-            LOGIN, CREATE, DELETE, UPDATE, GET, LIST, RESET_PASSWORD, RESET_ROLE
-        }
 
         private Operation opt;
 
@@ -255,6 +244,10 @@ public class ApiUserCommand implements Command<ApiUserCommand.CommandEntity> {
             sb.append("oldPassword:").append(oldPassword).append(" ");
             sb.append("newPassword:").append(newPassword).append(" ");
             return sb.toString();
+        }
+
+        public enum Operation {
+            LOGIN, CREATE, DELETE, UPDATE, GET, LIST, RESET_PASSWORD, RESET_ROLE
         }
     }
 

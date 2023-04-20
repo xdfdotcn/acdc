@@ -27,7 +27,6 @@ import org.springframework.util.CollectionUtils;
 
 import javax.persistence.EntityExistsException;
 import javax.persistence.EntityNotFoundException;
-import java.time.Instant;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -209,6 +208,8 @@ public class ApiConnectCommand implements Command<ApiConnectCommand.CommandEntit
     };
     // CHECKSTYLE:ON
 
+    private final Map<CommandEntity.Operation, Function<CommandEntity, Map<String, Object>>> commandExecutors = new HashMap<>();
+
     @Autowired
     private I18nService i18n;
 
@@ -220,8 +221,6 @@ public class ApiConnectCommand implements Command<ApiConnectCommand.CommandEntit
 
     @Autowired
     private DefaultConnectorConfigurationRepository defaultConnectorConfigurationRepository;
-
-    private final Map<CommandEntity.Operation, Function<CommandEntity, Map<String, Object>>> commandExecutors = new HashMap<>();
 
     public ApiConnectCommand() {
         commandExecutors.put(Operation.CREATE, this::doCreate);
@@ -332,8 +331,6 @@ public class ApiConnectCommand implements Command<ApiConnectCommand.CommandEntit
                 .description(clusterType.name())
                 .version(DEFAULT_CONNECT_CLUSTER_VERSION)
                 .connectorClass(savedConnectorClass)
-                .creationTime(Instant.now())
-                .updateTime(Instant.now())
                 .build();
 
         // cluster
@@ -467,8 +464,6 @@ public class ApiConnectCommand implements Command<ApiConnectCommand.CommandEntit
                 .map(it -> DefaultConnectorConfigurationDO.builder()
                         .name(it.getKey())
                         .value(it.getValue())
-                        .creationTime(Instant.now())
-                        .updateTime(Instant.now())
                         .connectorClass(ConnectorClassDO.builder().id(connectorClassId).build())
                         .build()
                 ).collect(Collectors.toSet());
@@ -489,46 +484,6 @@ public class ApiConnectCommand implements Command<ApiConnectCommand.CommandEntit
 
     // CHECKSTYLE:OFF
     public static class CommandEntity {
-
-        public enum Operation {
-            CREATE, DELETE, UPDATE_DEFAULT_CONFIG, GET, LIST
-        }
-
-        @Getter
-        public enum ClusterType {
-            SOURCE_MYSQL("io.debezium.connector.mysql.MySqlConnector", SOURCE_MYSQL_DEFAULT_CONF, DataSystemType.MYSQL, ConnectorType.SOURCE),
-
-            SOURCE_TIDB("cn.xdf.acdc.connector.tidb.TidbConnector", SOURCE_TIDB_DEFAULT_CONF, DataSystemType.TIDB, ConnectorType.SOURCE),
-
-            SINK_MYSQL("cn.xdf.acdc.connect.jdbc.JdbcSinkConnector", SINK_MYSQL_DEFAULT_CONF, DataSystemType.MYSQL, ConnectorType.SINK),
-
-            SINK_TIDB("cn.xdf.acdc.connect.jdbc.JdbcSinkConnector", SINK_TIDB_DEFAULT_CONF, DataSystemType.TIDB, ConnectorType.SINK),
-
-            SINK_HIVE("cn.xdf.acdc.connect.hdfs.HdfsSinkConnector", SINK_HIVE_DEFAULT_CONF, DataSystemType.HIVE, ConnectorType.SINK),
-
-            SINK_KAFKA("cn.xdf.acdc.connect.kafka.KafkaSinkConnector", SINK_KAFKA_DEFAULT_CONF, DataSystemType.KAFKA, ConnectorType.SINK);
-
-            private Map<String, String> defaultConf;
-
-            private String connectorClass;
-
-            private DataSystemType dataSystemType;
-
-            private ConnectorType connectorType;
-
-
-            ClusterType(
-                    final String connectorClass,
-                    final Map<String, String> defaultConf,
-                    final DataSystemType dataSystemType,
-                    final ConnectorType connectorType
-            ) {
-                this.connectorClass = connectorClass;
-                this.defaultConf = defaultConf;
-                this.dataSystemType = dataSystemType;
-                this.connectorType = connectorType;
-            }
-        }
 
         // --create, --delete , --update-default-config
         private Operation opt;
@@ -628,6 +583,46 @@ public class ApiConnectCommand implements Command<ApiConnectCommand.CommandEntit
             sb.append("key:").append(key).append(" ");
             sb.append("value:").append(value).append(" ");
             return sb.toString();
+        }
+
+        public enum Operation {
+            CREATE, DELETE, UPDATE_DEFAULT_CONFIG, GET, LIST
+        }
+
+        @Getter
+        public enum ClusterType {
+            SOURCE_MYSQL("io.debezium.connector.mysql.MySqlConnector", SOURCE_MYSQL_DEFAULT_CONF, DataSystemType.MYSQL, ConnectorType.SOURCE),
+
+            SOURCE_TIDB("cn.xdf.acdc.connector.tidb.TidbConnector", SOURCE_TIDB_DEFAULT_CONF, DataSystemType.TIDB, ConnectorType.SOURCE),
+
+            SINK_MYSQL("cn.xdf.acdc.connect.jdbc.JdbcSinkConnector", SINK_MYSQL_DEFAULT_CONF, DataSystemType.MYSQL, ConnectorType.SINK),
+
+            SINK_TIDB("cn.xdf.acdc.connect.jdbc.JdbcSinkConnector", SINK_TIDB_DEFAULT_CONF, DataSystemType.TIDB, ConnectorType.SINK),
+
+            SINK_HIVE("cn.xdf.acdc.connect.hdfs.HdfsSinkConnector", SINK_HIVE_DEFAULT_CONF, DataSystemType.HIVE, ConnectorType.SINK),
+
+            SINK_KAFKA("cn.xdf.acdc.connect.kafka.KafkaSinkConnector", SINK_KAFKA_DEFAULT_CONF, DataSystemType.KAFKA, ConnectorType.SINK);
+
+            private Map<String, String> defaultConf;
+
+            private String connectorClass;
+
+            private DataSystemType dataSystemType;
+
+            private ConnectorType connectorType;
+
+
+            ClusterType(
+                    final String connectorClass,
+                    final Map<String, String> defaultConf,
+                    final DataSystemType dataSystemType,
+                    final ConnectorType connectorType
+            ) {
+                this.connectorClass = connectorClass;
+                this.defaultConf = defaultConf;
+                this.dataSystemType = dataSystemType;
+                this.connectorType = connectorType;
+            }
         }
     }
 }

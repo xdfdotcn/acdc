@@ -1,0 +1,14 @@
+[ERROR] src/main/java/cn/xdf/acdc/devops/service/process/datasystem/kafka/SaslMechanism.java:[7,25] (design) VisibilityModifier: 变量 'name' 应定义为 private 的，并配置访问方法。
+[ERROR] src/main/java/cn/xdf/acdc/devops/service/utility/datasystem/helper/HiveHelperService.java:[61] (indentation) Indentation: 'lambda arguments' 缩进了16个缩进符，应为12个。
+[ERROR] src/main/java/cn/xdf/acdc/devops/service/utility/datasystem/helper/HiveHelperService.java:[61,24] (coding) UnnecessaryParentheses: lambda 值周围不必要的小括号。
+[ERROR] src/main/java/cn/xdf/acdc/devops/service/utility/datasystem/helper/HiveHelperService.java:[77] (indentation) Indentation: 'lambda arguments' 缩进了16个缩进符，应为12个。
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-checkstyle-plugin:3.1.0:check (validate) on project acdc-devops-backend-service: You have 4 Checkstyle violations. -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
+[ERROR] 
+[ERROR] After correcting the problems, you can resume the build with the command
+[ERROR]   mvn <args> -rf :acdc-devops-backend-service

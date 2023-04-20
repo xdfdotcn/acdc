@@ -37,6 +37,7 @@ import cn.xdf.acdc.connect.hdfs.wal.WAL;
 import cn.xdf.acdc.connect.hdfs.wal.WALFile.Writer;
 import cn.xdf.acdc.connect.hdfs.wal.WALFileTest.CorruptWriter;
 import io.confluent.common.utils.MockTime;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -48,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -60,8 +62,10 @@ import org.apache.kafka.connect.errors.ConnectException;
 import org.apache.kafka.connect.sink.SinkRecord;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
 
 public class ExactlyOnceTopicPartitionWriterTest extends TestWithMiniDFSCluster {
@@ -69,7 +73,7 @@ public class ExactlyOnceTopicPartitionWriterTest extends TestWithMiniDFSCluster 
     private RecordWriterProvider writerProvider;
 
     private RecordWriterProvider
-        newWriterProvider;
+            newWriterProvider;
 
     private HdfsStorage storage;
 
@@ -86,6 +90,7 @@ public class ExactlyOnceTopicPartitionWriterTest extends TestWithMiniDFSCluster 
 
     /**
      * Set up.
+     *
      * @throws Exception set up fail
      */
     public void setUp() throws Exception {
@@ -109,15 +114,15 @@ public class ExactlyOnceTopicPartitionWriterTest extends TestWithMiniDFSCluster 
 
         @SuppressWarnings("unchecked")
         List<String> partitionFields = (List<String>) parsedConfig.get(
-            PartitionerConfig.PARTITION_FIELD_NAME_CONFIG
+                PartitionerConfig.PARTITION_FIELD_NAME_CONFIG
         );
         String partitionField = partitionFields.get(0);
 
         TopicPartitionWriter topicPartitionWriter = new ExactlyOnceTopicPartitionWriter(
-            context,
-            time,
-            TOPIC_PARTITION,
-            defaultStoreContext
+                context,
+                time,
+                TOPIC_PARTITION,
+                defaultStoreContext
         );
 
         String key = "key";
@@ -158,13 +163,13 @@ public class ExactlyOnceTopicPartitionWriterTest extends TestWithMiniDFSCluster 
         Set<Path> expectedFiles = new HashSet<>();
         for (int i = 0; i < records.size() - 1; i++) {
             String encodingPartition = partitionField + "=" + records.get(i).get("int");
+            String committedFileName = defaultStoreContext.getFileOperator()
+                    .generateCommittedFileName(TOPIC_PARTITION, i * 10, i * 10, extension);
             expectedFiles.add(new Path(
-                FileUtils.jointPath(
-                    defaultStoreContext.getStoreConfig().tablePath(),
-                    encodingPartition,
-                    FileUtils.committedFileName(
-                        defaultStoreContext.getStoreConfig().table(),
-                        TOPIC_PARTITION, i * 10, i * 10, extension, zeroPadFormat)))
+                    FileUtils.jointPath(
+                            defaultStoreContext.getStoreConfig().tablePath(),
+                            encodingPartition,
+                            committedFileName))
             );
         }
 
@@ -185,10 +190,10 @@ public class ExactlyOnceTopicPartitionWriterTest extends TestWithMiniDFSCluster 
         partitioner.configure(parsedConfig);
         defaultStoreContext.setPartitioner(partitioner);
         TopicPartitionWriter topicPartitionWriter = new ExactlyOnceTopicPartitionWriter(
-            context,
-            time,
-            TOPIC_PARTITION,
-            defaultStoreContext
+                context,
+                time,
+                TOPIC_PARTITION,
+                defaultStoreContext
         );
 
         Schema schema = createSchema();
@@ -208,11 +213,11 @@ public class ExactlyOnceTopicPartitionWriterTest extends TestWithMiniDFSCluster 
         Set<Path> expectedFiles = new HashSet<>();
         StoreConfig storeConfig = defaultStoreContext.getStoreConfig();
         expectedFiles.add(new Path(storeConfig.tablePath() + "/partition=" + PARTITION
-            + "/" + storeConfig.table() + "+" + PARTITION + "+00+02" + extension));
+                + "/" + TOPIC_PARTITION.topic() + "+" + PARTITION + "+00+02" + extension));
         expectedFiles.add(new Path(storeConfig.tablePath() + "/partition=" + PARTITION
-            + "/" + storeConfig.table() + "+" + PARTITION + "+03+05" + extension));
+                + "/" + TOPIC_PARTITION.topic() + "+" + PARTITION + "+03+05" + extension));
         expectedFiles.add(new Path(storeConfig.tablePath() + "/partition=" + PARTITION
-            + "/" + storeConfig.table() + "+" + PARTITION + "+06+08" + extension));
+                + "/" + TOPIC_PARTITION.topic() + "+" + PARTITION + "+06+08" + extension));
         int expectedBatchSize = 3;
         verify(expectedFiles, expectedBatchSize, records, schema);
     }
@@ -226,10 +231,10 @@ public class ExactlyOnceTopicPartitionWriterTest extends TestWithMiniDFSCluster 
         partitioner.configure(parsedConfig);
         defaultStoreContext.setPartitioner(partitioner);
         TopicPartitionWriter topicPartitionWriter = new ExactlyOnceTopicPartitionWriter(
-            context,
-            time,
-            TOPIC_PARTITION,
-            defaultStoreContext
+                context,
+                time,
+                TOPIC_PARTITION,
+                defaultStoreContext
         );
 
         //create a corrupt WAL
@@ -240,7 +245,7 @@ public class ExactlyOnceTopicPartitionWriterTest extends TestWithMiniDFSCluster 
                 if (getWriter().getClass() != CorruptWriter.class) {
                     try {
                         setWriter(new CorruptWriter(storage.conf(), Writer.file(new Path(this.getLogFile())),
-                            Writer.appendIfExists(true)));
+                                Writer.appendIfExists(true)));
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -255,15 +260,15 @@ public class ExactlyOnceTopicPartitionWriterTest extends TestWithMiniDFSCluster 
             long startOffset = i * 10;
             long endOffset = (i + 1) * 10 - 1;
             String encodingPartition = "partition=" + PARTITION;
-            String tempfileName = FileUtils.tempFileName(extension);
-            String tempFile = FileUtils.jointPath(defaultStoreContext.getStoreConfig().tablePath(), encodingPartition, tempfileName);
+            String tempFileName = defaultStoreContext.getFileOperator().generateTempFileName(extension);
+            String tempFile = FileUtils.jointPath(defaultStoreContext.getStoreConfig().tablePath(), encodingPartition, tempFileName);
             fs.createNewFile(new Path(tempFile));
-            String committedFile = FileUtils.committedFileName(defaultStoreContext.getStoreConfig().table(), TOPIC_PARTITION, startOffset,
-                endOffset, extension, zeroPadFormat);
+            String committedFile = defaultStoreContext.getFileOperator().generateCommittedFileName(TOPIC_PARTITION, startOffset,
+                    endOffset, extension);
             wal.append(tempFile, FileUtils.jointPath(
-                defaultStoreContext.getStoreConfig().tablePath(),
-                encodingPartition,
-                committedFile));
+                    defaultStoreContext.getStoreConfig().tablePath(),
+                    encodingPartition,
+                    committedFile));
         }
         wal.append(WAL.endMarker, "");
         wal.close();
@@ -286,11 +291,11 @@ public class ExactlyOnceTopicPartitionWriterTest extends TestWithMiniDFSCluster 
         Set<Path> expectedFiles = new HashSet<>();
         StoreConfig storeConfig = defaultStoreContext.getStoreConfig();
         expectedFiles.add(new Path(storeConfig.tablePath() + "/partition=" + PARTITION
-            + "/" + storeConfig.table() + "+" + PARTITION + "+00+02" + extension));
+                + "/" + TOPIC_PARTITION.topic() + "+" + PARTITION + "+00+02" + extension));
         expectedFiles.add(new Path(defaultStoreContext.getStoreConfig().tablePath() + "/partition=" + PARTITION
-            + "/" + storeConfig.table() + "+" + PARTITION + "+03+05" + extension));
+                + "/" + TOPIC_PARTITION.topic() + "+" + PARTITION + "+03+05" + extension));
         expectedFiles.add(new Path(defaultStoreContext.getStoreConfig().tablePath() + "/partition=" + PARTITION + "/"
-            + storeConfig.table() + "+" + PARTITION + "+06+08" + extension));
+                + TOPIC_PARTITION.topic() + "+" + PARTITION + "+06+08" + extension));
         int expectedBatchSize = 3;
         verify(expectedFiles, expectedBatchSize, records, schema);
     }
@@ -306,10 +311,10 @@ public class ExactlyOnceTopicPartitionWriterTest extends TestWithMiniDFSCluster 
         defaultStoreContext.setPartitioner(partitioner);
         defaultStoreContext.setHdfsSinkConfig(connectorConfig);
         TopicPartitionWriter topicPartitionWriter = new ExactlyOnceTopicPartitionWriter(
-            context,
-            time,
-            TOPIC_PARTITION,
-            defaultStoreContext
+                context,
+                time,
+                TOPIC_PARTITION,
+                defaultStoreContext
         );
 
         Schema schema = createSchema();
@@ -342,15 +347,15 @@ public class ExactlyOnceTopicPartitionWriterTest extends TestWithMiniDFSCluster 
         defaultStoreContext.setPartitioner(partitioner);
         @SuppressWarnings("unchecked")
         List<String> partitionFields = (List<String>) parsedConfig.get(
-            PartitionerConfig.PARTITION_FIELD_NAME_CONFIG
+                PartitionerConfig.PARTITION_FIELD_NAME_CONFIG
         );
         String partitionField = partitionFields.get(0);
 
         TopicPartitionWriter topicPartitionWriter = new ExactlyOnceTopicPartitionWriter(
-            context,
-            time,
-            TOPIC_PARTITION,
-            defaultStoreContext
+                context,
+                time,
+                TOPIC_PARTITION,
+                defaultStoreContext
         );
 
         Schema schema = createSchema();
@@ -387,22 +392,22 @@ public class ExactlyOnceTopicPartitionWriterTest extends TestWithMiniDFSCluster 
 
         Set<Path> expectedFiles = new HashSet<>();
         expectedFiles.add(new Path(
-            FileUtils.jointPath(
-                defaultStoreContext.getStoreConfig().tablePath(),
-                directory1,
-                FileUtils.committedFileName(defaultStoreContext.getStoreConfig().table(), TOPIC_PARTITION, 0, 2, extension, zeroPadFormat)))
+                FileUtils.jointPath(
+                        defaultStoreContext.getStoreConfig().tablePath(),
+                        directory1,
+                        defaultStoreContext.getFileOperator().generateCommittedFileName(TOPIC_PARTITION, 0, 2, extension)))
         );
         expectedFiles.add(new Path(
-            FileUtils.jointPath(
-                defaultStoreContext.getStoreConfig().tablePath(),
-                directory2,
-                FileUtils.committedFileName(defaultStoreContext.getStoreConfig().table(), TOPIC_PARTITION, 3, 5, extension, zeroPadFormat)))
+                FileUtils.jointPath(
+                        defaultStoreContext.getStoreConfig().tablePath(),
+                        directory2,
+                        defaultStoreContext.getFileOperator().generateCommittedFileName(TOPIC_PARTITION, 3, 5, extension)))
         );
         expectedFiles.add(new Path(
-            FileUtils.jointPath(
-                defaultStoreContext.getStoreConfig().tablePath(),
-                directory3,
-                FileUtils.committedFileName(defaultStoreContext.getStoreConfig().table(), TOPIC_PARTITION, 6, 8, extension, zeroPadFormat)))
+                FileUtils.jointPath(
+                        defaultStoreContext.getStoreConfig().tablePath(),
+                        directory3,
+                        defaultStoreContext.getFileOperator().generateCommittedFileName(TOPIC_PARTITION, 6, 8, extension)))
         );
         int expectedBatchSize = 3;
         verify(expectedFiles, expectedBatchSize, records, schema);
@@ -419,10 +424,10 @@ public class ExactlyOnceTopicPartitionWriterTest extends TestWithMiniDFSCluster 
         defaultStoreContext.setPartitioner(partitioner);
 
         TopicPartitionWriter topicPartitionWriter = new ExactlyOnceTopicPartitionWriter(
-            context,
-            time,
-            TOPIC_PARTITION,
-            defaultStoreContext
+                context,
+                time,
+                TOPIC_PARTITION,
+                defaultStoreContext
         );
 
         Schema schema = createSchema();
@@ -440,7 +445,7 @@ public class ExactlyOnceTopicPartitionWriterTest extends TestWithMiniDFSCluster 
         topicPartitionWriter.close();
 
         long partitionDurationMs = (Long) parsedConfig.get(
-            PartitionerConfig.PARTITION_DURATION_MS_CONFIG
+                PartitionerConfig.PARTITION_DURATION_MS_CONFIG
         );
         String pathFormat = (String) parsedConfig.get(PartitionerConfig.PATH_FORMAT_CONFIG);
         String timeZoneString = (String) parsedConfig.get(PartitionerConfig.TIMEZONE_CONFIG);
@@ -450,36 +455,27 @@ public class ExactlyOnceTopicPartitionWriterTest extends TestWithMiniDFSCluster 
 
         String directory = encodedPartition;
         StoreConfig storeConfig = defaultStoreContext.getStoreConfig();
-        String testNam = FileUtils.committedFileName(
-            defaultStoreContext.getStoreConfig().table(),
-            TOPIC_PARTITION, 0, 2, extension, zeroPadFormat);
-
-        System.out.println(testNam);
 
         Set<Path> expectedFiles = new HashSet<>();
         expectedFiles.add(new Path(
-            FileUtils.jointPath(
-                storeConfig.tablePath(),
-                directory,
-                FileUtils.committedFileName(
-                    defaultStoreContext.getStoreConfig().table(),
-                    TOPIC_PARTITION, 0, 2, extension, zeroPadFormat)))
+                FileUtils.jointPath(
+                        storeConfig.tablePath(),
+                        directory,
+                        defaultStoreContext.getFileOperator().generateCommittedFileName(TOPIC_PARTITION, 0, 2, extension)))
+
         );
         expectedFiles.add(new Path(
-            FileUtils.jointPath(
-                storeConfig.tablePath(),
-                directory,
-                FileUtils.committedFileName(
-                    defaultStoreContext.getStoreConfig().table(),
-                    TOPIC_PARTITION, 3, 5, extension, zeroPadFormat)))
+                FileUtils.jointPath(
+                        storeConfig.tablePath(),
+                        directory,
+                        defaultStoreContext.getFileOperator().generateCommittedFileName(TOPIC_PARTITION, 3, 5, extension)))
         );
         expectedFiles.add(new Path(
-            FileUtils.jointPath(
-                storeConfig.tablePath(),
-                directory,
-                FileUtils.committedFileName(
-                    defaultStoreContext.getStoreConfig().table(),
-                    TOPIC_PARTITION, 6, 8, extension, zeroPadFormat)))
+                FileUtils.jointPath(
+                        storeConfig.tablePath(),
+                        directory,
+                        defaultStoreContext.getFileOperator().generateCommittedFileName(TOPIC_PARTITION, 6, 8, extension)))
+
         );
         int expectedBatchSize = 3;
         verify(expectedFiles, expectedBatchSize, records, schema);
@@ -490,8 +486,8 @@ public class ExactlyOnceTopicPartitionWriterTest extends TestWithMiniDFSCluster 
         // Do not roll on size, only based on time.
         localProps.put(StorageSinkConnectorConfig.FLUSH_SIZE_CONFIG, "1000");
         localProps.put(
-            HdfsSinkConfig.ROTATE_INTERVAL_MS_CONFIG,
-            String.valueOf(TimeUnit.MINUTES.toMillis(1))
+                HdfsSinkConfig.ROTATE_INTERVAL_MS_CONFIG,
+                String.valueOf(TimeUnit.MINUTES.toMillis(1))
         );
         setUp();
 
@@ -502,10 +498,10 @@ public class ExactlyOnceTopicPartitionWriterTest extends TestWithMiniDFSCluster 
         defaultStoreContext.setPartitioner(partitioner);
 
         TopicPartitionWriter topicPartitionWriter = new ExactlyOnceTopicPartitionWriter(
-            context,
-            time,
-            TOPIC_PARTITION,
-            defaultStoreContext
+                context,
+                time,
+                TOPIC_PARTITION,
+                defaultStoreContext
         );
 
         Schema schema = createSchemaWithTimestampField();
@@ -529,20 +525,20 @@ public class ExactlyOnceTopicPartitionWriterTest extends TestWithMiniDFSCluster 
             timestampLater += advanceMs;
         }
         sinkRecords.addAll(createSinkRecords(
-            records.subList(9, 18),
-            schema,
-            9,
-            Collections.singleton(new TopicPartition(TOPIC, PARTITION))
+                records.subList(9, 18),
+                schema,
+                9,
+                Collections.singleton(new TopicPartition(TOPIC, PARTITION))
         ));
 
         // And one last record to flush the previous ones.
         long timestampMuchLater = first.plusHours(6).getMillis();
         Struct lastOne = createRecordWithTimestampField(schema, timestampMuchLater);
         sinkRecords.addAll(createSinkRecords(
-            Collections.singletonList(lastOne),
-            schema,
-            19,
-            Collections.singleton(new TopicPartition(TOPIC, PARTITION))
+                Collections.singletonList(lastOne),
+                schema,
+                19,
+                Collections.singleton(new TopicPartition(TOPIC, PARTITION))
         ));
 
         for (SinkRecord record : sinkRecords) {
@@ -558,28 +554,23 @@ public class ExactlyOnceTopicPartitionWriterTest extends TestWithMiniDFSCluster 
 
         String dirPrefixFirst = encodedPartitionFirst;
         Set<Path> expectedFiles = new HashSet<>();
-        for (int i : new int[] {0, 3, 6}) {
+        for (int i : new int[]{0, 3, 6}) {
             expectedFiles.add(new Path(
-                FileUtils.jointPath(
-                    defaultStoreContext.getStoreConfig().tablePath(),
-                    dirPrefixFirst,
-                    FileUtils.committedFileName(
-                        defaultStoreContext.getStoreConfig().table(),
-                        TOPIC_PARTITION, i, i + 2, extension, zeroPadFormat)
-                )
+                    FileUtils.jointPath(
+                            defaultStoreContext.getStoreConfig().tablePath(),
+                            dirPrefixFirst,
+                            defaultStoreContext.getFileOperator().generateCommittedFileName(TOPIC_PARTITION, i, i + 2, extension)
+                    )
             ));
         }
 
         String dirPrefixLater = encodedPartitionLater;
-        for (int i : new int[] {9, 12, 15}) {
+        for (int i : new int[]{9, 12, 15}) {
             expectedFiles.add(new Path(
-                FileUtils.jointPath(
-                    defaultStoreContext.getStoreConfig().tablePath(),
-                    dirPrefixLater),
-                FileUtils.committedFileName(
-                    defaultStoreContext.getStoreConfig().table(),
-                    TOPIC_PARTITION,
-                    i, i + 2, extension, zeroPadFormat)
+                    FileUtils.jointPath(
+                            defaultStoreContext.getStoreConfig().tablePath(),
+                            dirPrefixLater),
+                    defaultStoreContext.getFileOperator().generateCommittedFileName(TOPIC_PARTITION, i, i + 2, extension)
             ));
 
         }
@@ -591,8 +582,8 @@ public class ExactlyOnceTopicPartitionWriterTest extends TestWithMiniDFSCluster 
         // Do not roll on size, only based on time.
         localProps.put(StorageSinkConnectorConfig.FLUSH_SIZE_CONFIG, "1000");
         localProps.put(
-            HdfsSinkConfig.ROTATE_INTERVAL_MS_CONFIG,
-            String.valueOf(TimeUnit.MINUTES.toMillis(1))
+                HdfsSinkConfig.ROTATE_INTERVAL_MS_CONFIG,
+                String.valueOf(TimeUnit.MINUTES.toMillis(1))
         );
         setUp();
 
@@ -603,10 +594,10 @@ public class ExactlyOnceTopicPartitionWriterTest extends TestWithMiniDFSCluster 
         defaultStoreContext.setPartitioner(partitioner);
 
         TopicPartitionWriter topicPartitionWriter = new ExactlyOnceTopicPartitionWriter(
-            context,
-            time,
-            TOPIC_PARTITION,
-            defaultStoreContext
+                context,
+                time,
+                TOPIC_PARTITION,
+                defaultStoreContext
         );
 
         Schema schema = createSchema();
@@ -633,15 +624,15 @@ public class ExactlyOnceTopicPartitionWriterTest extends TestWithMiniDFSCluster 
 
         String dirPrefixFirst = encodedPartitionFirst;
         Set<Path> expectedFiles = new HashSet<>();
-        for (int i : new int[] {0, 3, 6}) {
-            String commitFile = FileUtils.committedFileName(defaultStoreContext.getStoreConfig().table(), TOPIC_PARTITION, i, i + 2, extension, zeroPadFormat);
+        for (int i : new int[]{0, 3, 6}) {
+            String commitFile = defaultStoreContext.getFileOperator().generateCommittedFileName(TOPIC_PARTITION, i, i + 2, extension);
             expectedFiles.add(new Path(FileUtils.jointPath(defaultStoreContext.getStoreConfig().tablePath(), dirPrefixFirst, commitFile)));
         }
 
         String dirPrefixLater = encodedPartitionLater;
         // Records 15,16,17 won't be flushed until a record with a higher timestamp arrives.
-        for (int i : new int[] {9, 12}) {
-            String commitFile = FileUtils.committedFileName(defaultStoreContext.getStoreConfig().table(), TOPIC_PARTITION, i, i + 2, extension, zeroPadFormat);
+        for (int i : new int[]{9, 12}) {
+            String commitFile = defaultStoreContext.getFileOperator().generateCommittedFileName(TOPIC_PARTITION, i, i + 2, extension);
             expectedFiles.add(new Path(FileUtils.jointPath(defaultStoreContext.getStoreConfig().tablePath(), dirPrefixLater, commitFile)));
         }
         verify(expectedFiles, 3, records, schema);
@@ -652,8 +643,8 @@ public class ExactlyOnceTopicPartitionWriterTest extends TestWithMiniDFSCluster 
         // Do not roll on size, only based on time.
         localProps.put(StorageSinkConnectorConfig.FLUSH_SIZE_CONFIG, "1000");
         localProps.put(
-            HdfsSinkConfig.ROTATE_INTERVAL_MS_CONFIG,
-            String.valueOf(TimeUnit.MINUTES.toMillis(1))
+                HdfsSinkConfig.ROTATE_INTERVAL_MS_CONFIG,
+                String.valueOf(TimeUnit.MINUTES.toMillis(1))
         );
         setUp();
 
@@ -665,10 +656,10 @@ public class ExactlyOnceTopicPartitionWriterTest extends TestWithMiniDFSCluster 
         defaultStoreContext.setPartitioner(partitioner);
 
         TopicPartitionWriter topicPartitionWriter = new ExactlyOnceTopicPartitionWriter(
-            context,
-            time,
-            TOPIC_PARTITION,
-            defaultStoreContext
+                context,
+                time,
+                TOPIC_PARTITION,
+                defaultStoreContext
         );
 
         Schema schema = createSchema();
@@ -694,28 +685,24 @@ public class ExactlyOnceTopicPartitionWriterTest extends TestWithMiniDFSCluster 
 
         String dirPrefixFirst = encodedPartitionFirst;
         Set<Path> expectedFiles = new HashSet<>();
-        for (int i : new int[] {0, 3, 6}) {
+        for (int i : new int[]{0, 3, 6}) {
             expectedFiles.add(new Path(
-                FileUtils.jointPath(
-                    defaultStoreContext.getStoreConfig().tablePath(),
-                    dirPrefixFirst,
-                    FileUtils.committedFileName(
-                        defaultStoreContext.getStoreConfig().table(),
-                        TOPIC_PARTITION, i, i + 2, extension, zeroPadFormat)
-                )
+                    FileUtils.jointPath(
+                            defaultStoreContext.getStoreConfig().tablePath(),
+                            dirPrefixFirst,
+                            defaultStoreContext.getFileOperator().generateCommittedFileName(TOPIC_PARTITION, i, i + 2, extension)
+                    )
             ));
         }
 
         String dirPrefixLater = encodedPartitionLater;
         // Records 15,16,17 won't be flushed until a record with a higher timestamp arrives.
-        for (int i : new int[] {9, 12}) {
+        for (int i : new int[]{9, 12}) {
             expectedFiles.add(new Path(
-                FileUtils.jointPath(
-                    defaultStoreContext.getStoreConfig().tablePath(),
-                    dirPrefixLater),
-                FileUtils.committedFileName(
-                    defaultStoreContext.getStoreConfig().table(),
-                    TOPIC_PARTITION, i, i + 2, extension, zeroPadFormat)
+                    FileUtils.jointPath(
+                            defaultStoreContext.getStoreConfig().tablePath(),
+                            dirPrefixLater),
+                    defaultStoreContext.getFileOperator().generateCommittedFileName(TOPIC_PARTITION, i, i + 2, extension)
             ));
         }
         verify(expectedFiles, 3, records, schema);
@@ -723,16 +710,16 @@ public class ExactlyOnceTopicPartitionWriterTest extends TestWithMiniDFSCluster 
 
     @Test
     public void testWriteRecordTimeBasedPartitionWallclockMockedWithScheduleRotation()
-        throws Exception {
+            throws Exception {
         // Do not roll on size, only based on time.
         localProps.put(StorageSinkConnectorConfig.FLUSH_SIZE_CONFIG, "1000");
         localProps.put(
-            HdfsSinkConfig.ROTATE_INTERVAL_MS_CONFIG,
-            String.valueOf(TimeUnit.HOURS.toMillis(1))
+                HdfsSinkConfig.ROTATE_INTERVAL_MS_CONFIG,
+                String.valueOf(TimeUnit.HOURS.toMillis(1))
         );
         localProps.put(
-            HdfsSinkConfig.ROTATE_SCHEDULE_INTERVAL_MS_CONFIG,
-            String.valueOf(TimeUnit.MINUTES.toMillis(10))
+                HdfsSinkConfig.ROTATE_SCHEDULE_INTERVAL_MS_CONFIG,
+                String.valueOf(TimeUnit.MINUTES.toMillis(10))
         );
         setUp();
 
@@ -745,19 +732,19 @@ public class ExactlyOnceTopicPartitionWriterTest extends TestWithMiniDFSCluster 
         MockedWallclockTimestampExtractor.TIME.sleep(Time.SYSTEM.milliseconds());
 
         TopicPartitionWriter topicPartitionWriter = new ExactlyOnceTopicPartitionWriter(
-            context,
-            MockedWallclockTimestampExtractor.TIME,
-            TOPIC_PARTITION,
-            defaultStoreContext
+                context,
+                MockedWallclockTimestampExtractor.TIME,
+                TOPIC_PARTITION,
+                defaultStoreContext
         );
 
         Schema schema = createSchema();
         List<Struct> records = createRecordBatches(schema, 3, 6);
         Collection<SinkRecord> sinkRecords = createSinkRecords(
-            records.subList(0, 3),
-            schema,
-            0,
-            Collections.singleton(new TopicPartition(TOPIC, PARTITION))
+                records.subList(0, 3),
+                schema,
+                0,
+                Collections.singleton(new TopicPartition(TOPIC, PARTITION))
         );
         for (SinkRecord record : sinkRecords) {
             topicPartitionWriter.buffer(record);
@@ -773,10 +760,10 @@ public class ExactlyOnceTopicPartitionWriterTest extends TestWithMiniDFSCluster 
         topicPartitionWriter.write();
 
         sinkRecords = createSinkRecords(
-            records.subList(3, 6),
-            schema,
-            3,
-            Collections.singleton(new TopicPartition(TOPIC, PARTITION))
+                records.subList(3, 6),
+                schema,
+                3,
+                Collections.singleton(new TopicPartition(TOPIC, PARTITION))
         );
         for (SinkRecord record : sinkRecords) {
             topicPartitionWriter.buffer(record);
@@ -798,26 +785,18 @@ public class ExactlyOnceTopicPartitionWriterTest extends TestWithMiniDFSCluster 
 
         String dirPrefixFirst = encodedPartitionFirst;
         Set<Path> expectedFiles = new HashSet<>();
-        for (int i : new int[] {0}) {
+        for (int i : new int[]{0}) {
             expectedFiles.add(new Path(
-                FileUtils.jointPath(defaultStoreContext.getStoreConfig().tablePath(), dirPrefixFirst,
-                    FileUtils.committedFileName(
-                        defaultStoreContext.getStoreConfig().table(),
-                        TOPIC_PARTITION,
-                        i,
-                        i + 2,
-                        extension,
-                        zeroPadFormat)))
+                    FileUtils.jointPath(defaultStoreContext.getStoreConfig().tablePath(), dirPrefixFirst,
+                            defaultStoreContext.getFileOperator().generateCommittedFileName(TOPIC_PARTITION, i, i + 2, extension)))
             );
         }
 
         String dirPrefixLater = encodedPartitionLater;
-        for (int i : new int[] {3}) {
+        for (int i : new int[]{3}) {
             expectedFiles.add(new Path(
-                FileUtils.jointPath(defaultStoreContext.getStoreConfig().tablePath(), dirPrefixLater,
-                    FileUtils.committedFileName(
-                        defaultStoreContext.getStoreConfig().table(),
-                        TOPIC_PARTITION, i, i + 2, extension, zeroPadFormat))
+                    FileUtils.jointPath(defaultStoreContext.getStoreConfig().tablePath(), dirPrefixLater,
+                            defaultStoreContext.getFileOperator().generateCommittedFileName(TOPIC_PARTITION, i, i + 2, extension))
             ));
         }
         verify(expectedFiles, 3, records, schema);
@@ -861,8 +840,8 @@ public class ExactlyOnceTopicPartitionWriterTest extends TestWithMiniDFSCluster 
     }
 
     public static class MockedWallclockTimestampExtractor
-        extends
-        TimeBasedPartitioner.WallclockTimestampExtractor {
+            extends
+            TimeBasedPartitioner.WallclockTimestampExtractor {
 
         public static final MockTime TIME = new MockTime();
 

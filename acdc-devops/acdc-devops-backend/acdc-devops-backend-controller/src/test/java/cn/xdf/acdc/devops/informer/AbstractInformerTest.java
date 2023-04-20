@@ -8,7 +8,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.scheduling.TaskScheduler;
 
-import java.time.Instant;
+import java.util.Date;
 import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.ExecutionException;
@@ -83,10 +83,8 @@ public class AbstractInformerTest {
         }
 
         @Override
-        Instant getUpdateTime(final Integer integer) {
-            return Instant.now();
+        Date getUpdateTime(final Integer integer) {
+            return new Date();
         }
-
     }
-
 }

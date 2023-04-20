@@ -16,28 +16,22 @@ public class KafkaTopicDTO extends PageDTO {
 
     private Long id;
 
-    private Long kafkaClusterId;
-
     private String name;
 
     public KafkaTopicDTO(final KafkaTopicDO kafkaTopic) {
         this.id = kafkaTopic.getId();
         this.name = kafkaTopic.getName();
-        this.kafkaClusterId = kafkaTopic.getKafkaCluster().getId();
     }
 
     /**
-     * convert DO to DTO.
+     * Convert to DO.
      *
-     * @param kafkaTopicDO kafka topic DO
-     * @return cn.xdf.acdc.devops.core.domain.dto.KafkaTopicDTO
-     * @date 2022/9/19 11:37 上午
+     * @return KafkaTopicDO
      */
-    public static KafkaTopicDTO toKafkaTopicDTO(final KafkaTopicDO kafkaTopicDO) {
-        return KafkaTopicDTO.builder()
-                .id(kafkaTopicDO.getId())
-                .kafkaClusterId(kafkaTopicDO.getKafkaCluster().getId())
-                .name(kafkaTopicDO.getName())
+    public KafkaTopicDO toDO() {
+        return KafkaTopicDO.builder()
+                .id(this.id)
+                .name(this.name)
                 .build();
     }
 }

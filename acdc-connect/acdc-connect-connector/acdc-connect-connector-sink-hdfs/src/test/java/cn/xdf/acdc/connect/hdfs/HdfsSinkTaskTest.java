@@ -48,8 +48,6 @@ public class HdfsSinkTaskTest extends TestWithMiniDFSCluster {
 
     private static final String EXTENSION = ".avro";
 
-    private static final String ZERO_PAD_FMT = "%010d";
-
     private final DataFileReader schemaFileReader = new AvroDataFileReader();
 
     @Test
@@ -82,8 +80,8 @@ public class HdfsSinkTaskTest extends TestWithMiniDFSCluster {
         Schema schema = createSchema();
         Struct record = createRecord(schema);
         SinkRecord mockRecord =
-            new SinkRecord(TOPIC_PARTITION.topic(), TOPIC_PARTITION.partition(), Schema.STRING_SCHEMA, key, schema, record,
-                0);
+                new SinkRecord(TOPIC_PARTITION.topic(), TOPIC_PARTITION.partition(), Schema.STRING_SCHEMA, key, schema, record,
+                        0);
         SinkRecord processRecord = processorProvider.getProcessor(StoreConstants.TABLES).process(mockRecord);
         Schema processSchema = processRecord.valueSchema();
         Collection<SinkRecord> sinkRecordsA = new ArrayList<>();
@@ -91,14 +89,14 @@ public class HdfsSinkTaskTest extends TestWithMiniDFSCluster {
         for (TopicPartition tp : context.assignment()) {
             for (long offset = 0; offset < 7; offset++) {
                 SinkRecord sinkRecord =
-                    new SinkRecord(tp.topic(), tp.partition(), Schema.STRING_SCHEMA, key, schema, record,
-                        offset);
+                        new SinkRecord(tp.topic(), tp.partition(), Schema.STRING_SCHEMA, key, schema, record,
+                                offset);
                 sinkRecordsA.add(sinkRecord);
             }
             for (long offset = 7; offset < 16; offset++) {
                 SinkRecord sinkRecord =
-                    new SinkRecord(tp.topic(), tp.partition(), Schema.STRING_SCHEMA, key, schema, record,
-                        offset);
+                        new SinkRecord(tp.topic(), tp.partition(), Schema.STRING_SCHEMA, key, schema, record,
+                                offset);
                 sinkRecordsB.add(sinkRecord);
             }
         }
@@ -113,8 +111,8 @@ public class HdfsSinkTaskTest extends TestWithMiniDFSCluster {
         // Paths within this filesystem (such as the WAL) will also share the same FileSystem object
         // because the cache is keyed on uri.getScheme() and uri.getAuthority().
         FileSystem.get(
-            new URI(connectorConfig.getString(HdfsSinkConfig.HDFS_URL_CONFIG)),
-            connectorConfig.getHadoopConfiguration()
+                new URI(connectorConfig.getString(HdfsSinkConfig.HDFS_URL_CONFIG)),
+                connectorConfig.getHadoopConfiguration()
         ).close();
 
         // If any FileSystem-based resources are kept in-use between put calls, they should generate
@@ -134,15 +132,10 @@ public class HdfsSinkTaskTest extends TestWithMiniDFSCluster {
                 long startOffset = validOffsets[j - 1] + 1;
                 long endOffset = validOffsets[j];
                 Path path = new Path(
-                    FileUtils.jointPath(
-                        defaultStoreContext.getStoreConfig().tablePath(),
-                        partition,
-                        FileUtils.committedFileName(
-                            defaultStoreContext.getStoreConfig().table(),
-                            tp,
-                            startOffset, endOffset, EXTENSION,
-                            ZERO_PAD_FMT))
-
+                        FileUtils.jointPath(
+                                defaultStoreContext.getStoreConfig().tablePath(),
+                                partition,
+                                defaultStoreContext.getFileOperator().generateCommittedFileName(tp, startOffset, endOffset, EXTENSION))
                 );
                 Collection<Object> records = schemaFileReader.readData(connectorConfig.getHadoopConfiguration(), path);
                 long size = endOffset - startOffset + 1;
@@ -177,38 +170,33 @@ public class HdfsSinkTaskTest extends TestWithMiniDFSCluster {
         Map<TopicPartition, List<String>> tempfiles = new HashMap<>();
         List<String> list1 = new ArrayList<>();
         list1.add(
-            FileUtils.jointPath(
-                defaultStoreContext.getStoreConfig().tablePath(),
-                DIRECTORY1,
-                FileUtils.tempFileName(EXTENSION))
+                FileUtils.jointPath(
+                        defaultStoreContext.getStoreConfig().tablePath(),
+                        DIRECTORY1,
+                        defaultStoreContext.getFileOperator().generateTempFileName(EXTENSION))
         );
         list1.add(
-            FileUtils.jointPath(
-                defaultStoreContext.getStoreConfig().tablePath(),
-                DIRECTORY1,
-                FileUtils.tempFileName(EXTENSION))
+                FileUtils.jointPath(
+                        defaultStoreContext.getStoreConfig().tablePath(),
+                        DIRECTORY1,
+                        defaultStoreContext.getFileOperator().generateTempFileName(EXTENSION))
         );
         tempfiles.put(TOPIC_PARTITION, list1);
 
         Map<TopicPartition, List<String>> committedFiles = new HashMap<>();
         List<String> list3 = new ArrayList<>();
         list3.add(
-            FileUtils.jointPath(
-                defaultStoreContext.getStoreConfig().tablePath(),
-                DIRECTORY1,
-                FileUtils.committedFileName(
-                    defaultStoreContext.getStoreConfig().table(),
-                    TOPIC_PARTITION, 100, 200,
-                    EXTENSION, ZERO_PAD_FMT))
+                FileUtils.jointPath(
+                        defaultStoreContext.getStoreConfig().tablePath(),
+                        DIRECTORY1,
+                        defaultStoreContext.getFileOperator().generateCommittedFileName(TOPIC_PARTITION, 100, 200, EXTENSION))
         );
         list3.add(
-            FileUtils.jointPath(
-                defaultStoreContext.getStoreConfig().tablePath(),
-                DIRECTORY1,
-                FileUtils.committedFileName(
-                    defaultStoreContext.getStoreConfig().table(),
-                    TOPIC_PARTITION, 201, 300,
-                    EXTENSION, ZERO_PAD_FMT))
+                FileUtils.jointPath(
+                        defaultStoreContext.getStoreConfig().tablePath(),
+                        DIRECTORY1,
+                        defaultStoreContext.getFileOperator().generateCommittedFileName(TOPIC_PARTITION, 201, 300, EXTENSION))
+
         );
         committedFiles.put(TOPIC_PARTITION, list3);
 
@@ -241,29 +229,29 @@ public class HdfsSinkTaskTest extends TestWithMiniDFSCluster {
         Map<TopicPartition, List<String>> tempfiles = new HashMap<>();
         List<String> list1 = new ArrayList<>();
         list1.add(
-            FileUtils.jointPath(
-                defaultStoreContext.getStoreConfig().tablePath(),
-                DIRECTORY1,
-                FileUtils.tempFileName(EXTENSION))
+                FileUtils.jointPath(
+                        defaultStoreContext.getStoreConfig().tablePath(),
+                        DIRECTORY1,
+                        defaultStoreContext.getFileOperator().generateTempFileName(EXTENSION))
         );
         list1.add(FileUtils.jointPath(
-            defaultStoreContext.getStoreConfig().tablePath(),
-            DIRECTORY1,
-            FileUtils.tempFileName(EXTENSION))
+                defaultStoreContext.getStoreConfig().tablePath(),
+                DIRECTORY1,
+                defaultStoreContext.getFileOperator().generateTempFileName(EXTENSION))
         );
         tempfiles.put(TOPIC_PARTITION, list1);
 
         List<String> list2 = new ArrayList<>();
         list2.add(
-            FileUtils.jointPath(
-                defaultStoreContext.getStoreConfig().tablePath(),
-                DIRECTORY2,
-                FileUtils.tempFileName(EXTENSION))
+                FileUtils.jointPath(
+                        defaultStoreContext.getStoreConfig().tablePath(),
+                        DIRECTORY2,
+                        defaultStoreContext.getFileOperator().generateTempFileName(EXTENSION))
         );
         list2.add(FileUtils.jointPath(
-            defaultStoreContext.getStoreConfig().tablePath(),
-            DIRECTORY2,
-            FileUtils.tempFileName(EXTENSION))
+                defaultStoreContext.getStoreConfig().tablePath(),
+                DIRECTORY2,
+                defaultStoreContext.getFileOperator().generateTempFileName(EXTENSION))
         );
 
         tempfiles.put(TOPIC_PARTITION2, list2);
@@ -271,44 +259,30 @@ public class HdfsSinkTaskTest extends TestWithMiniDFSCluster {
         Map<TopicPartition, List<String>> committedFiles = new HashMap<>();
         List<String> list3 = new ArrayList<>();
         list3.add(
-            FileUtils.jointPath(
-                defaultStoreContext.getStoreConfig().tablePath(),
-                DIRECTORY1,
-                FileUtils.committedFileName(defaultStoreContext.getStoreConfig().table(),
-                    TOPIC_PARTITION, 100, 200,
-                    EXTENSION, ZERO_PAD_FMT))
-
+                FileUtils.jointPath(
+                        defaultStoreContext.getStoreConfig().tablePath(),
+                        DIRECTORY1,
+                        defaultStoreContext.getFileOperator().generateCommittedFileName(TOPIC_PARTITION, 100, 200, EXTENSION))
         );
         list3.add(
-            FileUtils.jointPath(
-                defaultStoreContext.getStoreConfig().tablePath(),
-                DIRECTORY1,
-                FileUtils.committedFileName(
-                    defaultStoreContext.getStoreConfig().table(),
-                    TOPIC_PARTITION, 201, 300,
-                    EXTENSION, ZERO_PAD_FMT))
-
+                FileUtils.jointPath(
+                        defaultStoreContext.getStoreConfig().tablePath(),
+                        DIRECTORY1,
+                        defaultStoreContext.getFileOperator().generateCommittedFileName(TOPIC_PARTITION, 201, 300, EXTENSION))
         );
         committedFiles.put(TOPIC_PARTITION, list3);
 
         List<String> list4 = new ArrayList<>();
         list4.add(
-            FileUtils.jointPath(
-                defaultStoreContext.getStoreConfig().tablePath(),
-                DIRECTORY2,
-                FileUtils.committedFileName(
-                    defaultStoreContext.getStoreConfig().table(),
-                    TOPIC_PARTITION2, 400, 500,
-                    EXTENSION, ZERO_PAD_FMT
-                )));
+                FileUtils.jointPath(
+                        defaultStoreContext.getStoreConfig().tablePath(),
+                        DIRECTORY2,
+                        defaultStoreContext.getFileOperator().generateCommittedFileName(TOPIC_PARTITION2, 400, 500, EXTENSION)));
         list4.add(
-            FileUtils.jointPath(
-                defaultStoreContext.getStoreConfig().tablePath(),
-                DIRECTORY2,
-                FileUtils.committedFileName(
-                    defaultStoreContext.getStoreConfig().table(),
-                    TOPIC_PARTITION2, 501, 800,
-                    EXTENSION, ZERO_PAD_FMT))
+                FileUtils.jointPath(
+                        defaultStoreContext.getStoreConfig().tablePath(),
+                        DIRECTORY2,
+                        defaultStoreContext.getFileOperator().generateCommittedFileName(TOPIC_PARTITION2, 501, 800, EXTENSION))
         );
 
         committedFiles.put(TOPIC_PARTITION2, list4);
@@ -344,15 +318,15 @@ public class HdfsSinkTaskTest extends TestWithMiniDFSCluster {
         Schema schema = createSchema();
         Struct record = createRecord(schema);
         SinkRecord mockRecord =
-            new SinkRecord(TOPIC_PARTITION.topic(), TOPIC_PARTITION.partition(), Schema.STRING_SCHEMA, key, schema, record,
-                0);
+                new SinkRecord(TOPIC_PARTITION.topic(), TOPIC_PARTITION.partition(), Schema.STRING_SCHEMA, key, schema, record,
+                        0);
         SinkRecord processRecord = processorProvider.getProcessor(StoreConstants.TABLES).process(mockRecord);
         Schema processSchema = processRecord.valueSchema();
         Collection<SinkRecord> sinkRecords = new ArrayList<>();
         for (TopicPartition tp : context.assignment()) {
             for (long offset = 0; offset < 7; offset++) {
                 SinkRecord sinkRecord =
-                    new SinkRecord(tp.topic(), tp.partition(), Schema.STRING_SCHEMA, key, schema, record, offset);
+                        new SinkRecord(tp.topic(), tp.partition(), Schema.STRING_SCHEMA, key, schema, record, offset);
                 sinkRecords.add(sinkRecord);
             }
         }
@@ -373,14 +347,10 @@ public class HdfsSinkTaskTest extends TestWithMiniDFSCluster {
                 long startOffset = validOffsets[j - 1] + 1;
                 long endOffset = validOffsets[j];
                 Path path = new Path(
-                    FileUtils.jointPath(
-                        defaultStoreContext.getStoreConfig().tablePath(),
-                        directory,
-                        FileUtils.committedFileName(
-                            defaultStoreContext.getStoreConfig().table(),
-                            tp,
-                            startOffset, endOffset, EXTENSION,
-                            ZERO_PAD_FMT))
+                        FileUtils.jointPath(
+                                defaultStoreContext.getStoreConfig().tablePath(),
+                                directory,
+                                defaultStoreContext.getFileOperator().generateCommittedFileName(tp, startOffset, endOffset, EXTENSION))
                 );
                 Collection<Object> records = schemaFileReader.readData(connectorConfig.getHadoopConfiguration(), path);
                 long size = endOffset - startOffset + 1;
@@ -407,7 +377,7 @@ public class HdfsSinkTaskTest extends TestWithMiniDFSCluster {
         for (TopicPartition tp : context.assignment()) {
             for (long offset = 0; offset < 7; offset++) {
                 SinkRecord sinkRecord =
-                    new SinkRecord(tp.topic(), tp.partition(), Schema.STRING_SCHEMA, key, schema, record, offset);
+                        new SinkRecord(tp.topic(), tp.partition(), Schema.STRING_SCHEMA, key, schema, record, offset);
                 sinkRecords.add(sinkRecord);
             }
         }
@@ -425,17 +395,11 @@ public class HdfsSinkTaskTest extends TestWithMiniDFSCluster {
                 long startOffset = validOffsets[j - 1] + 1;
                 long endOffset = validOffsets[j];
                 Path path = new Path(
-                    FileUtils.jointPath(
-                        defaultStoreContext.getStoreConfig().tablePath(),
-                        directory,
-                        FileUtils.committedFileName(
-                            defaultStoreContext.getStoreConfig().table(),
-                            tp,
-                            startOffset, endOffset, EXTENSION,
-                            ZERO_PAD_FMT))
-
+                        FileUtils.jointPath(
+                                defaultStoreContext.getStoreConfig().tablePath(),
+                                directory,
+                                defaultStoreContext.getFileOperator().generateCommittedFileName(tp, startOffset, endOffset, EXTENSION))
                 );
-
                 Collection<Object> records = schemaFileReader.readData(connectorConfig.getHadoopConfiguration(), path);
                 long size = endOffset - startOffset + 1;
                 assertEquals(records.size(), size);
@@ -448,42 +412,29 @@ public class HdfsSinkTaskTest extends TestWithMiniDFSCluster {
 
     private void createCommittedFiles() throws IOException {
         String file1 = FileUtils.jointPath(
-            defaultStoreContext.getStoreConfig().tablePath(),
-            DIRECTORY1,
-            FileUtils.committedFileName(
-                defaultStoreContext.getStoreConfig().table(),
-                TOPIC_PARTITION, 0,
-                10, EXTENSION, ZERO_PAD_FMT)
+                defaultStoreContext.getStoreConfig().tablePath(),
+                DIRECTORY1,
+                defaultStoreContext.getFileOperator().generateCommittedFileName(TOPIC_PARTITION, 0, 10, EXTENSION)
         );
 
         String file2 =
-            FileUtils.jointPath(
-                defaultStoreContext.getStoreConfig().tablePath(),
-                DIRECTORY1,
-                FileUtils.committedFileName(
-                    defaultStoreContext.getStoreConfig().table(),
-                    TOPIC_PARTITION, 11,
-                    20, EXTENSION, ZERO_PAD_FMT)
-
-            );
+                FileUtils.jointPath(
+                        defaultStoreContext.getStoreConfig().tablePath(),
+                        DIRECTORY1,
+                        defaultStoreContext.getFileOperator().generateCommittedFileName(TOPIC_PARTITION, 11, 20, EXTENSION)
+                );
         String file3 =
-            FileUtils.jointPath(
-                defaultStoreContext.getStoreConfig().tablePath(),
-                DIRECTORY1,
-                FileUtils.committedFileName(
-                    defaultStoreContext.getStoreConfig().table(),
-                    TOPIC_PARTITION2, 21,
-                    40, EXTENSION, ZERO_PAD_FMT)
-            );
+                FileUtils.jointPath(
+                        defaultStoreContext.getStoreConfig().tablePath(),
+                        DIRECTORY1,
+                        defaultStoreContext.getFileOperator().generateCommittedFileName(TOPIC_PARTITION2, 21, 40, EXTENSION)
+                );
         String file4 =
-            FileUtils.jointPath(
-                defaultStoreContext.getStoreConfig().tablePath(),
-                DIRECTORY1,
-                FileUtils.committedFileName(
-                    defaultStoreContext.getStoreConfig().table(),
-                    TOPIC_PARTITION2, 41,
-                    45, EXTENSION, ZERO_PAD_FMT)
-            );
+                FileUtils.jointPath(
+                        defaultStoreContext.getStoreConfig().tablePath(),
+                        DIRECTORY1,
+                        defaultStoreContext.getFileOperator().generateCommittedFileName(TOPIC_PARTITION2, 41, 45, EXTENSION)
+                );
 
         fs.createNewFile(new Path(file1));
         fs.createNewFile(new Path(file2));
@@ -492,7 +443,7 @@ public class HdfsSinkTaskTest extends TestWithMiniDFSCluster {
     }
 
     private void createWALs(final Map<TopicPartition, List<String>> tempfiles,
-        final Map<TopicPartition, List<String>> committedFiles) throws Exception {
+            final Map<TopicPartition, List<String>> committedFiles) throws Exception {
         @SuppressWarnings("unchecked")
         HdfsStorage storage = new HdfsStorage(connectorConfig, url);
         for (TopicPartition tp : tempfiles.keySet()) {

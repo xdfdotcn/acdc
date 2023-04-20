@@ -2,13 +2,15 @@ package cn.xdf.acdc.devops.core.domain.query;
 
 import cn.xdf.acdc.devops.core.domain.entity.enumeration.DataSystemType;
 import cn.xdf.acdc.devops.core.domain.entity.enumeration.RequisitionState;
+import cn.xdf.acdc.devops.core.domain.enumeration.ConnectionState;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.Instant;
+import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -16,15 +18,31 @@ import java.util.List;
 @Builder
 public class ConnectionQuery extends PagedQuery {
 
-    private Instant beginUpdateTime;
-
-    private Long connectionId;
-
-    private DataSystemType sinkDataSystemType;
+    private Date beginUpdateTime;
 
     private RequisitionState requisitionState;
 
+    private ConnectionState actualState;
+
     private List<Long> connectionIds;
 
+    private String domainAccount;
+
     private String sourceProjectName;
+
+    private Long sourceConnectorId;
+
+    private Long sourceDataCollectionId;
+
+    private Set<Long> sinkDataCollectionIds;
+
+    private DataSystemType sinkDataSystemType;
+
+    private Long sinkConnectorId;
+
+    private String sinkDataCollectionName;
+
+    private String sourceDataCollectionName;
+
+    private Boolean deleted;
 }

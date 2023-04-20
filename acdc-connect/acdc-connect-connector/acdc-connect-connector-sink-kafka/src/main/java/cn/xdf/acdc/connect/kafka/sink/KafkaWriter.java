@@ -1,7 +1,7 @@
 package cn.xdf.acdc.connect.kafka.sink;
 
 import cn.xdf.acdc.connect.core.sink.AbstractWriter;
-import cn.xdf.acdc.connect.plugins.converter.xdf.RecordConverter;
+import cn.xdf.acdc.connect.core.sink.kafka.RecordConverter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -53,8 +53,8 @@ public class KafkaWriter extends AbstractWriter<KafkaProducer<byte[], byte[]>> {
     private final int recordForwardResultQueueCapacity;
 
     public KafkaWriter(final KafkaSinkConfig kafkaSinkConfig, final Converter keyConvertor, final Converter valueConverter,
-                       final KafkaProducer<byte[], byte[]> kafkaProducer, final int recordForwardResultQueueOverloadTolerateMaxInSeconds,
-                       final int recordForwardResultQueueCapacity) {
+            final KafkaProducer<byte[], byte[]> kafkaProducer, final int recordForwardResultQueueOverloadTolerateMaxInSeconds,
+            final int recordForwardResultQueueCapacity) {
         super(kafkaSinkConfig);
         this.producerSendException = new AtomicReference<>();
         this.keyConverter = keyConvertor;
@@ -85,6 +85,16 @@ public class KafkaWriter extends AbstractWriter<KafkaProducer<byte[], byte[]>> {
     @Override
     protected KafkaProducer<byte[], byte[]> getClient() {
         return kafkaProducer;
+    }
+
+    @Override
+    public void write(final Collection<SinkRecord> records) throws ConnectException {
+        // For kafka sink, we transfer the record directly.
+        for (SinkRecord record : records) {
+            for (String destination : sinkConfig().getDestinations()) {
+                doWrite(kafkaProducer, destination, record);
+            }
+        }
     }
 
     @Override

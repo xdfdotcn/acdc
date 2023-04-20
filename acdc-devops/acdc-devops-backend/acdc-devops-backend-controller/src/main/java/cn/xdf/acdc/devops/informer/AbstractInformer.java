@@ -4,9 +4,9 @@ import cn.xdf.acdc.devops.controller.FixedRateRunnableTask;
 import io.jsonwebtoken.lang.Collections;
 import org.springframework.scheduling.TaskScheduler;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +28,7 @@ public abstract class AbstractInformer<E> extends FixedRateRunnableTask implemen
 
     private Map<Long, E> resources;
 
-    private Instant lastUpdateTime;
+    private Date lastUpdateTime;
 
     private List<Consumer<E>> addCallbacks;
 
@@ -41,7 +41,7 @@ public abstract class AbstractInformer<E> extends FixedRateRunnableTask implemen
     public AbstractInformer(final TaskScheduler scheduler) {
         super(scheduler);
 
-        lastUpdateTime = Instant.ofEpochSecond(0);
+        lastUpdateTime = new Date(Long.MIN_VALUE);
         resources = new HashMap<>();
         addCallbacks = new ArrayList<>();
         updateCallbacks = new ArrayList<>();
@@ -52,13 +52,13 @@ public abstract class AbstractInformer<E> extends FixedRateRunnableTask implemen
     public void run() {
         List<E> dataList = query();
 
-        final AtomicReference<Instant> tmpUpdateTime = new AtomicReference<>(lastUpdateTime);
+        final AtomicReference<Date> tmpUpdateTime = new AtomicReference<>(lastUpdateTime);
         if (!Collections.isEmpty(dataList)) {
             dataList.forEach(newer ->
-                    resources.compute(getKey(newer), (key, order) -> {
-                        invokeAppropriateCallbacks(order, newer);
+                    resources.compute(getKey(newer), (key, older) -> {
+                        invokeAppropriateCallbacks(older, newer);
 
-                        Instant updateTime = getUpdateTime(newer);
+                        Date updateTime = getUpdateTime(newer);
                         if (tmpUpdateTime.get().compareTo(updateTime) < 0) {
                             tmpUpdateTime.set(updateTime);
                         }
@@ -94,12 +94,12 @@ public abstract class AbstractInformer<E> extends FixedRateRunnableTask implemen
         return isInitialized;
     }
 
-    private void invokeAppropriateCallbacks(final E order, final E newer) {
-        if (order == null) {
+    private void invokeAppropriateCallbacks(final E older, final E newer) {
+        if (older == null) {
             addCallbacks.forEach(consumer -> consumer.accept(newer));
-        } else if (isDeleted(order, newer)) {
+        } else if (isDeleted(older, newer)) {
             deleteCallbacks.forEach(consumer -> consumer.accept(newer));
-        } else if (!equals(newer, order)) {
+        } else if (!equals(newer, older)) {
             updateCallbacks.forEach(consumer -> consumer.accept(newer));
         }
     }
@@ -186,9 +186,9 @@ public abstract class AbstractInformer<E> extends FixedRateRunnableTask implemen
      * @param e element
      * @return update time
      */
-    abstract Instant getUpdateTime(E e);
+    abstract Date getUpdateTime(E e);
 
-    Instant getLastUpdateTime() {
+    Date getLastUpdateTime() {
         return this.lastUpdateTime;
     }
 }

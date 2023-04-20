@@ -10,12 +10,6 @@ public enum FieldKeyType {
 
     private static final Map<String, FieldKeyType> TYPE_MAP = new HashMap<>();
 
-    private int sort;
-
-    FieldKeyType(int sort) {
-        this.sort = sort;
-    }
-
     static {
         for (FieldKeyType type : FieldKeyType.values()) {
             String name = type.name();
@@ -23,20 +17,28 @@ public enum FieldKeyType {
         }
     }
 
-    /**
-     * Get sort.
-     * @return sort
-     */
-    public int getSort() {
-        return sort;
+    private final int sort;
+
+    FieldKeyType(int sort) {
+        this.sort = sort;
     }
 
     /**
      * To fieldKeyType.
-     * @param name  name
+     *
+     * @param name name
      * @return FieldKeyType
      */
     public static FieldKeyType nameOf(final String name) {
         return Objects.isNull(TYPE_MAP.get(name)) ? NONE : TYPE_MAP.get(name);
+    }
+
+    /**
+     * Get sort.
+     *
+     * @return sort
+     */
+    public int getSort() {
+        return sort;
     }
 }

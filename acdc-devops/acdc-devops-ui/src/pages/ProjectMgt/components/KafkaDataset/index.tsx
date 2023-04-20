@@ -1,18 +1,28 @@
-import React, {useState} from 'react';
+import React, {useRef, useState} from 'react';
 import ProCard from '@ant-design/pro-card';
 import RcResizeObserver from 'rc-resize-observer';
 import type {ProColumns} from '@ant-design/pro-table';
-import ProTable from '@ant-design/pro-table';
+import ProTable, {ActionType} from '@ant-design/pro-table';
 import styles from './split.less';
-import {queryKafkaTopics, queryRdbDatabase, queryRdbTable} from '@/services/a-cdc/api';
+import {
+  pagedQueryDataSystemResource,
+  queryKafkaTopics,
+  queryRdbDatabase,
+  queryRdbTable,
+  refreshDynamicDataSystemResource
+} from '@/services/a-cdc/api';
 
 import {useModel} from 'umi';
+import {Button} from "antd";
+import {SyncOutlined} from "@ant-design/icons";
 
 const KafkaDataSetList: React.FC = () => {
 
 	const {kafkaDatasetModel, setKafkaDatasetModel} = useModel('KafkaDatasetModel')
 
-	const columns: ProColumns<API.RdbDatabase>[] = [
+  const [refresh, setRefresh] = useState(false);
+
+	const columns: ProColumns<API.DataSystemResource>[] = [
 		{
 			title: 'Topic 名称',
 			dataIndex: 'name',
@@ -22,16 +32,21 @@ const KafkaDataSetList: React.FC = () => {
 	// 模糊搜索
 	const [queryDatasetName, setQueryDatasetName] = useState<string>();
 
+  const ref = useRef<ActionType>();
+
 	return (
-		<ProTable<API.KafkaTopic>
+		<ProTable<API.DataSystemResource, API.DataSystemResourceQuery>
 			params={{
-				kafkaClusterId: kafkaDatasetModel.kafkaClusterId,
-				name: queryDatasetName
+        parentResourceId: kafkaDatasetModel.kafkaClusterId,
+				name: queryDatasetName,
+        resourceTypes: ["KAFKA_TOPIC"]
 			}}
 
-			request={queryKafkaTopics}
+			request={pagedQueryDataSystemResource}
 
 			columns={columns}
+
+      actionRef={ref}
 
 			toolbar={{
 				search: {
@@ -41,7 +56,29 @@ const KafkaDataSetList: React.FC = () => {
 				},
 			}}
 
-			options={false}
+      options={{
+        density: false,
+        fullScreen: false,
+        reload: true,
+        setting: false
+      }}
+      toolBarRender={() => [
+        <Button.Group key="refs" style={{display: 'block'}}>
+          <Button
+            key="button"
+            disabled={refresh}
+            icon={<SyncOutlined />}
+            onClick={async () => {
+              setRefresh(true)
+              await refreshDynamicDataSystemResource(kafkaDatasetModel.kafkaClusterId)
+              ref.current?.reload();
+              setRefresh(false)
+            }}>
+            刷新 Topic
+          </Button>
+        </Button.Group>
+      ]}
+
 			rowKey={(record)=>String(record.id)}
 			search={false}
 			pagination={{

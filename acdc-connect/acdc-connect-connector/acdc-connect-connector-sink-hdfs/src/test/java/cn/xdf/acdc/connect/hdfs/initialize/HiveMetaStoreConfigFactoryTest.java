@@ -73,7 +73,7 @@ public class HiveMetaStoreConfigFactoryTest extends HiveTestBase {
                 StoreConstants.HDFS_ROOT,
                 HdfsSinkConstants.WAL_LOG_DIRECTORY
             ))
-            .tmpTablePath(FileUtils.jointPath(
+            .tempTablePath(FileUtils.jointPath(
                 url,
                 StoreConstants.HDFS_ROOT,
                 HdfsSinkConstants.TEMPFILE_DIRECTORY,

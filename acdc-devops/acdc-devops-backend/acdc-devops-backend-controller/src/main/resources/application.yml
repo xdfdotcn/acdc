@@ -2,18 +2,19 @@ spring:
   profiles:
     active: @profile.active@
   application:
-    name: acdc-scheduler
+    name: acdc-devops-backend-controller
   messages:
     basename: i18n/messages
     encoding: UTF-8
+  jpa:
+    properties:
+      hibernate.jdbc.time_zone: GMT+8
+  liquibase:
+    contexts: @liquibase.context@
+
 server:
   port: 8080
 
-custom:
-  rest:
-    connection:
-      connect-timeout: 15000
-      read-timeout: 60000
 scheduler:
   config:
     pool-size: 24
@@ -26,6 +27,7 @@ scheduler:
   extend-event:
     interval:
       ms: 10000
+
 # metrics:
 management:
   endpoints:

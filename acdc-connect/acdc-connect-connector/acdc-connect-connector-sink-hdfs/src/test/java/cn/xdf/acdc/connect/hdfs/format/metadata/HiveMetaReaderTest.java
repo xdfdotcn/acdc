@@ -28,19 +28,21 @@ import cn.xdf.acdc.connect.hdfs.initialize.HiveMetaStoreConfigFactory;
 import cn.xdf.acdc.connect.hdfs.initialize.StoreConfig;
 import cn.xdf.acdc.connect.hdfs.storage.HdfsFileOperator;
 import cn.xdf.acdc.connect.hdfs.storage.HdfsStorage;
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.util.List;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.errors.ConnectException;
 import org.apache.kafka.connect.sink.SinkRecord;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class HiveMetaReaderTest extends HiveTextTestBase {
 
@@ -61,19 +63,19 @@ public class HiveMetaReaderTest extends HiveTextTestBase {
 
     private void initComponent() throws IOException {
         this.storeConfig = new HiveMetaStoreConfigFactory(
-            connectorConfig,
-            hiveMetaStore
+                connectorConfig,
+                hiveMetaStore
         ).createStoreConfig();
         this.fileOperator = new HdfsFileOperator(
-            new HdfsStorage(connectorConfig, connectorConfig.url()),
-            storeConfig,
-            connectorConfig
+                new HdfsStorage(connectorConfig, connectorConfig.url()),
+                storeConfig,
+                connectorConfig
         );
         this.schemaReader = new HiveMetaReader(
-            connectorConfig,
-            storeConfig,
-            fileOperator,
-            hiveMetaStore);
+                connectorConfig,
+                storeConfig,
+                fileOperator,
+                hiveMetaStore);
         this.hiveUtil = schemaReader.getHiveFactory().createHiveUtil(storeConfig, connectorConfig, hiveMetaStore);
         recordWriterProvider = new TextRecordAppendWriterProvider(fileOperator, storeConfig);
     }
@@ -94,12 +96,8 @@ public class HiveMetaReaderTest extends HiveTextTestBase {
         Schema tableSchema = createPromotableSchema();
         setSupportSchemaChange(schemaReader, true);
         final ProjectedResult projectRecord = schemaReader.projectRecord(TOPIC_PARTITION, createPromotableSchemaSinkRecord());
-        tableSchema.fields().forEach(
-            field -> assertEquals(
-                field.schema().type(),
-                projectRecord.getCurrentSchema().field(field.name()).schema().type()
-            )
-        );
+        tableSchema.fields().forEach(field -> assertEquals(field.schema().type(), projectRecord.getCurrentSchema().field(field.name()).schema().type()));
+
         assertTrue(!projectRecord.isNeedChangeSchema());
     }
 
@@ -145,17 +143,17 @@ public class HiveMetaReaderTest extends HiveTextTestBase {
         ProjectedResult projectRecord = schemaReader.projectRecord(TOPIC_PARTITION, createDecreaseFieldSinkRecord());
         assertTrue(!projectRecord.isNeedChangeSchema());
         assertEquals(tableSchema.fields().size(), projectRecord.getCurrentSchema().fields().size());
-        String commitFile = fileOperator.createCommitFileByRotation(
-            "dt=20210715",
-            TOPIC_PARTITION,
-            ".txt"
+        String commitFile = fileOperator.createRotationCommittedFileInTablePartitionPath(
+                "dt=20210715",
+                TOPIC_PARTITION,
+                ".txt"
         );
-        assertTrue(!schemaReader.getTableSchemaAndDataStatus().isExistData());
+        assertTrue(!schemaReader.getTableSchemaAndDataStatus(TOPIC_PARTITION).isExistData());
         RecordWriter recordWriter = recordWriterProvider.newRecordWriter(commitFile);
         recordWriter.write(projectRecord.getProjectedRecord());
         recordWriter.commit();
-        assertTrue(schemaReader.getTableSchemaAndDataStatus().isExistData());
-        TableSchemaAndDataStatus tableSchemaAndDataStatus = schemaReader.getTableSchemaAndDataStatus();
+        assertTrue(schemaReader.getTableSchemaAndDataStatus(TOPIC_PARTITION).isExistData());
+        TableSchemaAndDataStatus tableSchemaAndDataStatus = schemaReader.getTableSchemaAndDataStatus(TOPIC_PARTITION);
         for (String partition : tableSchemaAndDataStatus.getDataPartitions()) {
             hiveUtil.addPartition(partition);
         }
@@ -171,17 +169,17 @@ public class HiveMetaReaderTest extends HiveTextTestBase {
         setSupportSchemaChange(schemaReader, true);
         ProjectedResult projectRecord = schemaReader.projectRecord(TOPIC_PARTITION, createPromotableSinkRecord());
         assertTrue(!projectRecord.isNeedChangeSchema());
-        String commitFile = fileOperator.createCommitFileByRotation(
-            "dt=20210715",
-            TOPIC_PARTITION,
-            ".txt"
+        String commitFile = fileOperator.createRotationCommittedFileInTablePartitionPath(
+                "dt=20210715",
+                TOPIC_PARTITION,
+                ".txt"
         );
-        assertTrue(!schemaReader.getTableSchemaAndDataStatus().isExistData());
+        assertTrue(!schemaReader.getTableSchemaAndDataStatus(TOPIC_PARTITION).isExistData());
         RecordWriter recordWriter = recordWriterProvider.newRecordWriter(commitFile);
         recordWriter.write(projectRecord.getProjectedRecord());
         recordWriter.commit();
-        assertTrue(schemaReader.getTableSchemaAndDataStatus().isExistData());
-        TableSchemaAndDataStatus tableSchemaAndDataStatus = schemaReader.getTableSchemaAndDataStatus();
+        assertTrue(schemaReader.getTableSchemaAndDataStatus(TOPIC_PARTITION).isExistData());
+        TableSchemaAndDataStatus tableSchemaAndDataStatus = schemaReader.getTableSchemaAndDataStatus(TOPIC_PARTITION);
         for (String partition : tableSchemaAndDataStatus.getDataPartitions()) {
             hiveUtil.addPartition(partition);
         }

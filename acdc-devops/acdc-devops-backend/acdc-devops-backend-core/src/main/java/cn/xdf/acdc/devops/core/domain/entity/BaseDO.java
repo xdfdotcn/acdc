@@ -11,7 +11,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import javax.persistence.Column;
 import javax.persistence.MappedSuperclass;
 import java.io.Serializable;
-import java.time.Instant;
+import java.util.Date;
 
 @MappedSuperclass
 @NoArgsConstructor
@@ -21,12 +21,12 @@ import java.time.Instant;
 public abstract class BaseDO implements Serializable {
 
     @ApiModelProperty(value = "创建时间", required = true)
-    @Column(name = "creation_time", nullable = false)
+    @Column(name = "creation_time", updatable = false, nullable = false)
     @CreationTimestamp
-    private Instant creationTime;
+    private Date creationTime;
 
     @ApiModelProperty(value = "更新时间", required = true)
     @Column(name = "update_time", nullable = false)
     @UpdateTimestamp
-    private Instant updateTime;
+    private Date updateTime;
 }

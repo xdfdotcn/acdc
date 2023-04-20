@@ -2,13 +2,15 @@ package cn.xdf.acdc.devops.statemachine;
 
 import cn.xdf.acdc.devops.biz.connect.ConnectClusterRest;
 import cn.xdf.acdc.devops.biz.connect.response.ConnectorStatusResponse;
-import cn.xdf.acdc.devops.core.domain.dto.ConnectorInfoDTO;
+import cn.xdf.acdc.devops.core.domain.dto.ConnectorDetailDTO;
+import cn.xdf.acdc.devops.dto.Connector;
 import cn.xdf.acdc.devops.core.domain.entity.ConnectClusterDO;
 import cn.xdf.acdc.devops.core.domain.enumeration.ConnectorEvent;
 import cn.xdf.acdc.devops.core.domain.enumeration.ConnectorState;
+import cn.xdf.acdc.devops.core.domain.query.ConnectorQuery;
 import cn.xdf.acdc.devops.core.util.DelayStrategy;
-import cn.xdf.acdc.devops.service.entity.ConnectClusterService;
-import cn.xdf.acdc.devops.service.process.connector.ConnectorCoreProcessService;
+import cn.xdf.acdc.devops.service.process.connector.ConnectClusterService;
+import cn.xdf.acdc.devops.service.process.connector.ConnectorService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -23,7 +25,6 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -43,11 +44,13 @@ public class ConnectorStateHandler {
 
     private static final String GAUGE_METRICS_LABEL_STATE = "state";
 
+    private static final String CONNECTOR_NAME_KEY = "name";
+
     private static final long DELAY_STRATEGY_BASE_TIME_INTERVAL_IN_MILLISECOND = 30_000L;
 
     private static final long DELAY_STRATEGY_EXPIRE_TIME_IN_MILLISECOND = DelayStrategy.MAX_TIME_INTERVAL * 2;
 
-    private final ConnectorCoreProcessService connectorCoreProcessService;
+    private final ConnectorService connectorService;
 
     private final ConnectClusterService connectClusterService;
 
@@ -71,15 +74,15 @@ public class ConnectorStateHandler {
     /**
      * Construct a ConnectorStateHandler instance.
      *
-     * @param connectorCoreProcessService     connectorCoreService
+     * @param connectorService     connector service
      * @param connectorStateMachineProvider connectorStateMachineProvider
      * @param connectClusterRest            connectClusterRest
      * @param connectClusterService         connectClusterService
      * @param meterRegistry                 meterRegistry
      */
-    public ConnectorStateHandler(final ConnectorCoreProcessService connectorCoreProcessService, final ConnectorStateMachineProvider connectorStateMachineProvider,
+    public ConnectorStateHandler(final ConnectorService connectorService, final ConnectorStateMachineProvider connectorStateMachineProvider,
             final ConnectClusterRest connectClusterRest, final ConnectClusterService connectClusterService, final MeterRegistry meterRegistry) {
-        this.connectorCoreProcessService = connectorCoreProcessService;
+        this.connectorService = connectorService;
         this.connectorStateMachineProvider = connectorStateMachineProvider;
         this.connectClusterRest = connectClusterRest;
         this.connectClusterService = connectClusterService;
@@ -118,12 +121,13 @@ public class ConnectorStateHandler {
     }
 
     private void handleUserTriggerEvent(final Long clusterId, final UserTriggerConnectorEvent event) {
-        List<ConnectorInfoDTO> connectorInfos = connectorCoreProcessService.queryConnector(event.getActual(), event.getDesired(), clusterId);
-        if (!Collections.isEmpty(connectorInfos)) {
-            List<Long> connectorIds = connectorInfos.stream().map(ConnectorInfoDTO::getId).collect(Collectors.toList());
+
+        List<Connector> connectors = getConnectorInfoFromDb(clusterId, event.getActual(), event.getDesired());
+        if (!Collections.isEmpty(connectors)) {
+            List<Long> connectorIds = connectors.stream().map(Connector::getId).collect(Collectors.toList());
             log.info("Begin to handle user trigger event: {}, cluster id: {}, connectorIds: {}.", event, clusterId, connectorIds);
 
-            connectorInfos.forEach(connectorInfoDTO -> handleEvent(connectorInfoDTO, connectorInfoDTO.getActualState(), event.getEvent()));
+            connectors.forEach(connector -> handleEvent(connector, connector.getActualState(), event.getEvent()));
 
             log.info("End handle user trigger event: {}, cluster id: {}, connectorIds: {}.", event, clusterId, connectorIds);
         }
@@ -135,14 +139,14 @@ public class ConnectorStateHandler {
         }
     }
 
-    private void handleEvent(final ConnectorInfoDTO connectorInfoDTO, final ConnectorState currentState, final ConnectorEvent event) {
-        log.info("Begin to handle connector event: {}, connectorIds: {}, currentState: {}.", event, connectorInfoDTO.getId(), currentState);
+    private void handleEvent(final Connector connector, final ConnectorState currentState, final ConnectorEvent event) {
+        log.info("Begin to handle connector event: {}, connectorIds: {}, currentState: {}.", event, connector.getId(), currentState);
 
-        createConnectorStateMachineIfNotExist(connectorInfoDTO.getId(), currentState);
-        ConnectorStateMachine connectorStateMachine = stateMachineHolder.get(connectorInfoDTO.getId());
-        connectorStateMachine.fire(event, connectorInfoDTO);
+        createConnectorStateMachineIfNotExist(connector.getId(), currentState);
+        ConnectorStateMachine connectorStateMachine = stateMachineHolder.get(connector.getId());
+        connectorStateMachine.fire(event, connector);
 
-        log.info("End handle connector event: {}, connectorIds: {}, currentState: {}.", event, connectorInfoDTO.getId(), currentState);
+        log.info("End handle connector event: {}, connectorIds: {}, currentState: {}.", event, connector.getId(), currentState);
     }
 
     /**
@@ -173,6 +177,7 @@ public class ConnectorStateHandler {
             try {
                 ConnectorStatusResponse connectorStatus = connectClusterRest.getConnectorStatus(connectRestApiUrl, connectorName);
                 Map<String, String> connectorConfig = connectClusterRest.getConnectorConfig(connectRestApiUrl, connectorName);
+                connectorConfig.remove(CONNECTOR_NAME_KEY);
                 actualConnectorStatusMap.put(connectorName, connectorStatus);
                 actualConnectorConfigMap.put(connectorName, connectorConfig);
             } catch (JsonProcessingException | ResourceAccessException e) {
@@ -190,41 +195,41 @@ public class ConnectorStateHandler {
          * produce event depend on actual state
          */
         // starting -> running
-        getConnectorInfoFromDb(clusterId, ConnectorState.STARTING).forEach(connectorInfoDTO -> {
-            if (actualConnectorStatusMap.containsKey(connectorInfoDTO.getName())) {
-                ConnectorStatusResponse connectorStatus = actualConnectorStatusMap.get(connectorInfoDTO.getName());
+        getConnectorInfoFromDb(clusterId, ConnectorState.STARTING).forEach(connector -> {
+            if (actualConnectorStatusMap.containsKey(connector.getName())) {
+                ConnectorStatusResponse connectorStatus = actualConnectorStatusMap.get(connector.getName());
 
-                if (!handleFailedConnector(connectorStatus, connectorInfoDTO)) {
-                    handleEvent(connectorInfoDTO, connectorInfoDTO.getActualState(), ConnectorEvent.STARTUP_SUCCESS);
+                if (!handleFailedConnector(connectorStatus, connector)) {
+                    handleEvent(connector, connector.getActualState(), ConnectorEvent.STARTUP_SUCCESS);
                 }
             }
         });
 
         // running
-        getConnectorInfoFromDb(clusterId, ConnectorState.RUNNING, ConnectorState.RUNNING).forEach(connectorInfoDTO -> {
-            if (actualConnectorStatusMap.containsKey(connectorInfoDTO.getName())) {
-                ConnectorStatusResponse connectorStatus = actualConnectorStatusMap.get(connectorInfoDTO.getName());
+        getConnectorInfoFromDb(clusterId, ConnectorState.RUNNING, ConnectorState.RUNNING).forEach(connector -> {
+            if (actualConnectorStatusMap.containsKey(connector.getName())) {
+                ConnectorStatusResponse connectorStatus = actualConnectorStatusMap.get(connector.getName());
 
-                if (!handleFailedConnector(connectorStatus, connectorInfoDTO)
-                        && !connectorInfoDTO.getConnectorConfig().equals(actualConnectorConfigMap.get(connectorInfoDTO.getName()))) {
+                if (!handleFailedConnector(connectorStatus, connector)
+                        && !connector.getConnectorConfig().equals(actualConnectorConfigMap.get(connector.getName()))) {
 
-                    handleEvent(connectorInfoDTO, connectorInfoDTO.getActualState(), ConnectorEvent.UPDATE);
+                    handleEvent(connector, connector.getActualState(), ConnectorEvent.UPDATE);
                 }
             }
         });
 
         // stopping -> stopped
-        getConnectorInfoFromDb(clusterId, ConnectorState.STOPPING).forEach(connectorInfoDTO -> {
-            if (!actualConnectorStatusMap.containsKey(connectorInfoDTO.getName())) {
-                handleEvent(connectorInfoDTO, connectorInfoDTO.getActualState(), ConnectorEvent.STOP_SUCCESS);
+        getConnectorInfoFromDb(clusterId, ConnectorState.STOPPING).forEach(connector -> {
+            if (!actualConnectorStatusMap.containsKey(connector.getName())) {
+                handleEvent(connector, connector.getActualState(), ConnectorEvent.STOP_SUCCESS);
             }
         });
     }
 
-    private boolean handleFailedConnector(final ConnectorStatusResponse connectorStatus, final ConnectorInfoDTO connectorInfoDTO) {
+    private boolean handleFailedConnector(final ConnectorStatusResponse connectorStatus, final Connector connector) {
         if (connectorStatus.isConnectorFailed() || !connectorStatus.getFailedTaskIds().isEmpty()) {
-            connectorInfoDTO.setRemark(connectorInfoDTO.getRemark() + connectorStatus.getExceptions().get(0));
-            handleEvent(connectorInfoDTO, connectorInfoDTO.getActualState(), ConnectorEvent.TASK_FAILURE);
+            connector.setRemark(connector.getRemark() + connectorStatus.getExceptions().get(0));
+            handleEvent(connector, connector.getActualState(), ConnectorEvent.TASK_FAILURE);
             return true;
         }
         return false;
@@ -253,74 +258,76 @@ public class ConnectorStateHandler {
     }
 
     private void validConnectorConfig(final Long clusterId, final String connectRestApiUrl) {
-        getConnectorInfoFromDb(clusterId, ConnectorState.PENDING).forEach(connectorInfoDTO -> {
+        getConnectorInfoFromDb(clusterId, ConnectorState.PENDING).forEach(connector -> {
             try {
-                connectClusterRest.validConnectorConfig(connectRestApiUrl, connectorInfoDTO.getName(), connectorInfoDTO.getConnectorConfig());
+                connectClusterRest.validConnectorConfig(connectRestApiUrl, connector.getName(), connector.getConnectorConfig());
             } catch (HttpServerErrorException exception) {
                 log.error("Valid connector config error: {}", exception);
-                connectorInfoDTO.setRemark(Arrays.toString(exception.getStackTrace()));
-                handleEvent(connectorInfoDTO, ConnectorState.PENDING, ConnectorEvent.CREATE_FAILURE);
+                connector.setRemark(Arrays.toString(exception.getStackTrace()));
+                handleEvent(connector, ConnectorState.PENDING, ConnectorEvent.CREATE_FAILURE);
             }
         });
     }
 
     private void reCreateConnectors(final Long connectRestApiUrl) {
-        List<ConnectorInfoDTO> connectorInfos = getConnectorInfoFromDb(connectRestApiUrl, ConnectorState.CREATION_FAILED, ConnectorState.RUNNING);
-        connectorInfos.forEach(connectorInfoDTO -> {
+        List<Connector> connectors = getConnectorInfoFromDb(connectRestApiUrl, ConnectorState.CREATION_FAILED, ConnectorState.RUNNING);
+        connectors.forEach(connector -> {
 
-            DelayStrategy delayStrategy = connectorRetryDelayStrategyMap.computeIfAbsent(connectorInfoDTO.getId(), key ->
+            DelayStrategy delayStrategy = connectorRetryDelayStrategyMap.computeIfAbsent(connector.getId(), key ->
                     new DelayStrategy(DELAY_STRATEGY_BASE_TIME_INTERVAL_IN_MILLISECOND));
 
             if (delayStrategy.isReached()) {
-                handleEvent(connectorInfoDTO, connectorInfoDTO.getActualState(), ConnectorEvent.RETRY);
+                handleEvent(connector, connector.getActualState(), ConnectorEvent.RETRY);
             }
         });
     }
 
     private void retryRunningFailedConnectors(final Long clusterId) {
-        List<ConnectorInfoDTO> connectorInfos = getConnectorInfoFromDb(clusterId, ConnectorState.RUNTIME_FAILED, ConnectorState.RUNNING);
-        connectorInfos.forEach(connectorInfoDTO -> {
+        List<Connector> connectors = getConnectorInfoFromDb(clusterId, ConnectorState.RUNTIME_FAILED, ConnectorState.RUNNING);
+        connectors.forEach(connector -> {
 
-            DelayStrategy delayStrategy = connectorRetryDelayStrategyMap.computeIfAbsent(connectorInfoDTO.getId(), key ->
+            DelayStrategy delayStrategy = connectorRetryDelayStrategyMap.computeIfAbsent(connector.getId(), key ->
                     new DelayStrategy(DELAY_STRATEGY_BASE_TIME_INTERVAL_IN_MILLISECOND));
 
             if (delayStrategy.isReached()) {
-                handleEvent(connectorInfoDTO, connectorInfoDTO.getActualState(), ConnectorEvent.RETRY);
+                handleEvent(connector, connector.getActualState(), ConnectorEvent.RETRY);
             }
         });
     }
 
     private void updatingAutoToRunning(final Long clusterId) {
-        getConnectorInfoFromDb(clusterId, ConnectorState.UPDATING).forEach(connectorInfoDTO -> {
-            handleEvent(connectorInfoDTO, ConnectorState.UPDATING, ConnectorEvent.UPDATE_SUCCESS);
+        getConnectorInfoFromDb(clusterId, ConnectorState.UPDATING).forEach(connector -> {
+            handleEvent(connector, ConnectorState.UPDATING, ConnectorEvent.UPDATE_SUCCESS);
         });
     }
 
     private void statusBack(final Long clusterId, final ConnectorState connectorState, final boolean isExist, final List<String> connectors) {
-        getConnectorInfoFromDb(clusterId, connectorState).forEach(connectorInfoDTO -> {
-            if (isTimeOut(connectorInfoDTO) && isExist == connectors.contains(connectorInfoDTO.getName().trim())) {
-                handleEvent(connectorInfoDTO, connectorState, ConnectorEvent.TIMEOUT);
-                connectorExecStartTimeMap.remove(connectorInfoDTO.getId());
+        getConnectorInfoFromDb(clusterId, connectorState).forEach(connector -> {
+            if (isTimeOut(connector) && isExist == connectors.contains(connector.getName().trim())) {
+                handleEvent(connector, connectorState, ConnectorEvent.TIMEOUT);
+                connectorExecStartTimeMap.remove(connector.getId());
             }
         });
     }
 
-    private boolean isTimeOut(final ConnectorInfoDTO connectorInfoDTO) {
-        if (!connectorExecStartTimeMap.containsKey(connectorInfoDTO.getId())) {
-            connectorExecStartTimeMap.put(connectorInfoDTO.getId(), System.currentTimeMillis());
+    private boolean isTimeOut(final Connector connector) {
+        if (!connectorExecStartTimeMap.containsKey(connector.getId())) {
+            connectorExecStartTimeMap.put(connector.getId(), System.currentTimeMillis());
             return false;
         }
-        long execInterval = System.currentTimeMillis() - connectorExecStartTimeMap.get(connectorInfoDTO.getId());
+        long execInterval = System.currentTimeMillis() - connectorExecStartTimeMap.get(connector.getId());
         return execInterval > connectorExecTimeoutInMillisecond;
     }
 
-    private List<ConnectorInfoDTO> getConnectorInfoFromDb(final Long connectClusterId, final ConnectorState currentState) {
-        return connectorCoreProcessService.queryConnector(connectClusterId, currentState);
+    private List<Connector> getConnectorInfoFromDb(final Long connectClusterId, final ConnectorState currentState) {
+        return getConnectorInfoFromDb(connectClusterId, currentState, null);
     }
 
-    private List<ConnectorInfoDTO> getConnectorInfoFromDb(final Long connectClusterId, final ConnectorState currentState, final ConnectorState expectState) {
-        List<ConnectorInfoDTO> connectorInfos = connectorCoreProcessService.queryConnector(currentState, expectState, connectClusterId);
-        return connectorInfos == null ? new ArrayList<>() : connectorInfos;
+    private List<Connector> getConnectorInfoFromDb(final Long connectClusterId, final ConnectorState currentState, final ConnectorState expectState) {
+        ConnectorQuery query = ConnectorQuery.builder()
+                .connectCluster(new ConnectClusterDO(connectClusterId)).actualState(currentState).desiredState(expectState).build();
+        List<ConnectorDetailDTO> connectorDetails = connectorService.queryDetailWithDecryptConfiguration(query);
+        return connectorDetails.stream().map(Connector::fromConnectorDetail).collect(Collectors.toList());
     }
 
 }

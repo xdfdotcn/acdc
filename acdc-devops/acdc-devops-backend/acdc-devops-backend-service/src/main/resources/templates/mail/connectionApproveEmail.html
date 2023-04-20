@@ -32,7 +32,7 @@
 
 <H3>申请人所属项目:</H3>
 <p>
-    <span th:each="projectName,projectNameState : ${connectionRequisitionDetailDTO.proposerProjects}">
+    <span th:each="projectName,projectNameState : ${connectionRequisitionDetailDTO.connectionSinkProjectNames}">
     <span th:text="${projectName}"/>&emsp;
     </span>
 </p>
@@ -77,21 +77,21 @@
     <td th:text="${connection.sourceProjectName}">projectName</td>
     <td th:text="${connection.sourceDataSystemClusterName}">clusterName</td>
     <td th:text="${connection.sourceDatabaseName}">databaseName</td>
-    <td th:text="${connection.sourceDatasetName}">datasetName</td>
+    <td th:text="${connection.sourceDataCollectionName}">datasetName</td>
   </tr>
 </table>
 </br>
 <H3>表字段信息:</H3>
 
 <div th:each="connection,outIterationState : ${connectionRequisitionDetailDTO.connections}">
-  <H4 th:text="${connection.sourceDatasetName}"></H4>
+  <H4 th:text="${connection.sourceDataCollectionName}"></H4>
   <table border="1" aria-colspan="10" width="100%">
     <tr>
       <th>数据表字段</th>
     </tr>
     <tr th:each="connectionColumnConfiguration,innerIterationState : ${connection.connectionColumnConfigurations}">
-      <td th:if="${not #strings.isEmpty(connectionColumnConfiguration.sourceFieldFormat)}"
-          th:text="${connectionColumnConfiguration.sourceFieldFormat}">fieldFormat
+      <td th:if="${not #strings.isEmpty(connectionColumnConfiguration.sourceColumnName)}"
+          th:text="${connectionColumnConfiguration.sourceColumnName}">fieldFormat
       </td>
     </tr>
   </table>

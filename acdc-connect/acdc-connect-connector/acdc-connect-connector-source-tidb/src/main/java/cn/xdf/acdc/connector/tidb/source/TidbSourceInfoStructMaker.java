@@ -8,10 +8,14 @@ import org.apache.kafka.connect.data.Struct;
 
 public class TidbSourceInfoStructMaker implements SourceInfoStructMaker {
 
+    private static final String TIDB_SOURCE_INFO_SCHEMA_NAME = "cn.xdf.acdc.connector.tidb.Source";
+
     private final Schema schema;
 
     public TidbSourceInfoStructMaker() {
         schema = SchemaBuilder.struct()
+                .name(TIDB_SOURCE_INFO_SCHEMA_NAME)
+                .field(AbstractSourceInfo.TABLE_NAME_KEY, Schema.OPTIONAL_STRING_SCHEMA)
                 .build();
     }
 

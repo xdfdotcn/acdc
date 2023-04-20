@@ -68,7 +68,7 @@ public class FormatAPIDataWriterCompatibilityTest extends HiveTestBase {
         HdfsSinkConfig config = new HdfsSinkConfig(props);
 
         hdfsWriter = new HdfsWriterCoordinator(config, context);
-        hdfsWriter.syncHiveMetaData();
+        hdfsWriter.syncHiveMetaData(TOPIC_PARTITION);
 
         // Since we're not using a real format, we won't validate the output. However, this should at
         // least exercise the code paths for the old Format class
@@ -106,7 +106,7 @@ public class FormatAPIDataWriterCompatibilityTest extends HiveTestBase {
         HdfsSinkConfig config = new HdfsSinkConfig(props);
 
         hdfsWriter = new HdfsWriterCoordinator(config, context);
-        hdfsWriter.syncHiveMetaData();
+        hdfsWriter.syncHiveMetaData(TOPIC_PARTITION);
 
         // Since we're not using a real format, we won't validate the output. However, this should at
         // least exercise the code paths for the old Format class

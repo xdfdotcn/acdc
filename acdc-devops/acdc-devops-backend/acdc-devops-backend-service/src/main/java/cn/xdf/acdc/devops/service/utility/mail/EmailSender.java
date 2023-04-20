@@ -1,6 +1,5 @@
 package cn.xdf.acdc.devops.service.utility.mail;
 
-import cn.xdf.acdc.devops.core.domain.dto.DomainUserDTO;
 import java.util.List;
 
 /**
@@ -24,7 +23,7 @@ public interface EmailSender {
      * @param content content
      */
     default void sendEmail(
-        List<DomainUserDTO> to,
+        List<DomainUser> to,
         EmailTemplate template,
         Object content) {
         throw new UnsupportedOperationException();
@@ -39,8 +38,8 @@ public interface EmailSender {
      * @param content content
      */
     void sendEmail(
-        List<DomainUserDTO> to,
-        List<DomainUserDTO> cc,
+        List<DomainUser> to,
+        List<DomainUser> cc,
         EmailTemplate template,
         Object content);
 }

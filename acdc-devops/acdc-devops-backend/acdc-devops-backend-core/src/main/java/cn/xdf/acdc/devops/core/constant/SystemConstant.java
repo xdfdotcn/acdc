@@ -4,11 +4,11 @@ public class SystemConstant {
 
     public static final String EMPTY_STRING = "";
 
-    public static final String HDFS_TAG = "HDFS";
-
-    public static final String KAFKA_TAG = "KAFKA";
-
     public static final String ACDC = "ACDC";
+
+    public static final String SOURCE = "source";
+
+    public static final String SINK = "sink";
 
     public static class Symbol {
 
@@ -28,14 +28,15 @@ public class SystemConstant {
 
         public static final String ENTER = "\n";
 
+        public static final String TAB = "\t";
+
         public static final String AT = "@";
 
         public static final String DOLLAR = "$";
 
-    }
+        public static final String BLANK = " ";
 
-    public static class Kafka {
+        public static final String EQUIVALENCE = "=";
 
-        public static final String SASL_PLAINTEXT = "SASL_PLAINTEXT";
     }
 }

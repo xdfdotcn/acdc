@@ -7,7 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.Instant;
+import java.util.Date;
 
 @Data
 @AllArgsConstructor
@@ -17,7 +17,7 @@ public class ConnectorQuery extends PagedQuery {
 
     private String name;
 
-    private Instant beginUpdateTime;
+    private Date beginUpdateTime;
 
     private ConnectClusterDO connectCluster;
 

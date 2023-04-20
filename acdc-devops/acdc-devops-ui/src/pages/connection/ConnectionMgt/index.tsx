@@ -1,127 +1,110 @@
-import React, {useState} from 'react';
-import type {ProColumns} from '@ant-design/pro-table';
+import React, { useRef, useState } from 'react';
+import type { EditableFormInstance, ProColumns } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
-import {deleteConnection, editConnection, editConnectionStatus, getConnectionActualStatus, getConnectionDetail, getConnectorConfig, getSinkConnectorInfo, getSourceConnectorInfo, queryConnection} from '@/services/a-cdc/api';
-import {message, Drawer, Modal} from 'antd';
-import {useAccess, useModel} from 'umi';
-import {DrawerForm, } from '@ant-design/pro-form';
-import {EditOutlined, PoweroffOutlined, PlaySquareOutlined, CopyOutlined} from '@ant-design/icons';
-import ConnectionFieldMappingList from '../components/FieldMapping';
-import {handleFieldMappingItem, verifyPrimaryKey} from '@/services/a-cdc/connection/field-mapping';
+import Field from '@ant-design/pro-field';
+
+import {
+	deleteConnection,
+	updateConnection,
+	editConnectionStatus,
+	generateConnectionColumnConfByConnectionId,
+	getConnectionActualStatus,
+	getConnectionDetail,
+	queryConnection,
+	stopConnection, startConnection
+} from '@/services/a-cdc/api';
+import { message, Drawer, Modal, Tag, Descriptions, Space, Button, Divider } from 'antd';
+import { useAccess, useModel } from 'umi';
+import { DrawerForm, } from '@ant-design/pro-form';
+import { EditOutlined, PoweroffOutlined, PlaySquareOutlined, CopyOutlined } from '@ant-design/icons';
+import ConnectionColumnConf, { ConnectionColumnConfProps, PageFrom } from '../components/ConnectionColumnConf';
 import ConnectionInfo from '../ConnectionInfo';
 import ConnectorDetail from '@/pages/connector/ConnectorMgt/components/ConnectorDetail';
-const {confirm} = Modal;
+import { DataSystemTypeConstant } from '@/services/a-cdc/constant/DataSystemTypeConstant';
+const { confirm } = Modal;
 
 const ConnectionList: React.FC = () => {
 	// 全局数据流
-	const {connectionModel, setConnectionModel} = useModel('ConnectionModel')
-	// 全局数据流
-	const {connectorModel, setConnectorModel} = useModel('ConnectorModel')
-	const {connectionFieldMappingModel, setConnectionFieldMappingModel} = useModel('ConnectionFieldMappingModel')
-	const {setFieldMappingModel} = useModel('FieldMappingModel')
-
+	const { connectionModel, setConnectionModel } = useModel('ConnectionModel')
 
 	const [connectionDetail, setConnectionDetail] = useState<API.ConnectionDetail>({})
 
 	const [showDetail, setShowDetail] = useState<boolean>(false);
 
+	const [showEditState, setShowEditState] = useState<boolean>(false);
+
+	const [connectorId, setConnectorId] = useState<number>();
+
+	const [showConnectorDetail, setShowConnectorDetail] = useState<boolean>(false);
+
 	const access = useAccess();
 
+	const [connectionColumnConfPropsState, setConnectionColumnConfPropsState] = useState<ConnectionColumnConfProps>();
+
+	const editorFormRef = useRef<EditableFormInstance<API.ConnectionColumnConf>>();
+
+
+	const runStateValueEnum = {
+		STARTING: { text: '启动中', status: 'STARTING' },
+		RUNNING: { text: '运行中', status: 'RUNNING' },
+		STOPPING: { text: '停止中', status: 'STOPPING' },
+		STOPPED: { text: '停止', status: 'STOPPED' },
+		FAILED: { text: '运行失败', status: 'FAILED' },
+	}
+
+	const requisitionStateValueEnum = {
+		APPROVING: { text: '审批中', status: 'APPROVING' },
+		REFUSED: { text: '审批拒绝', status: 'REFUSED' },
+		APPROVED: { text: '审批通过', status: 'APPROVED' },
+	}
 
 	/**
 		提交修改表单
 	*/
-	const submitFieldMappingEdit = async () => {
-		if (!connectionModel.connectionId) {
-			return false
-		}
-
-		if (!connectionFieldMappingModel || !connectionFieldMappingModel.fieldMappings) {
-			message.error("错误的字段映射");
-			return false;
-		}
-		let fieldMappings: API.FieldMappingListItem[] = connectionFieldMappingModel!.fieldMappings!;
-
-		// 主键字段校验
-		let sinkDataSystemType = connectionModel!.sinkDataSystemType
-		if (!verifyPrimaryKey(fieldMappings, sinkDataSystemType!)) {
-			if (sinkDataSystemType == 'HIVE') {
-				message.warn("源表不存在主键字段")
-			}
-
-			if (
-				sinkDataSystemType == 'MYSQL'
-				|| sinkDataSystemType == 'TIDB'
-			) {
-				message.warn("源表主键与目标表主键类型不一致")
-			}
-
-			return false;
-		}
-
+	const handleUpdateConnection = async () => {
 		confirm({
 			title: '确定提交吗',
 			icon: <EditOutlined />,
 			content: '修改字段映射',
 			async onOk() {
-				// 处理条件过滤
-				let newItems = handleFieldMappingItem(connectionFieldMappingModel?.fieldMappings!);
-				let reqBody: API.ConnectionEditInfo = {
-					connectionId: connectionModel?.connectionId!,
-					fieldMappings: newItems
-				}
-				await editConnection([{...reqBody}]);
+				let connectionColumnConfigurations: API.ConnectionColumnConf[] = []
+				const rows = editorFormRef.current?.getRowsData?.();
+				rows!.forEach((record, _index, _arr) => {
+					connectionColumnConfigurations.push({
+						sourceColumnName: record.sourceColumnName,
+						sourceColumnType: record.sourceColumnType,
+						sourceColumnUniqueIndexNames: record.sourceColumnUniqueIndexNames,
+						sinkColumnName: record.sinkColumnName,
+						sinkColumnType: record.sinkColumnType,
+						sinkColumnUniqueIndexNames: record.sinkColumnUniqueIndexNames,
+						filterOperator: record.filterOperator,
+						filterValue: record.filterValue,
+					})
+				})
+
+				let connections: API.ConnectionDetail[] = []
+				connections.push({
+					id: connectionModel.connectionId,
+					connectionColumnConfigurations: connectionColumnConfigurations!
+				})
+
+				await updateConnection(connections)
 				message.success('修改成功');
 				setConnectionModel({
 					...connectionModel,
 					refreshVersion: connectionModel.refreshVersion! + 1,
 					showEdit: false
 				})
+				setShowEditState(false)
 			},
-			onCancel() {},
+			onCancel() { },
 		});
-	}
-
-	/**
- 获取链路详情
-*/
-	const fetchSinkConnectorInfo = async (item: API.Connection) => {
-
-		let config = await getConnectorConfig({id: item.sinkConnectorId})
-		let sinkInfo = await getSinkConnectorInfo({id: item.sinkConnectorId})
-		setConnectorModel({
-			...connectorModel,
-			connectorId: item.sinkConnectorId,
-			connectorType: 'SINK',
-			sinkConnectorInfo: sinkInfo,
-			connectorConfig: config,
-			showDetail: true,
-		})
-		setFieldMappingModel({
-			connectorId: item.sinkConnectorId,
-			from: 'detail',
-			srcDataSystemType: '',
-			sinkDataSystemType: 'mysql'
-		})
-	}
-
-	const fetchSourceConnectorInfo = async (item: API.Connection) => {
-		let config = await getConnectorConfig({id: item.sourceConnectorId})
-		let sourceInfo = await getSourceConnectorInfo({id: item.sourceConnectorId})
-		setConnectorModel({
-			...connectorModel,
-			connectorId: item.sinkConnectorId,
-			connectorType: 'SOURCE',
-			sourceConnectorInfo: sourceInfo,
-			connectorConfig: config,
-			showDetail: true,
-		})
 	}
 
 	/**
 	 更新connection 状态
 	*/
-	const editStatus = (connectionId?: number, state?: string, requisitionState?: string) => {
+	const startOrStopConnection = (connectionId?: number, state?: string, requisitionState?: string) => {
 		if ('APPROVED' != requisitionState) {
 			message.warn("您申请的链路还未审批通过,不能启停链路")
 			return;
@@ -133,17 +116,19 @@ const ConnectionList: React.FC = () => {
 			content: '修改链路状态',
 			async onOk() {
 				// 处理条件过滤
-				await editConnectionStatus({
-					connectionId: connectionId,
-					state: state
-				});
+				if (state == 'STOPPED') {
+					await stopConnection(connectionId!);
+				}
+				else {
+					await startConnection(connectionId!);
+				}
 				message.success('操作成功');
 				setConnectionModel({
 					...connectionModel,
 					refreshVersion: connectionModel.refreshVersion! + 1
 				})
 			},
-			onCancel() {},
+			onCancel() { },
 		});
 	}
 
@@ -152,7 +137,7 @@ const ConnectionList: React.FC = () => {
 	*/
 	const delConnection = async (connectionId?: number) => {
 		// 必须停止链路才可以修改,可能会触发审批
-		let status = await getConnectionActualStatus({id: connectionId})
+		let status = await getConnectionActualStatus({ id: connectionId })
 
 		if (status != 'STOPPED') {
 			message.warn('请停止链路');
@@ -174,22 +159,22 @@ const ConnectionList: React.FC = () => {
 					refreshVersion: connectionModel.refreshVersion! + 1
 				})
 			},
-			onCancel() {},
+			onCancel() { },
 		});
 	}
 
+	const handleConnectionDetail = async (record: API.Connection) => {
+		let detail = await getConnectionDetail(record.id!)
 
-	const fetchConnectionDetail = async (id: number) => {
-		let detail = await getConnectionDetail(id)
 		setConnectionDetail(detail!)
 		setShowDetail(true)
 	}
 
-	const fetchFieldMapping = async (item: API.Connection) => {
+	const editConnectionColumnConf = async (record: API.Connection) => {
 		// 必须停止链路才可以修改,可能会触发审批
-		let status = await getConnectionActualStatus({id: item.connectionId})
+		let status = await getConnectionActualStatus({ id: record.id })
 
-		if ('APPROVED' != item.requisitionState) {
+		if ('APPROVED' != record.requisitionState) {
 			message.warn('您申请的链路还未审批通过,不能编辑配置');
 			return;
 		}
@@ -198,112 +183,89 @@ const ConnectionList: React.FC = () => {
 			return;
 		}
 
-		setConnectionFieldMappingModel({
-			connectionId: item.connectionId,
-			from: 'edit',
-			srcDataSetId: item.sourceDatasetId!,
-			sinkDataSetId: item.sinkDatasetId!,
-			sinkDataSystemType: item.sinkDataSystemType,
+
+		let connectionColumnConfs: API.ConnectionColumnConf[] =
+			await generateConnectionColumnConfByConnectionId(record.id!)
+
+		setConnectionColumnConfPropsState({
+			displayDataSource: connectionColumnConfs,
+			originalDataSource: connectionColumnConfs,
+			canEdit: record.sinkDataSystemType != DataSystemTypeConstant.KAFKA,
+			canDelete: record.sinkDataSystemType == DataSystemTypeConstant.KAFKA,
+			sinkDataSystemType: record.sinkDataSystemType,
+			sourceDataCollectionId: record.sourceDataCollectionId
 		})
+
+		setShowEditState(true)
+
 		setConnectionModel({
 			...connectionModel,
-			connectionId: item.connectionId,
-			sinkDataSystemType: item.sinkDataSystemType,
+			connectionId: record.id,
+			sinkDataSystemType: record.sinkDataSystemType,
 			showEdit: true,
 		})
+
+	}
+
+	const doShowConnectorDetail = (connectorId: number) => {
+		setConnectorId(connectorId)
+		setShowConnectorDetail(true)
 	}
 
 	const connectionColumns: ProColumns<API.Connection>[] = [
 		{
-			title: '类型',
-			width: "10%",
+			title: '目标数据集',
+			width: "35%",
+			dataIndex: 'sinkDataCollectionName',
+			ellipsis: true,
+			copyable: true,
+		},
+		{
+			title: '源数据集',
+			width: "23%",
+			dataIndex: 'sourceDataCollectionName',
+			ellipsis: true,
+			copyable: true,
+		},
+		{
+			title: '数据系统类型',
+			width: "8%",
 			dataIndex: 'sinkDataSystemType',
 			ellipsis: true,
 			onFilter: true,
 			valueType: 'select',
-			formItemProps: {
-				rules: [
-					{
-						required: true,
-						message: '此项为必填项',
-					},
-				],
-			},
-			initialValue: 'HIVE',
 			valueEnum: {
-				MYSQL: {text: 'MYSQL', status: 'Success'},
-				TIDB: {text: 'TIDB', status: 'Success'},
-				HIVE: {text: 'HIVE', status: 'Success'},
-				KAFKA: {text: 'KAFKA', status: 'Success'},
-			},
-
-		},
-
-		{
-			title: '申请状态 ',
-			width: "7%",
-			dataIndex: 'requisitionState',
-			valueType: 'select',
-			valueEnum: {
-				APPROVING: {text: '审批中', status: 'APPROVING'},
-				REFUSED: {text: '审批拒绝', status: 'REFUSED'},
-				APPROVED: {text: '审批通过', status: 'APPROVED'},
+				MYSQL: { text: 'MYSQL', status: 'Success' },
+				TIDB: { text: 'TIDB', status: 'Success' },
+				HIVE: { text: 'HIVE', status: 'Success' },
+				KAFKA: { text: 'KAFKA', status: 'Success' },
 			},
 
 		},
 		{
 			title: '运行状态',
-			width: "7%",
+			width: "6%",
 			dataIndex: 'actualState',
 			valueType: 'select',
-			valueEnum: {
-				STARTING: {text: '启动中', status: 'STARTING'},
-				RUNNING: {text: '运行中', status: 'RUNNING'},
-				STOPPING: {text: '停止中', status: 'STOPPING'},
-				STOPPED: {text: '已停止', status: 'STOPPED'},
-				FAILED: {text: '运行失败', status: 'FAILED'},
-			},
-		},
-
-		{
-			title: '集群',
-			width: "12%",
-			dataIndex: 'sinkDatasetClusterName',
-			ellipsis: true,
-			copyable: true,
-		},
-
-		{
-			title: '数据库',
-			width: "10%",
-			dataIndex: 'sinkDatasetDatabaseName',
-			ellipsis: true,
-			copyable: true,
-		},
-
-		{
-			title: '数据集',
-			width: "20%",
-			dataIndex: 'sinkDatasetName',
-			ellipsis: true,
-			copyable: true,
+			valueEnum: runStateValueEnum,
 		},
 		{
 			title: '创建时间',
-			width: "16%",
-			dataIndex: 'creationTimeFormat',
+			width: "13%",
+			dataIndex: 'creationTime',
 			search: false,
 		},
 		{
 			title: '操作',
-			width: "32%",
+			width: "15%",
 			valueType: 'option',
 			dataIndex: 'option',
 			render: (text, record, _, action) => [
 				<a
-					key={"info_" + record.connectionId}
+					key={"info_" + record.id}
 					onClick={() => {
-						fetchConnectionDetail(record.connectionId!)
+						handleConnectionDetail(record!)
+
 					}}
 				>
 					<CopyOutlined />
@@ -311,9 +273,9 @@ const ConnectionList: React.FC = () => {
 				</a>
 				,
 				<a
-					key={"editable_" + record.connectionId}
+					key={"editable_" + record.id}
 					onClick={() => {
-						fetchFieldMapping(record)
+						editConnectionColumnConf(record)
 					}}
 				>
 					<EditOutlined />
@@ -323,12 +285,12 @@ const ConnectionList: React.FC = () => {
 				<>
 					{
 						record.desiredState == 'RUNNING' ?
-							<a key={"stop_" + record.connectionId} onClick={() => {editStatus(record.connectionId, 'STOPPED', record.requisitionState)}}>
+							<a key={"stop_" + record.id} onClick={() => { startOrStopConnection(record.id, 'STOPPED', record.requisitionState) }}>
 								<PlaySquareOutlined />
 								停止
 							</a>
 							:
-							<a key={"start_" + record.connectionId} onClick={() => {editStatus(record.connectionId, 'RUNNING', record.requisitionState)}}>
+							<a key={"start_" + record.id} onClick={() => { startOrStopConnection(record.id, 'RUNNING', record.requisitionState) }}>
 								<PoweroffOutlined />
 								启动
 							</a>
@@ -336,54 +298,134 @@ const ConnectionList: React.FC = () => {
 				</>
 				,
 
-				<div>
-					{
-						access.canAdmin ?
 
-							<a
-								key={'delete_' + record.connectionId}
-								onClick={() => {
-									delConnection(record.connectionId)
-								}}
-							>
-								删除
-							</a>
-							: <></>
-					}
-				</div>
-				,
-				<div>
-					{
-						access.canAdmin ?
-							<a
-								key={'sink_task_' + record.connectionId}
-								onClick={() => {
-									fetchSinkConnectorInfo(record)
-								}}
-							>
-								sink
-							</a>
-							: <></>
-					}
-				</div>
-				,
-				<div>
-					{
-						access.canAdmin ?
-							<a
-								key={'source_task_' + record.connectionId}
-								onClick={() => {
-									fetchSourceConnectorInfo(record)
-								}}
-							>
-								source
-							</a>
-							: <></>
-					}
-				</div>
 			],
 		},
 	];
+
+	/**
+	 * 生成数据集的展示路径
+	 * 
+	 * @param dataCollectionResourcePath  数据集资源路径列表
+	 * @returns 展示路径
+	 */
+	const generateDataCollectionResourcePath = (dataCollectionResourcePath: API.DataSystemResource[]) => {
+
+		const path: JSX.Element[] = []
+		{
+			dataCollectionResourcePath?.map((item, index) => {
+				path.push(<>
+					<strong >{item.resourceType}</strong>&nbsp;
+					<span >{item.name}</span>&nbsp;&nbsp;/&nbsp;&nbsp;
+				</>)
+			})
+		}
+		return path;
+	}
+	/**
+	 * 列表二级展示内容
+	 * 
+	 * @param record 数据行记录
+	 * @returns 二级展示内容表格
+	 */
+	const expandedRowRender = (record: API.Connection) => {
+		const expandedDataSource = [];
+		expandedDataSource.push(record);
+		return (
+			<ProTable<API.Connection>
+				columns={[
+					{
+						title: '',
+						dataIndex: 'id',
+						key: 'id',
+						render: (_text, record, _, _action) => [
+							<>
+								<div>
+									<span>源端路径:</span>&nbsp;&nbsp;/&nbsp;&nbsp;
+									<strong >{'PROJECT'}</strong>&nbsp;
+									<span >{record.sourceProjectName}</span>&nbsp;&nbsp;/&nbsp;&nbsp;
+									{generateDataCollectionResourcePath(record.sourceDataCollectionResourcePath!)}
+								</div>
+
+								<Divider />
+
+								<div>
+									<span>目标路径:</span>&nbsp;&nbsp;/&nbsp;&nbsp;
+									<strong >{'PROJECT'}</strong>&nbsp;
+									<span >{record.sinkProjectName}</span>&nbsp;&nbsp;/&nbsp;&nbsp;
+									{generateDataCollectionResourcePath(record.sinkDataCollectionResourcePath!)}
+								</div>
+
+								<Divider />
+
+								<div>
+									<span>申请人:</span>&nbsp;&nbsp;
+									<span > {record.userEmail}</span>
+								</div>
+
+
+								<Divider />
+
+								<Tag color='cyan'>{record.sinkDataSystemType}</Tag>
+								<Tag color='cyan'>{runStateValueEnum[record.actualState!].text}</Tag>
+								<Tag color='cyan'>{requisitionStateValueEnum[record.requisitionState!].text}</Tag>
+								
+								{access.canAdmin ?<Divider />:<></>}
+
+								<Space className="site-button-ghost-wrapper">
+									<>
+										{
+											access.canAdmin ?
+												<Button type="dashed" ghost
+													onClick={() => {
+														doShowConnectorDetail(record.sinkConnectorId)
+													}}>
+													目标端任务
+												</Button>
+												: <></>
+										}
+									</>
+
+									<>
+										{
+											access.canAdmin ?
+												<Button type="dashed" ghost
+													onClick={() => {
+														doShowConnectorDetail(record.sourceConnectorId)
+													}}>
+													源端任务
+												</Button>
+												: <></>
+										}
+									</>
+
+									<>
+										{
+											access.canAdmin ?
+												<Button type="dashed"  danger ghost
+													key={'delete_' + record.id}
+													onClick={() => {
+														delConnection(record.id)
+													}}>
+													删除链路
+												</Button>
+												: <></>
+										}
+									</>
+								</Space>
+							</>
+						]
+					},
+				]}
+				headerTitle={false}
+				search={false}
+				options={false}
+				dataSource={expandedDataSource}
+				pagination={false}
+			/>
+		);
+
+	};
 
 	return (
 		<div>
@@ -391,28 +433,37 @@ const ConnectionList: React.FC = () => {
 				params={{
 					refreshVersion: connectionModel!.refreshVersion!
 				}}
-				rowKey={(record) => String(record.connectionId)}
+				//rowKey={(record) => String(record.connectionId)}
+				rowKey='id'
 				// 请求数据API
 				request={queryConnection}
 				columns={connectionColumns}
 				toolbar={{
 				}}
 				// 分页设置,默认数据,不展示动态调整分页大小
-				pagination={{
-					showSizeChanger: true,
-					pageSize: 10
-				}}
+				// pagination={{
+				// 	showSizeChanger: true,
+				// 	pageSize: 10
+				// }}
+
 				options={{
 					setting: {
 						listsHeight: 400,
 					},
+					reload: false
 				}}
 
-				search={{collapsed: false}}
+				pagination={{
+					showQuickJumper: true,
+				}}
+
+				search={{ collapsed: false }}
 
 				form={{
 					ignoreRules: false,
 				}}
+
+				expandedRowRender={(record) => expandedRowRender(record)}
 
 			/>
 
@@ -426,22 +477,22 @@ const ConnectionList: React.FC = () => {
 				company: string;
 			}>
 				title="修改字映射"
-				visible={connectionModel.showEdit}
-				width={"90%"}
+				visible={showEditState}
+				width={"100%"}
 				drawerProps={{
 					forceRender: false,
 					destroyOnClose: true,
 					onClose: () => {
-						setConnectionModel({
-							...connectionModel,
-							showEdit: false,
-						})
+						setShowEditState(false)
 					}
 				}}
-				onFinish={submitFieldMappingEdit}
+				onFinish={handleUpdateConnection}
 
 			>
-				<ConnectionFieldMappingList />
+				<ConnectionColumnConf
+					columnConfProps={{ ...connectionColumnConfPropsState }}
+					editorFormRef={editorFormRef}
+				/>
 			</DrawerForm>
 
 			<Drawer
@@ -457,17 +508,13 @@ const ConnectionList: React.FC = () => {
 
 			<Drawer
 				width={"100%"}
-				visible={connectorModel.showDetail}
+				visible={showConnectorDetail}
 				onClose={() => {
-					//setShowDetail(false);
-					setConnectorModel({
-						...connectorModel,
-						showDetail: false,
-					})
+					setShowConnectorDetail(false)
 				}}
 				closable={true}
 			>
-				<ConnectorDetail />
+				<ConnectorDetail connectorId={connectorId} />
 			</Drawer>
 
 		</div>

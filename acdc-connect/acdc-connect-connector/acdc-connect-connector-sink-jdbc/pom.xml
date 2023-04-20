@@ -25,7 +25,11 @@
             <groupId>cn.xdf.acdc</groupId>
             <artifactId>acdc-connect-connector-sink-core</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>io.debezium</groupId>
+            <artifactId>debezium-core</artifactId>
+            <scope>provided</scope>
+        </dependency>
         <!-- Utilities -->
         <dependency>
             <groupId>org.projectlombok</groupId>

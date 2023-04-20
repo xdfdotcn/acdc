@@ -28,7 +28,7 @@ public class StoreConfig {
 
     private String walLogPath;
 
-    private String tmpTablePath;
+    private String tempTablePath;
 
     private String tablePath;
 
@@ -44,6 +44,7 @@ public class StoreConfig {
 
     /**
      * Storage root path .
+     *
      * @return the store root path
      */
     public String storeRootPath() {
@@ -52,6 +53,7 @@ public class StoreConfig {
 
     /**
      * WAL log path .
+     *
      * @return WAL log path
      */
     public String walLogPath() {
@@ -60,14 +62,16 @@ public class StoreConfig {
 
     /**
      * Temp file path.
+     *
      * @return temp file path
      */
-    public String tmpTablePath() {
-        return this.tmpTablePath;
+    public String tempTablePath() {
+        return this.tempTablePath;
     }
 
     /**
      * Hive table's file store path.
+     *
      * @return temp file path
      */
     public String tablePath() {
@@ -76,6 +80,7 @@ public class StoreConfig {
 
     /**
      * Table name.
+     *
      * @return temp file path
      */
     public String table() {
@@ -84,6 +89,7 @@ public class StoreConfig {
 
     /**
      * Database name .
+     *
      * @return database name
      */
     public String database() {
@@ -92,6 +98,7 @@ public class StoreConfig {
 
     /**
      * store url eg :hdfs://hostname:8020.
+     *
      * @return store url
      */
     public String storeUrl() {
@@ -100,6 +107,7 @@ public class StoreConfig {
 
     /**
      * Format is text, the separator.
+     *
      * @return separator
      */
     public String textSeparator() {
@@ -108,6 +116,7 @@ public class StoreConfig {
 
     /**
      * Get format .
+     *
      * @return Format
      */
     public Format format() {
@@ -119,7 +128,7 @@ public class StoreConfig {
         final StringBuilder sb = new StringBuilder("StoreConfig{");
         sb.append("storeRootPath='").append(storeRootPath).append('\'');
         sb.append(", walLogPath='").append(walLogPath).append('\'');
-        sb.append(", tmpTablePath='").append(tmpTablePath).append('\'');
+        sb.append(", tempTablePath='").append(tempTablePath).append('\'');
         sb.append(", tablePath='").append(tablePath).append('\'');
         sb.append(", table='").append(table).append('\'');
         sb.append(", database='").append(database).append('\'');
@@ -159,9 +168,9 @@ public class StoreConfig {
             return this;
         }
 
-        public StorageConfBuilder tmpTablePath(final String tmpTablePath) {
+        public StorageConfBuilder tempTablePath(final String tmpTablePath) {
             notBlank(tmpTablePath);
-            storeConfig.tmpTablePath = tmpTablePath;
+            storeConfig.tempTablePath = tmpTablePath;
             return this;
         }
 

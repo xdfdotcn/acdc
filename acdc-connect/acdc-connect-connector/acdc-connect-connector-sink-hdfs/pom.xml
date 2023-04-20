@@ -36,10 +36,14 @@
         </dependency>
         <dependency>
             <groupId>cn.xdf.acdc</groupId>
-            <artifactId>acdc-connect-smt-value-mapper</artifactId>
-            <scope>runtime</scope>
+            <artifactId>acdc-connect-transforms-value-mapper</artifactId>
+            <scope>provided</scope>
         </dependency>
-
+        <dependency>
+            <groupId>io.debezium</groupId>
+            <artifactId>debezium-core</artifactId>
+            <scope>provided</scope>
+        </dependency>
         <!-- Kafka Connect -->
         <dependency>
             <groupId>org.apache.kafka</groupId>

@@ -6,9 +6,9 @@ import cn.xdf.acdc.devops.core.domain.dto.ConnectionRequisitionDetailDTO;
 import cn.xdf.acdc.devops.core.domain.dto.LoginUserDTO;
 import cn.xdf.acdc.devops.core.domain.dto.PageDTO;
 import cn.xdf.acdc.devops.core.domain.dto.approve.ApproveDTO;
-import cn.xdf.acdc.devops.core.domain.query.ConnectionQuery;
-import cn.xdf.acdc.devops.service.process.connection.ConnectionProcessService;
-import cn.xdf.acdc.devops.service.process.connection.ConnectionRequisitionProcessService;
+import cn.xdf.acdc.devops.core.domain.query.ConnectionRequisitionQuery;
+import cn.xdf.acdc.devops.service.process.connection.ConnectionService;
+import cn.xdf.acdc.devops.service.process.connection.ConnectionRequisitionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,10 +24,10 @@ import java.util.List;
 public class ConnectionRequisitionController {
 
     @Autowired
-    private ConnectionRequisitionProcessService connectionRequisitionProcessService;
+    private ConnectionRequisitionService connectionRequisitionService;
 
     @Autowired
-    private ConnectionProcessService connectionProcessService;
+    private ConnectionService connectionService;
 
     /**
      * Get connection by id.
@@ -37,7 +37,7 @@ public class ConnectionRequisitionController {
      */
     @GetMapping("/connection-requisition/{connectionRequisitionId}")
     public ConnectionRequisitionDetailDTO getConnectionRequisition(@PathVariable final Long connectionRequisitionId) {
-        return connectionRequisitionProcessService.getRequisitionDetail(connectionRequisitionId);
+        return connectionRequisitionService.getDetailById(connectionRequisitionId);
     }
 
     /**
@@ -47,8 +47,8 @@ public class ConnectionRequisitionController {
      * @return requisition page list
      */
     @GetMapping("/connections/{connectionId}/connection-requisitions")
-    public PageDTO<ConnectionRequisitionDTO> queryRequisition(final ConnectionQuery query) {
-        List<ConnectionRequisitionDTO> requisitions = connectionRequisitionProcessService.query(query);
+    public PageDTO<ConnectionRequisitionDTO> queryRequisition(final ConnectionRequisitionQuery query) {
+        List<ConnectionRequisitionDTO> requisitions = connectionRequisitionService.query(query);
         return PageDTO.of(requisitions, requisitions.size());
     }
 
@@ -64,6 +64,6 @@ public class ConnectionRequisitionController {
             @RequestBody final ApproveDTO approveDTO
     ) {
         LoginUserDTO currentUser = ApiSecurityUtils.getCurrentUserDetails();
-        connectionRequisitionProcessService.approve(connectionRequisitionId, approveDTO, currentUser.getDomainAccount());
+        connectionRequisitionService.approve(connectionRequisitionId, approveDTO, currentUser.getDomainAccount());
     }
 }

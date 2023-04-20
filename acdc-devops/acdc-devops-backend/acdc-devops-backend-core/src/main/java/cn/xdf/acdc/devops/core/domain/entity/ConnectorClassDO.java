@@ -54,6 +54,9 @@ public class ConnectorClassDO extends BaseDO implements Serializable {
     @JsonIgnoreProperties(value = {"connectorClass"}, allowSetters = true)
     private Set<DefaultConnectorConfigurationDO> defaultConnectorConfigurations = new HashSet<>();
 
+    @OneToMany(mappedBy = "connectorClass")
+    private Set<ConnectClusterDO> connectClusters = new HashSet<>();
+
     @ApiModelProperty("connector 类型")
     @Enumerated(EnumType.ORDINAL)
     private ConnectorType connectorType;
@@ -61,6 +64,10 @@ public class ConnectorClassDO extends BaseDO implements Serializable {
     @ApiModelProperty("数据系统类型")
     @Enumerated(EnumType.ORDINAL)
     private DataSystemType dataSystemType;
+
+    public ConnectorClassDO(final Long id) {
+        this.id = id;
+    }
 
     @Override
     public boolean equals(final Object o) {

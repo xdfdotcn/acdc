@@ -1,28 +1,26 @@
 package cn.xdf.acdc.devops.service.process.connection.approval.action.impl;
 
-import cn.xdf.acdc.devops.core.domain.dto.DomainUserDTO;
 import cn.xdf.acdc.devops.core.domain.entity.enumeration.ApprovalState;
-import cn.xdf.acdc.devops.service.process.connection.ConnectionRequisitionProcessService;
+import cn.xdf.acdc.devops.service.process.connection.ConnectionRequisitionService;
 import cn.xdf.acdc.devops.service.process.connection.approval.ApprovalContext;
 import cn.xdf.acdc.devops.service.process.connection.approval.ApprovalStateMachine;
 import cn.xdf.acdc.devops.service.process.connection.approval.ApproveEmailSender;
 import cn.xdf.acdc.devops.service.process.connection.approval.action.SourceOwnerRefusedAction;
 import cn.xdf.acdc.devops.service.process.connection.approval.event.ApprovalEvent;
+import cn.xdf.acdc.devops.service.utility.mail.DomainUser;
 import cn.xdf.acdc.devops.service.utility.mail.EmailTemplate;
 import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Component
-@Transactional
 public class DefaultSourceOwnerRefusedAction implements SourceOwnerRefusedAction {
 
     @Autowired
-    private ConnectionRequisitionProcessService connectionRequisitionProcessService;
+    private ConnectionRequisitionService connectionRequisitionService;
 
     @Autowired
     private ApproveEmailSender emailSender;
@@ -37,15 +35,15 @@ public class DefaultSourceOwnerRefusedAction implements SourceOwnerRefusedAction
         // 1. transform
         Long id = context.getId();
         String domainAccount = context.getOperatorId();
-        connectionRequisitionProcessService.checkSourceOwnerPermissions(id, domainAccount);
+        connectionRequisitionService.checkSourceOwnerPermissions(id, domainAccount);
         String approveResult = context.getDescription();
-        connectionRequisitionProcessService.updateApproveStateBySourceOwner(id, to, approveResult, domainAccount);
-        connectionRequisitionProcessService.invalidRequisition(id);
+        connectionRequisitionService.updateApproveStateBySourceOwner(id, to, approveResult, domainAccount);
+        connectionRequisitionService.invalidRequisition(id);
 
         // send email.
-        DomainUserDTO proposer = machine.getProposer(id);
+        DomainUser proposer = machine.getProposer(id);
 
-        List<DomainUserDTO> cc = new ArrayList<>();
+        List<DomainUser> cc = new ArrayList<>();
 
         emailSender.sendApproveEmail(
                 id,

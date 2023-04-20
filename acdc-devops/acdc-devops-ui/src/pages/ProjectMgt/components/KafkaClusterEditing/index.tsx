@@ -3,10 +3,15 @@ import ProForm, {ModalForm, ProFormInstance, ProFormSelect, ProFormText, ProForm
 import {useModel} from 'umi';
 import {EditOutlined} from '@ant-design/icons';
 import {message, Modal} from 'antd';
-import {createKafkaCluster, editKafkaCluster, getKafkaCluster} from '@/services/a-cdc/api';
+import {
+  createDataSystemResource,
+  getDataSystemResource,
+  updateDataSystemResource
+} from '@/services/a-cdc/api';
+import {ActionType} from "@ant-design/pro-table";
 const {confirm} = Modal;
 
-const KafkaClusterEditing: React.FC = () => {
+const KafkaClusterEditing: React.FC<{tableRef: ActionType}> = ({tableRef}) => {
 	// 数据流
 	const {kafkaClusterEditingModel, setKafkaClusterEditingModel} = useModel('KafkaClusterEditingModel')
 	// form ref
@@ -14,7 +19,6 @@ const KafkaClusterEditing: React.FC = () => {
 		ProFormInstance<{
 			name: string;
 			description?: string;
-			version: string;
 			bootstrapServers: string;
 			securityProtocol: string;
 			saslMechanism: string;
@@ -37,48 +41,69 @@ const KafkaClusterEditing: React.FC = () => {
 		confirm({
 			title: '确定提交吗?',
 			icon: <EditOutlined />,
-			content: '增加集群',
+			content: '增加/编辑集群',
 			async onOk() {
-				let formObj = formRef.current?.getFieldsFormatValue?.();
+        let formObj = formRef.current?.getFieldsFormatValue?.();
+
+        // build data system resource
+        const project: API.Project = {
+          id: kafkaClusterEditingModel.projectId
+        }
+
+        // configurations
+        const bootstrapConfiguration: API.DataSystemResourceConfiguration = {
+          name: "bootstrap.servers",
+          value: formObj!.bootstrapServers
+        }
+        const securityProtocolConfiguration: API.DataSystemResourceConfiguration = {
+          name: "security.protocol",
+          value: formObj!.securityProtocol
+        }
+
+        let kafkaCluster: API.DataSystemResource = {
+          name: formObj.name,
+          description: formObj.description,
+          projects: [project],
+          dataSystemType: "KAFKA",
+          resourceType: "KAFKA_CLUSTER",
+          dataSystemResourceConfigurations: {
+            "bootstrap.servers": bootstrapConfiguration,
+            "security.protocol": securityProtocolConfiguration
+          }
+        }
+
+        if (securityProtocolConfiguration.value != "PLAINTEXT") {
+          const saslMechanismConfiguration: API.DataSystemResourceConfiguration = {
+            name: "sasl.mechanism",
+            value: formObj!.saslMechanism
+          }
+          const usernameConfiguration: API.DataSystemResourceConfiguration = {
+            name: "username",
+            value: formObj!.saslUsername
+          }
+          const passwordConfiguration: API.DataSystemResourceConfiguration = {
+            name: "password",
+            value: formObj!.saslPassword
+          }
+          kafkaCluster.dataSystemResourceConfigurations["sasl.mechanism"] = saslMechanismConfiguration;
+          kafkaCluster.dataSystemResourceConfigurations["username"] = usernameConfiguration;
+          kafkaCluster.dataSystemResourceConfigurations["password"] = passwordConfiguration;
+        }
+
 				if ('edit' == kafkaClusterEditingModel.from) {
-					let editBody: API.KafkaCluster = {
-						id: kafkaClusterEditingModel.kafkaClusterId,
-						projectId: kafkaClusterEditingModel.projectId,
-						name: formObj!.name,
-						clusterType: formObj!.clusterType,
-						version: formObj!.version,
-						bootstrapServers: formObj!.bootstrapServers,
-						securityProtocol: formObj!.securityProtocol,
-						saslMechanism: formObj!.saslMechanism,
-						saslUsername: formObj!.saslUsername,
-						saslPassword: formObj!.saslPassword,
-						description: formObj!.description,
-					}
-					await editKafkaCluster(editBody)
+          kafkaCluster.id = kafkaClusterEditingModel.kafkaClusterId
+					await updateDataSystemResource(kafkaCluster)
 				}
 				else {
-					let createBody: API.KafkaCluster = {
-						id: kafkaClusterEditingModel.kafkaClusterId,
-						projectId: kafkaClusterEditingModel.projectId,
-						name: formObj!.name,
-						version: formObj!.version,
-						clusterType: formObj!.clusterType,
-						bootstrapServers: formObj!.bootstrapServers,
-						securityProtocol: formObj!.securityProtocol,
-						saslMechanism: formObj!.saslMechanism,
-						saslUsername: formObj!.saslUsername,
-						saslPassword: formObj!.saslPassword,
-						description: formObj!.description,
-					}
-					console.log("will create ", createBody)
-					await createKafkaCluster(createBody)
+					console.log("will create ", kafkaCluster)
+					await createDataSystemResource(kafkaCluster)
 				}
+        tableRef.reload()
 				message.info("操作成功")
 				setKafkaClusterEditingModel({
 					...kafkaClusterEditingModel,
 					showModal: false
 				})
-
 			},
 			onCancel() {},
 		});
@@ -90,20 +115,18 @@ const KafkaClusterEditing: React.FC = () => {
 			return;
 		}
 		// 表单数据
-		let kafkaCluster: API.KafkaCluster = await getKafkaCluster({kafkaClusterId: kafkaClusterEditingModel.kafkaClusterId!})
+		let kafkaCluster: API.DataSystemResource = await getDataSystemResource({id: kafkaClusterEditingModel.kafkaClusterId!})
 
 		formRef?.current?.setFieldsValue({
 			name: kafkaCluster.name,
-			version: kafkaCluster.version,
-			bootstrapServers: kafkaCluster.bootstrapServers,
+			bootstrapServers: kafkaCluster.dataSystemResourceConfigurations["bootstrap.servers"].value,
 			description: kafkaCluster.description,
-			securityProtocol: kafkaCluster.securityProtocol,
-			saslMechanism: kafkaCluster.saslMechanism,
-			saslUsername: kafkaCluster.saslUsername,
-			saslPassword: kafkaCluster.saslPassword,
+			securityProtocol: kafkaCluster.dataSystemResourceConfigurations["security.protocol"].value,
+			saslMechanism: kafkaCluster.dataSystemResourceConfigurations["sasl.mechanism"] ? kafkaCluster.dataSystemResourceConfigurations["sasl.mechanism"].value : "",
+			saslUsername: kafkaCluster.dataSystemResourceConfigurations["username"] ? kafkaCluster.dataSystemResourceConfigurations["username"].value : ""
 		});
 
-		dynamicSelectionSaslInput(kafkaCluster!.securityProtocol!)
+		dynamicSelectionSaslInput(kafkaCluster.dataSystemResourceConfigurations!["security.protocol"].value)
 	}
 
 	const dynamicSelectionSaslInput = (securityProtocol: String) => {
@@ -173,33 +196,6 @@ const KafkaClusterEditing: React.FC = () => {
 				}}
 
 			>
-
-				<ProForm.Group>
-					<ProFormSelect
-						name="clusterType"
-						label="集群类型"
-						width="md"
-						disabled={true}
-						options={[
-							{
-								value: 'USER',
-								label: '用户集群',
-							},
-						]}
-						rules={[{required: true, message: '集群类型必填'}]}
-					/>
-					<ProFormSelect
-						name="version"
-						label="集群版本"
-						width="md"
-						disabled={true}
-						valueEnum={{
-							'2.6.0': '2.6.0',
-						}}
-						placeholder="请选择集群类型,inner/ticdc/user"
-						rules={[{required: true, message: '集群类型必填'}]}
-					/>
-				</ProForm.Group>
 				<ProForm.Group>
 					<ProFormText
 						width="md"

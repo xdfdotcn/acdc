@@ -9,5 +9,5 @@ public enum EventType {
     /**
      * Produce by state machine on runtime.
      */
-    RUNTIME;
+    RUNTIME
 }

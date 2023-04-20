@@ -4,7 +4,7 @@ import { Drawer } from 'antd';
 import { useRef, useState } from 'react';
 import {useModel} from 'umi';
 import RdbClusterDetail from '../RdbClusterDetail';
-import RdbDataset from '../RdbDataset';
+import RdbDataCollection from '../RdbDataCollection';
 import RdbInstance from '../RdbInstance';
 
 const RdbClusterConfig: React.FC = () => {
@@ -20,7 +20,6 @@ const RdbClusterConfig: React.FC = () => {
 		}>
 	>();
 
-
 	return (
 		<div>
 			<Drawer
@@ -32,6 +31,7 @@ const RdbClusterConfig: React.FC = () => {
 						...rdbClusterConfigModel,
 						showDrawer: false,
 					})
+          setTab("tab0")
 				}}
 				closable={true}
 			>
@@ -40,15 +40,16 @@ const RdbClusterConfig: React.FC = () => {
 				tabs={{
 					tabPosition:'top',
 					activeKey: tab,
-						onChange: (key) => {
-							setTab(key);
-							if (key == 'tab2') {
-								setRdbDatasetModel({
-									...rdbDatasetModel,
-									rdbId: rdbClusterConfigModel.rdbId
-								})
-							}
-						},
+          onChange: (key) => {
+            setTab(key);
+            if (key == 'tab2') {
+              setRdbDatasetModel({
+                ...rdbDatasetModel,
+                clusterResourceId: rdbClusterConfigModel.resourceId,
+                dataSystemType: rdbClusterConfigModel.dataSystemType
+              })
+            }
+          },
 				}}
 					style={{
 						minWidth: '100%',
@@ -58,12 +59,11 @@ const RdbClusterConfig: React.FC = () => {
 					<ProCard.TabPane key="tab0" tab="集群信息">
 						<RdbClusterDetail />
 					</ProCard.TabPane>
-
 					<ProCard.TabPane key="tab1" tab="实例管理" >
 						<RdbInstance />
 					</ProCard.TabPane>
 					<ProCard.TabPane key="tab2" tab="数据集">
-						<RdbDataset />
+						<RdbDataCollection />
 					</ProCard.TabPane>
 				</ProCard>
 			</Drawer>

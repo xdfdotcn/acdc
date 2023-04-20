@@ -1,6 +1,6 @@
 package cn.xdf.acdc.devops.statemachine;
 
-import cn.xdf.acdc.devops.core.domain.dto.ConnectorInfoDTO;
+import cn.xdf.acdc.devops.dto.Connector;
 import cn.xdf.acdc.devops.core.domain.enumeration.ConnectorEvent;
 import cn.xdf.acdc.devops.core.domain.enumeration.ConnectorState;
 import cn.xdf.acdc.devops.statemachine.actions.CreatingConnectorAction;
@@ -60,9 +60,9 @@ public class ConnectorStateMachineBuilder implements ApplicationContextAware {
      * @return state machine builder
      */
     @Bean
-    public StateMachineBuilder<ConnectorStateMachine, ConnectorState, ConnectorEvent, ConnectorInfoDTO> getStateMachineBuilder() {
-        StateMachineBuilder<ConnectorStateMachine, ConnectorState, ConnectorEvent, ConnectorInfoDTO> builder = StateMachineBuilderFactory
-                .create(ConnectorStateMachine.class, ConnectorState.class, ConnectorEvent.class, ConnectorInfoDTO.class);
+    public StateMachineBuilder<ConnectorStateMachine, ConnectorState, ConnectorEvent, Connector> getStateMachineBuilder() {
+        StateMachineBuilder<ConnectorStateMachine, ConnectorState, ConnectorEvent, Connector> builder = StateMachineBuilderFactory
+                .create(ConnectorStateMachine.class, ConnectorState.class, ConnectorEvent.class, Connector.class);
 
         Arrays.stream(ConnectorStateTransitionTable.values()).forEach(table ->
             builder.externalTransition().from(table.getFrom()).to(table.getTo()).on(table.getEvent()).perform(getActionByClass(table.getActionClass())));
@@ -70,10 +70,10 @@ public class ConnectorStateMachineBuilder implements ApplicationContextAware {
         return builder;
     }
 
-    private Action<ConnectorStateMachine, ConnectorState, ConnectorEvent, ConnectorInfoDTO> getActionByClass(final Class actionClass) {
+    private Action<ConnectorStateMachine, ConnectorState, ConnectorEvent, Connector> getActionByClass(final Class actionClass) {
         String className = actionClass.getSimpleName();
         String beanName = classNameToBeanName(className);
-        return (Action<ConnectorStateMachine, ConnectorState, ConnectorEvent, ConnectorInfoDTO>) applicationContext.getBean(beanName);
+        return (Action<ConnectorStateMachine, ConnectorState, ConnectorEvent, Connector>) applicationContext.getBean(beanName);
     }
 
     private String classNameToBeanName(final String className) {

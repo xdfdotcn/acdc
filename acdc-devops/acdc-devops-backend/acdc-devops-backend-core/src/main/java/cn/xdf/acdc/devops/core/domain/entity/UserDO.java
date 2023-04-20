@@ -4,8 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.hibernate.annotations.BatchSize;
 import org.springframework.data.annotation.CreatedBy;
@@ -20,6 +21,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.Email;
 import java.io.Serializable;
@@ -28,7 +30,8 @@ import java.util.Set;
 
 @Entity
 @Table(name = "user")
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
@@ -73,13 +76,19 @@ public class UserDO extends BaseDO implements Serializable {
     @BatchSize(size = 20)
     private Set<AuthorityDO> authorities = new HashSet<>();
 
-    @ManyToMany(fetch = FetchType.EAGER, mappedBy = "users")
+    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "users")
     @JsonIgnoreProperties(value = {"owner", "rdbs", "users"}, allowSetters = true)
     private Set<ProjectDO> projects = new HashSet<>();
 
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "user")
+    private Set<ConnectionDO> connections = new HashSet<>();
+
+    public UserDO(final Long id) {
+        this.id = id;
+    }
+
     // functions for jpa union feature
     // CHECKSTYLE:OFF
-
     public void setProjects(Set<ProjectDO> projects) {
         if (this.projects != null) {
             this.projects.forEach(i -> i.removeUser(this));

@@ -18,7 +18,7 @@
 
     <modules>
         <module>acdc-connect-connector</module>
-        <module>acdc-connect-smt</module>
+        <module>acdc-connect-transforms</module>
         <module>acdc-connect-package</module>
         <module>acdc-connect-plugins</module>
     </modules>

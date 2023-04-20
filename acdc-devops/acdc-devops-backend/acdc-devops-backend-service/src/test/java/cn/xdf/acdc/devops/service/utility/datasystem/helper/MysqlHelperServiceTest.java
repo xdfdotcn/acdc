@@ -1,20 +1,19 @@
 package cn.xdf.acdc.devops.service.utility.datasystem.helper;
 
-import cn.xdf.acdc.devops.core.domain.dto.FieldDTO;
-import cn.xdf.acdc.devops.core.domain.entity.RdbInstanceDO;
-import cn.xdf.acdc.devops.core.domain.entity.enumeration.RoleType;
-import cn.xdf.acdc.devops.service.config.RuntimeConfig;
-import cn.xdf.acdc.devops.service.error.NotFoundException;
+import cn.xdf.acdc.devops.core.domain.entity.enumeration.DataSystemType;
+import cn.xdf.acdc.devops.service.config.RuntimeProperties;
 import cn.xdf.acdc.devops.service.error.exceptions.ServerErrorException;
+import cn.xdf.acdc.devops.service.util.UrlUtil;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.assertj.core.api.Assertions;
+import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
@@ -23,15 +22,19 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
-
-// CHECKSTYLE:OFF
 
 @RunWith(MockitoJUnitRunner.class)
 public class MysqlHelperServiceTest {
@@ -42,118 +45,79 @@ public class MysqlHelperServiceTest {
     private static final List<String[]> PERMISSIONS_FOR_DATASOURCE = Lists.newArrayList(new String[]{"SELECT"}, new String[]{"REPLICATION SLAVE"},
             new String[]{"REPLICATION CLIENT"}, new String[]{"RELOAD", "LOCK TABLES"});
 
-    private static final String QUERY_LOG_BIN_SQL = "show variables like 'log_bin'";
+    private static final HostAndPort HOST_AND_PORT = new HostAndPort("6.6.6.2", 6662);
 
-    private static final String QUERY_BINLOG_FORMAT_SQL = "show variables like 'binlog_format'";
+    private static final UsernameAndPassword USERNAME_AND_PASSWORD = new UsernameAndPassword("user", "password");
 
-    private static final String QUERY_BINLOG_ROW_IMAGE_SQL = "show variables like 'binlog_row_image'";
+    private static final String DATABASE_NAME = "dummy_database";
 
-    private static final String QUERY_EXPIRE_LOGS_DAYS_SQL = "show variables like 'expire_logs_days'";
+    private static final String TABLE_NAME = "dummy_table";
 
-    private static final String QUERY_SQL_MODE_SQL = "show variables like 'sql_mode'";
+    private static final MockedStatic<DriverManager> MOCKED_DRIVER_MANAGER = Mockito.mockStatic(DriverManager.class);
 
     private MysqlHelperService mysqlHelperService;
 
     @Mock
-    private RuntimeConfig runtimeConfig;
+    private RuntimeProperties runtimeProperties;
 
     @Mock
-    private RuntimeConfig.Host host;
+    private RuntimeProperties.Host host;
 
-    @Mock
-    private Connection connection;
-
-    @Mock
-    private PreparedStatement statement;
-
-    @Mock
-    private PreparedStatement queryGrantsStatement;
-
-    @Mock
-    private PreparedStatement queryLogBinStatement;
-
-    @Mock
-    private PreparedStatement queryBinLogFormatStatement;
-
-    @Mock
-    private PreparedStatement queryBinLogRowImageStatement;
-
-    @Mock
-    private PreparedStatement queryBinLogExpireLogsDaysStatement;
-
-    @Mock
-    private PreparedStatement querySqlModeStatement;
-
-    @Mock
-    private ResultSet queryGrantsResultSet;
-
-    @Mock
-    private ResultSet queryLogBinResultSet;
-
-    @Mock
-    private ResultSet queryBinLogFormatResultSet;
-
-    @Mock
-    private ResultSet queryBinLogRowImageResultSet;
-
-    @Mock
-    private ResultSet queryBinLogExpireLogsDaysResultSet;
-
-    @Mock
-    private ResultSet querySqlModeResultSet;
-
-    @Mock
-    private ResultSet resultSet;
-
-    @BeforeClass
-    public static void init() {
-        try {
-            Mockito.mockStatic(DriverManager.class);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    @AfterClass
+    public static void tearDownClass() {
+        MOCKED_DRIVER_MANAGER.close();
     }
 
     @Before
-    public void setup() throws SQLException {
-        when(DriverManager.getConnection(anyString(), anyString(), anyString())).thenReturn(connection);
-        when(connection.prepareStatement(anyString())).thenReturn(statement);
-        when(statement.executeQuery()).thenReturn(resultSet);
-        when(resultSet.getString(1)).thenReturn("db_test");
-        when(resultSet.next()).thenReturn(true).thenReturn(false);
-
-        when(runtimeConfig.getHost()).thenReturn(host);
+    public void setup() {
+        when(runtimeProperties.getHost()).thenReturn(host);
         when(host.getRanges()).thenReturn(Sets.newHashSet("%"));
         when(host.getIps()).thenReturn(Sets.newHashSet("%"));
 
-        mysqlHelperService = new MysqlHelperService();
-        mysqlHelperService.runtimeConfig = runtimeConfig;
+        mysqlHelperService = new MysqlHelperService(runtimeProperties);
+    }
+
+    private ResultSet generateMockedResultSet() throws SQLException {
+        Connection connection = Mockito.mock(Connection.class);
+        PreparedStatement statement = Mockito.mock(PreparedStatement.class);
+        ResultSet resultSet = Mockito.mock(ResultSet.class);
+
+        when(DriverManager.getConnection(anyString(), anyString(), anyString())).thenReturn(connection);
+        when(connection.prepareStatement(anyString())).thenReturn(statement);
+        when(statement.executeQuery()).thenReturn(resultSet);
+
+        return resultSet;
     }
 
     @Test
     public void testDDLSQl() {
-        Assertions.assertThat(mysqlHelperService.sqlOfShowTable()).isEqualTo(" SHOW TABLES ");
+        Assertions.assertThat(mysqlHelperService.sqlOfShowTable()).isEqualTo(MysqlHelperService.SQL_SHOW_TABLES);
 
-        Assertions.assertThat(mysqlHelperService.sqlOfShowDatabase()).isEqualTo(" SHOW DATABASES ");
+        Assertions.assertThat(mysqlHelperService.sqlOfShowDatabase()).isEqualTo(MysqlHelperService.SQL_SHOW_DATABASES);
 
-        Assertions.assertThat(mysqlHelperService.sqlOfDescTable("test_01")).isEqualTo(" DESC `test_01` ");
+        Assertions.assertThat(mysqlHelperService.sqlOfDescTable(DATABASE_NAME, TABLE_NAME))
+                .isEqualTo(String.format(MysqlHelperService.SQL_DESC_TABLE, DATABASE_NAME, TABLE_NAME, DATABASE_NAME, TABLE_NAME));
 
-        Assertions.assertThat(mysqlHelperService.urlOfRdbInstance("192.168.110.1", 8080))
-                .isEqualTo("jdbc:mysql://192.168.110.1:8080");
+        Assertions.assertThat(mysqlHelperService.generateMysqlUrl(HOST_AND_PORT))
+                .isEqualTo(UrlUtil.generateJDBCUrl(DataSystemType.MYSQL.name().toLowerCase(), HOST_AND_PORT.getHost(), HOST_AND_PORT.getPort(), null, MysqlHelperService.CONNECTION_PROPERTY));
 
-        Assertions.assertThat(mysqlHelperService.urlOfRdbDatabase("192.168.110.1", 8080, "db_test"))
-                .isEqualTo("jdbc:mysql://192.168.110.1:8080/db_test");
+        Assertions.assertThat(mysqlHelperService.generateMysqlUrl(HOST_AND_PORT, DATABASE_NAME))
+                .isEqualTo(UrlUtil.generateJDBCUrl(DataSystemType.MYSQL.name().toLowerCase(), HOST_AND_PORT.getHost(), HOST_AND_PORT.getPort(), DATABASE_NAME, MysqlHelperService.CONNECTION_PROPERTY));
     }
 
     @Test
     public void testShowDataBasesWithIpAndPort() throws SQLException {
+        Connection connection = Mockito.mock(Connection.class);
+        PreparedStatement statement = Mockito.mock(PreparedStatement.class);
+        ResultSet resultSet = Mockito.mock(ResultSet.class);
+
         when(DriverManager.getConnection(anyString(), anyString(), anyString())).thenReturn(connection);
         when(connection.prepareStatement(anyString())).thenReturn(statement);
         when(statement.executeQuery()).thenReturn(resultSet);
         when(resultSet.getString(1)).thenReturn("db_test");
         when(resultSet.next()).thenReturn(true).thenReturn(false);
 
-        List<String> databases = mysqlHelperService.showDataBases("192.168.110.1", 8080, "user", "password");
+        List<String> databases = mysqlHelperService.showDataBases(HOST_AND_PORT, USERNAME_AND_PASSWORD);
         assertTrue(databases.size() == 1);
         assertTrue(databases.get(0).equals("db_test"));
 
@@ -163,19 +127,23 @@ public class MysqlHelperServiceTest {
 
         ArgumentCaptor<String> sqlCaptor = ArgumentCaptor.forClass(String.class);
         Mockito.verify(connection).prepareStatement(sqlCaptor.capture());
-        Assertions.assertThat(sqlCaptor.getValue()).isEqualTo(" SHOW DATABASES ");
+        Assertions.assertThat(sqlCaptor.getValue()).isEqualTo(MysqlHelperService.SQL_SHOW_DATABASES);
 
     }
 
     @Test
     public void testShowDataBasesWithIpAndPortAndPredicate() throws SQLException {
+        Connection connection = Mockito.mock(Connection.class);
+        PreparedStatement statement = Mockito.mock(PreparedStatement.class);
+        ResultSet resultSet = Mockito.mock(ResultSet.class);
+
         when(DriverManager.getConnection(anyString(), anyString(), anyString())).thenReturn(connection);
-//        when(connection.createStatement()).thenReturn(statement);
-//        when(statement.executeQuery(anyString())).thenReturn(resultSet);
+        when(connection.prepareStatement(anyString())).thenReturn(statement);
+        when(statement.executeQuery()).thenReturn(resultSet);
         when(resultSet.getString(1)).thenReturn("db_test1").thenReturn("db_test2");
         when(resultSet.next()).thenReturn(true).thenReturn(true).thenReturn(false);
 
-        List<String> databases = mysqlHelperService.showDataBases("192.168.110.1", 8080, "user", "password", database -> !database.equals("db_test2"));
+        List<String> databases = mysqlHelperService.showDataBases(HOST_AND_PORT, USERNAME_AND_PASSWORD, database -> !database.equals("db_test2"));
         assertTrue(databases.size() == 1);
         assertTrue(databases.get(0).equals("db_test1"));
         Mockito.verify(connection, Mockito.times(1)).close();
@@ -185,27 +153,37 @@ public class MysqlHelperServiceTest {
 
     @Test
     public void testShowDataBaseShouldGetEmptyWhenNotExist() throws SQLException {
+        ResultSet resultSet = generateMockedResultSet();
         when(resultSet.next()).thenReturn(false);
-        List<String> databases = mysqlHelperService.showDataBases("192.168.110.1", 8080, "user", "password", database -> !database.equals("db_test2"));
+
+        List<String> databases = mysqlHelperService.showDataBases(HOST_AND_PORT, USERNAME_AND_PASSWORD, database -> !database.equals("db_test2"));
         Assertions.assertThat(databases.isEmpty()).isEqualTo(true);
     }
 
     @Test
     public void testShowDataBasesShouldThrowExceptionWhenGivenIllegalParameter() {
-        Throwable throwable1 = Assertions.catchThrowable(() -> mysqlHelperService.showDataBases("", 8080, "user", "password"));
+        Throwable throwable1 = Assertions.catchThrowable(() -> mysqlHelperService.showDataBases(new HostAndPort("", 6662), USERNAME_AND_PASSWORD));
         Assertions.assertThat(throwable1).isInstanceOf(IllegalArgumentException.class);
 
-        Throwable throwable2 = Assertions.catchThrowable(() -> mysqlHelperService.showDataBases("192.168", 0, "user", "password"));
+        Throwable throwable2 = Assertions.catchThrowable(() -> mysqlHelperService.showDataBases(new HostAndPort("6.6", 0), USERNAME_AND_PASSWORD));
         Assertions.assertThat(throwable2).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     public void testShowTables() throws SQLException {
+        Connection connection = Mockito.mock(Connection.class);
+        PreparedStatement statement = Mockito.mock(PreparedStatement.class);
+        ResultSet resultSet = Mockito.mock(ResultSet.class);
+
+        when(DriverManager.getConnection(anyString(), anyString(), anyString())).thenReturn(connection);
+        when(connection.prepareStatement(anyString())).thenReturn(statement);
+        when(statement.executeQuery()).thenReturn(resultSet);
+
         when(resultSet.getString(1)).thenReturn("table1").thenReturn("table2");
         when(resultSet.next()).thenReturn(true).thenReturn(true).thenReturn(false);
         ArgumentCaptor<String> sqlCaptor = ArgumentCaptor.forClass(String.class);
 
-        List<String> tables = mysqlHelperService.showTables("192.168.110.1", 8080, "user", "password", "db_test");
+        List<String> tables = mysqlHelperService.showTables(HOST_AND_PORT, USERNAME_AND_PASSWORD, DATABASE_NAME);
         Assertions.assertThat(tables.size()).isEqualTo(2);
         Assertions.assertThat(tables.get(1)).isEqualTo("table2");
         Mockito.verify(connection, Mockito.times(1)).close();
@@ -217,93 +195,105 @@ public class MysqlHelperServiceTest {
 
     @Test
     public void testShowTablesShouldGetEmptyWhenNotExist() throws SQLException {
+        ResultSet resultSet = generateMockedResultSet();
         when(resultSet.next()).thenReturn(false);
-        List<String> tables = mysqlHelperService.showTables("192.168.110.1", 8080, "user", "password", "db_test");
+        List<String> tables = mysqlHelperService.showTables(HOST_AND_PORT, USERNAME_AND_PASSWORD, DATABASE_NAME);
         Assertions.assertThat(tables.isEmpty()).isEqualTo(true);
     }
 
     @Test
     public void testDescTable() throws SQLException {
-        when(resultSet.getString(1)).thenReturn("id").thenReturn("");
-        when(resultSet.getString(2)).thenReturn("bigint(20)").thenReturn("");
-        when(resultSet.getString(3)).thenReturn("NO").thenReturn("");
-        when(resultSet.getString(4)).thenReturn("PRI").thenReturn("");
-        when(resultSet.getString(5)).thenReturn("12").thenReturn("");
-        when(resultSet.getString(6)).thenReturn("auto_increment").thenReturn("");
+        Connection connection = Mockito.mock(Connection.class);
+        PreparedStatement statement = Mockito.mock(PreparedStatement.class);
+        ResultSet resultSet = Mockito.mock(ResultSet.class);
 
-        when(resultSet.next()).thenReturn(true).thenReturn(true).thenReturn(false);
+        when(DriverManager.getConnection(anyString(), anyString(), anyString())).thenReturn(connection);
+        when(connection.prepareStatement(anyString())).thenReturn(statement);
+        when(statement.executeQuery()).thenReturn(resultSet);
 
-        List<FieldDTO> fields = mysqlHelperService.descTable("192.168.110.1", 8900, "user", "password", "db_test", "table_test");
+        when(resultSet.getString(1)).thenReturn("id").thenReturn("column_2").thenReturn("column_3").thenReturn("column_3").thenReturn("column_4").thenReturn("column_5");
+        when(resultSet.getString(2)).thenReturn("bigint(20)").thenReturn("varchar(32)").thenReturn("varchar(128)").thenReturn("varchar(128)").thenReturn("varchar(32)").thenReturn("varchar(32)");
+        when(resultSet.getString(3)).thenReturn("PRIMARY").thenReturn("unique_index_1").thenReturn("unique_index_2").thenReturn("multi_unique_index_1").thenReturn("multi_unique_index_1")
+                .thenReturn(null);
 
-        Assertions.assertThat(fields.size()).isEqualTo(2);
-        Assertions.assertThat(fields.get(0).getName()).isEqualTo("id");
-        Assertions.assertThat(fields.get(0).getAllowNull()).isEqualTo("NO");
-        Assertions.assertThat(fields.get(0).getDataType()).isEqualTo("bigint(20)");
-        Assertions.assertThat(fields.get(0).getDefaultValue()).isEqualTo("12");
-        Assertions.assertThat(fields.get(0).getKeyType()).isEqualTo("PRI");
-        Assertions.assertThat(fields.get(0).getExtra()).isEqualTo("auto_increment");
+        when(resultSet.next()).thenReturn(true).thenReturn(true).thenReturn(true).thenReturn(true).thenReturn(true).thenReturn(true).thenReturn(false);
 
-        Assertions.assertThat(fields.get(1).getName()).isEqualTo("");
-        Assertions.assertThat(fields.get(1).getAllowNull()).isEqualTo("");
-        Assertions.assertThat(fields.get(1).getDataType()).isEqualTo("");
-        Assertions.assertThat(fields.get(1).getKeyType()).isEqualTo("");
-        Assertions.assertThat(fields.get(1).getDefaultValue()).isEqualTo("");
+        List<RelationalDatabaseTableField> fields = mysqlHelperService.descTable(HOST_AND_PORT, USERNAME_AND_PASSWORD, DATABASE_NAME, TABLE_NAME);
+
+        List<RelationalDatabaseTableField> expectedFields = new ArrayList<>();
+        expectedFields.add(RelationalDatabaseTableField.builder().name("id").type("bigint(20)").uniqueIndexNames(Sets.newHashSet("PRIMARY")).build());
+        expectedFields.add(RelationalDatabaseTableField.builder().name("column_2").type("varchar(32)").uniqueIndexNames(Sets.newHashSet("unique_index_1")).build());
+        expectedFields.add(RelationalDatabaseTableField.builder().name("column_3").type("varchar(128)").uniqueIndexNames(Sets.newHashSet("unique_index_2", "multi_unique_index_1")).build());
+        expectedFields.add(RelationalDatabaseTableField.builder().name("column_4").type("varchar(32)").uniqueIndexNames(Sets.newHashSet("multi_unique_index_1")).build());
+        expectedFields.add(RelationalDatabaseTableField.builder().name("column_5").type("varchar(32)").uniqueIndexNames(new HashSet<>()).build());
+
+        Collections.sort(fields, Comparator.comparing(RelationalDatabaseTableField::getName));
+        Collections.sort(expectedFields, Comparator.comparing(RelationalDatabaseTableField::getName));
+
+        Assertions.assertThat(fields).isEqualTo(expectedFields);
 
         Mockito.verify(connection, Mockito.times(1)).close();
         Mockito.verify(statement, Mockito.times(1)).close();
         Mockito.verify(resultSet, Mockito.times(1)).close();
     }
 
-    @Test
+    @Test(expected = ServerErrorException.class)
     public void testDescTableShouldThrowExceptionWhenNotExist() throws SQLException {
+        ResultSet resultSet = generateMockedResultSet();
         when(resultSet.next()).thenReturn(false);
-        Throwable throwable1 = Assertions.catchThrowable(() -> mysqlHelperService.descTable("192.168.110.1", 8900, "user", "password", "db_test", "table_test"));
-        Assertions.assertThat(throwable1).isInstanceOf(NotFoundException.class);
+        mysqlHelperService.descTable(HOST_AND_PORT, USERNAME_AND_PASSWORD, DATABASE_NAME, TABLE_NAME);
     }
 
     @Test
     public void testDescTableShouldThrowExceptionWhenGivenIllegalParameter() {
-        Throwable throwable1 = Assertions.catchThrowable(() -> mysqlHelperService.descTable("", 8080, "user", "password", "db_test", "tb_test"));
+        Throwable throwable1 = Assertions.catchThrowable(() -> mysqlHelperService.descTable(new HostAndPort("", 6662), USERNAME_AND_PASSWORD, DATABASE_NAME, TABLE_NAME));
         Assertions.assertThat(throwable1).isInstanceOf(IllegalArgumentException.class);
 
-        Throwable throwable2 = Assertions.catchThrowable(() -> mysqlHelperService.descTable("192", 0, "user", "password", "db_test", "tb_test"));
+        Throwable throwable2 = Assertions.catchThrowable(() -> mysqlHelperService.descTable(new HostAndPort("6.6.6.6", 0), USERNAME_AND_PASSWORD, DATABASE_NAME, TABLE_NAME));
         Assertions.assertThat(throwable2).isInstanceOf(IllegalArgumentException.class);
 
-        Throwable throwable3 = Assertions.catchThrowable(() -> mysqlHelperService.descTable("192", 0, "user", "password", "", "tb_test"));
+        Throwable throwable3 = Assertions.catchThrowable(() -> mysqlHelperService.descTable(HOST_AND_PORT, USERNAME_AND_PASSWORD, "", TABLE_NAME));
         Assertions.assertThat(throwable3).isInstanceOf(IllegalArgumentException.class);
 
-        Throwable throwable4 = Assertions.catchThrowable(() -> mysqlHelperService.descTable("192", 0, "user", "password", "db_test", ""));
+        Throwable throwable4 = Assertions.catchThrowable(() -> mysqlHelperService.descTable(HOST_AND_PORT, USERNAME_AND_PASSWORD, DATABASE_NAME, ""));
         Assertions.assertThat(throwable4).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     public void testShowTablesShouldThrowExceptionWhenGivenIllegalParameter() {
-
-        Throwable throwable1 = Assertions.catchThrowable(() -> mysqlHelperService.showTables("", 8080, "user", "password", "db"));
+        Throwable throwable1 = Assertions.catchThrowable(() -> mysqlHelperService.showTables(new HostAndPort("", 6662), USERNAME_AND_PASSWORD, DATABASE_NAME));
         Assertions.assertThat(throwable1).isInstanceOf(IllegalArgumentException.class);
 
-        Throwable throwable2 = Assertions.catchThrowable(() -> mysqlHelperService.showTables("192", 0, "user", "password", "db"));
+        Throwable throwable2 = Assertions.catchThrowable(() -> mysqlHelperService.showTables(new HostAndPort("6.6.6.6", 0), USERNAME_AND_PASSWORD, DATABASE_NAME));
         Assertions.assertThat(throwable2).isInstanceOf(IllegalArgumentException.class);
 
-        Throwable throwable3 = Assertions.catchThrowable(() -> mysqlHelperService.showTables("192", 8080, "user", "password", ""));
+        Throwable throwable3 = Assertions.catchThrowable(() -> mysqlHelperService.showTables(HOST_AND_PORT, USERNAME_AND_PASSWORD, ""));
         Assertions.assertThat(throwable3).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     public void testShouldThrowExceptionWhenDbException() throws SQLException {
+        Connection connection = Mockito.mock(Connection.class);
+        PreparedStatement statement = Mockito.mock(PreparedStatement.class);
+        ResultSet resultSet = Mockito.mock(ResultSet.class);
+
+        when(DriverManager.getConnection(anyString(), anyString(), anyString())).thenReturn(connection);
+        when(connection.prepareStatement(anyString())).thenReturn(statement);
+        when(statement.executeQuery()).thenReturn(resultSet);
+
         // mock db exception
         doThrow(new SQLException()).when(resultSet).next();
 
-        Throwable throwable1 = Assertions.catchThrowable(() -> mysqlHelperService.showDataBases("192", 8080, "user", "password"));
+        Throwable throwable1 = Assertions.catchThrowable(() -> mysqlHelperService.showDataBases(HOST_AND_PORT, USERNAME_AND_PASSWORD));
         Assertions.assertThat(throwable1).isInstanceOf(RuntimeException.class);
 
-        Throwable throwable2 = Assertions.catchThrowable(() -> mysqlHelperService.showDataBases("192", 8080, "user", "password", db -> false));
+        Throwable throwable2 = Assertions.catchThrowable(() -> mysqlHelperService.showDataBases(HOST_AND_PORT, USERNAME_AND_PASSWORD, db -> false));
         Assertions.assertThat(throwable2).isInstanceOf(RuntimeException.class);
 
-        Throwable throwable3 = Assertions.catchThrowable(() -> mysqlHelperService.showTables("192", 8080, "user", "password", "db"));
+        Throwable throwable3 = Assertions.catchThrowable(() -> mysqlHelperService.showTables(HOST_AND_PORT, USERNAME_AND_PASSWORD, DATABASE_NAME));
         Assertions.assertThat(throwable3).isInstanceOf(RuntimeException.class);
 
-        Throwable throwable4 = Assertions.catchThrowable(() -> mysqlHelperService.descTable("192", 8080, "user", "password", "db", "tb"));
+        Throwable throwable4 = Assertions.catchThrowable(() -> mysqlHelperService.descTable(HOST_AND_PORT, USERNAME_AND_PASSWORD, DATABASE_NAME, TABLE_NAME));
         Assertions.assertThat(throwable4).isInstanceOf(RuntimeException.class);
 
         Mockito.verify(connection, Mockito.times(4)).close();
@@ -325,7 +315,7 @@ public class MysqlHelperServiceTest {
     }
 
     @Test
-    public void testCheckPermissionsForDataSource() {
+    public void testCheckPermissionsForDataSourceShouldPass() {
         Set<String> grantedPermissionsForDataSource = Sets.newHashSet("SELECT", "REPLICATION SLAVE", "LOCK TABLES", "REPLICATION CLIENT");
         mysqlHelperService.checkPermissions(grantedPermissionsForDataSource, PERMISSIONS_FOR_DATASOURCE);
     }
@@ -336,132 +326,76 @@ public class MysqlHelperServiceTest {
         mysqlHelperService.checkPermissions(grantedPermissionsForMaster, PERMISSIONS_FOR_MASTER);
     }
 
-    @Test
-    public void testCheckUserPermissionsAndBinlogConfiguration() throws SQLException {
-        RdbInstanceDO rdbInstance = new RdbInstanceDO();
-        rdbInstance.setRole(RoleType.DATA_SOURCE);
-        rdbInstance.setPort(3306);
-        rdbInstance.setHost("host");
-        mockSufficientPermissionResultSet("username");
-        mockQueryBinlogConfig(false, false, false, false);
-        mysqlHelperService.checkUserPermissionsAndBinlogConfiguration(Lists.newArrayList(rdbInstance), "username", "password");
-    }
-
     @Test(expected = ServerErrorException.class)
     public void testShouldThrowExceptionWhenInsufficientPermission() throws SQLException {
-        mockInsufficientPermissionResultSet("username");
-        mysqlHelperService.checkPermissions("host", 3306, "username", "password", PERMISSIONS_FOR_DATASOURCE);
+        Connection connection = Mockito.mock(Connection.class);
+        PreparedStatement statement = Mockito.mock(PreparedStatement.class);
+        ResultSet resultSet = Mockito.mock(ResultSet.class);
+
+        when(DriverManager.getConnection(anyString(), anyString(), anyString())).thenReturn(connection);
+        mockShowGrantsPrepareStatement(connection, statement, resultSet, USERNAME_AND_PASSWORD.getUsername());
+        when(resultSet.getString(1)).thenReturn("GRANT SELECT ON *.* TO 'username'@'%'");
+        when(resultSet.next()).thenReturn(true).thenReturn(false);
+
+        mysqlHelperService.checkPermissions(HOST_AND_PORT, USERNAME_AND_PASSWORD, PERMISSIONS_FOR_DATASOURCE);
     }
 
     @Test
     public void testCheckGrants() throws SQLException {
-        String username = "username";
-        String password = "password";
-        mockSufficientPermissionResultSet(username);
-        mysqlHelperService.checkPermissions("host", 3306, username, password, PERMISSIONS_FOR_DATASOURCE);
+        Connection connection = Mockito.mock(Connection.class);
+        PreparedStatement statement = Mockito.mock(PreparedStatement.class);
+        ResultSet resultSet = Mockito.mock(ResultSet.class);
+
+        when(DriverManager.getConnection(anyString(), anyString(), anyString())).thenReturn(connection);
+        mockShowGrantsPrepareStatement(connection, statement, resultSet, USERNAME_AND_PASSWORD.getUsername());
+        when(resultSet.getString(1))
+                .thenReturn("GRANT SELECT, RELOAD,REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO 'username'@'%'")
+                .thenReturn("GRANT Update,Delete,Insert ON *.* TO 'username'@'%'");
+        when(resultSet.next()).thenReturn(true).thenReturn(true).thenReturn(false);
+
+        mysqlHelperService.checkPermissions(HOST_AND_PORT, USERNAME_AND_PASSWORD, PERMISSIONS_FOR_DATASOURCE);
     }
 
     @Test(expected = ServerErrorException.class)
     public void testShouldThrowExceptionWhenShowGrantsResultIsUnexpected() throws SQLException {
-        String username = "username";
-        String password = "password";
-        mockUnexpectedPermissionResultSet(username);
-        mysqlHelperService.checkPermissions("host", 3306, username, password, PERMISSIONS_FOR_DATASOURCE);
+        Connection connection = Mockito.mock(Connection.class);
+        PreparedStatement statement = Mockito.mock(PreparedStatement.class);
+        ResultSet resultSet = Mockito.mock(ResultSet.class);
+
+        when(DriverManager.getConnection(anyString(), anyString(), anyString())).thenReturn(connection);
+        mockShowGrantsPrepareStatement(connection, statement, resultSet, USERNAME_AND_PASSWORD.getUsername());
+        when(resultSet.getString(1)).thenReturn("Unexpect show grant result");
+        when(resultSet.next()).thenReturn(true).thenReturn(false);
+
+        mysqlHelperService.checkPermissions(HOST_AND_PORT, USERNAME_AND_PASSWORD, PERMISSIONS_FOR_DATASOURCE);
     }
 
-    private void mockSufficientPermissionResultSet(final String username) throws SQLException {
-        mockPrepareStatement(username);
-        when(queryGrantsResultSet.getString(1))
-                .thenReturn("GRANT SELECT, RELOAD,REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO 'username'@'%'")
-                .thenReturn("GRANT Update,Delete,Insert ON *.* TO 'username'@'%'");
-        when(queryGrantsResultSet.next()).thenReturn(true).thenReturn(true).thenReturn(false);
-    }
-
-    private void mockInsufficientPermissionResultSet(final String username) throws SQLException {
-        mockPrepareStatement(username);
-        when(queryGrantsResultSet.getString(1)).thenReturn("GRANT SELECT ON *.* TO 'username'@'%'");
-        when(queryGrantsResultSet.next()).thenReturn(true).thenReturn(false);
-    }
-
-    private void mockUnexpectedPermissionResultSet(final String username) throws SQLException {
-        mockPrepareStatement(username);
-        when(queryGrantsResultSet.getString(1)).thenReturn("Unexpect show grant result");
-        when(queryGrantsResultSet.next()).thenReturn(true).thenReturn(false);
-    }
-
-    private void mockPrepareStatement(final String username) throws SQLException {
-        when(connection.prepareStatement(String.format("show grants for %s@'%s'", username, "%"))).thenReturn(queryGrantsStatement);
-        when(queryGrantsStatement.executeQuery()).thenReturn(queryGrantsResultSet);
+    private void mockShowGrantsPrepareStatement(final Connection connection, final PreparedStatement statement, final ResultSet resultSet, final String username) throws SQLException {
+        when(connection.prepareStatement(String.format("show grants for %s@'%s'", username, "%"))).thenReturn(statement);
+        when(statement.executeQuery()).thenReturn(resultSet);
     }
 
     @Test
-    public void testCheckBinlogConfig() throws SQLException {
-        mockQueryBinlogConfig(false, false, false, false);
-        mysqlHelperService.checkBinlogConfiguration("host", 3306, "user", "pwd");
-    }
+    public void testShowVariablesShouldAsExcept() throws SQLException {
+        Connection connection = Mockito.mock(Connection.class);
+        PreparedStatement statement = Mockito.mock(PreparedStatement.class);
+        ResultSet resultSet = Mockito.mock(ResultSet.class);
 
-    @Test
-    public void testShouldPassWhenBinLogExpireTimeIsZero() throws SQLException {
-        mockQueryMySqlConfig(false, QUERY_LOG_BIN_SQL, queryLogBinStatement, queryLogBinResultSet, "ON", "OFF");
-        mockQueryMySqlConfig(false, QUERY_BINLOG_FORMAT_SQL, queryBinLogFormatStatement, queryBinLogFormatResultSet, "ROW", "");
-        mockQueryMySqlConfig(false, QUERY_BINLOG_ROW_IMAGE_SQL, queryBinLogRowImageStatement, queryBinLogRowImageResultSet, "FULL", "");
-        mockQueryMySqlConfig(false, QUERY_EXPIRE_LOGS_DAYS_SQL, queryBinLogExpireLogsDaysStatement, queryBinLogExpireLogsDaysResultSet, "0", "3");
-        mysqlHelperService.checkBinlogConfiguration("host", 3306, "user", "pwd");
-    }
+        when(DriverManager.getConnection(anyString(), anyString(), anyString())).thenReturn(connection);
+        when(connection.prepareStatement(MysqlHelperService.SHOW_VARIABLES_SQL)).thenReturn(statement);
+        when(statement.executeQuery()).thenReturn(resultSet);
 
-    @Test
-    public void testCheckSqlMode() throws SQLException {
-        mockQueryMySqlConfig(false, QUERY_SQL_MODE_SQL, querySqlModeStatement, querySqlModeResultSet, "STRICT_TRANS_TABLES", "");
-        mysqlHelperService.checkSqlMode("host", 3306, "user", "pwd");
-    }
+        when(resultSet.next()).thenReturn(true).thenReturn(true).thenReturn(true).thenReturn(true).thenReturn(false);
+        when(resultSet.getString(1)).thenReturn("log_bin").thenReturn("binlog_format").thenReturn("binlog_row_image").thenReturn("expire_logs_days");
+        when(resultSet.getString(2)).thenReturn("ON").thenReturn("ROW").thenReturn("FULL").thenReturn("4");
 
-    @Test(expected = ServerErrorException.class)
-    public void testShouldThrowExceptionWhenSqlModeUnexcepted() throws SQLException {
-        mockQueryMySqlConfig(true, QUERY_SQL_MODE_SQL, querySqlModeStatement, querySqlModeResultSet, "STRICT_TRANS_TABLES", "");
-        mysqlHelperService.checkSqlMode("host", 3306, "user", "pwd");
-    }
+        Map<String, String> variables = new HashMap<>();
+        variables.put("log_bin", "ON");
+        variables.put("binlog_format", "ROW");
+        variables.put("binlog_row_image", "FULL");
+        variables.put("expire_logs_days", "4");
 
-    @Test(expected = ServerErrorException.class)
-    public void testShouldThrowExceptionWhenLogBinConfigUnexpected() throws SQLException {
-        mockQueryBinlogConfig(true, false, false, false);
-        mysqlHelperService.checkBinlogConfiguration("host", 3306, "user", "pwd");
-    }
-
-    @Test(expected = ServerErrorException.class)
-    public void testShouldThrowExceptionWhenBinLogFormatConfigUnexpected() throws SQLException {
-        mockQueryBinlogConfig(false, true, false, false);
-        mysqlHelperService.checkBinlogConfiguration("host", 3306, "user", "pwd");
-    }
-
-    @Test(expected = ServerErrorException.class)
-    public void testShouldThrowExceptionWhenBinLogRowImageConfigUnexpected() throws SQLException {
-        mockQueryBinlogConfig(false, false, true, false);
-        mysqlHelperService.checkBinlogConfiguration("host", 3306, "user", "pwd");
-    }
-
-
-    @Test(expected = ServerErrorException.class)
-    public void testShouldThrowExceptionWhenExpireLogsDaysConfigUnexpected() throws SQLException {
-        mockQueryBinlogConfig(false, false, false, true);
-        mysqlHelperService.checkBinlogConfiguration("host", 3306, "user", "pwd");
-    }
-
-    private void mockQueryBinlogConfig(final Boolean isCheckLogBinException, final Boolean isCheckBinLogFormatException,
-                                       final Boolean isCheckBinLogRowImageException, final Boolean isCheckExpireLogsDaysException) throws SQLException {
-        mockQueryMySqlConfig(isCheckLogBinException, QUERY_LOG_BIN_SQL, queryLogBinStatement, queryLogBinResultSet, "ON", "OFF");
-        mockQueryMySqlConfig(isCheckBinLogFormatException, QUERY_BINLOG_FORMAT_SQL, queryBinLogFormatStatement, queryBinLogFormatResultSet, "ROW", "");
-        mockQueryMySqlConfig(isCheckBinLogRowImageException, QUERY_BINLOG_ROW_IMAGE_SQL, queryBinLogRowImageStatement, queryBinLogRowImageResultSet, "FULL", "");
-        mockQueryMySqlConfig(isCheckExpireLogsDaysException, QUERY_EXPIRE_LOGS_DAYS_SQL, queryBinLogExpireLogsDaysStatement, queryBinLogExpireLogsDaysResultSet, "4", "3");
-    }
-
-    private void mockQueryMySqlConfig(Boolean isCheckException, String sql, PreparedStatement ps, ResultSet rs, String exceptedValue, String wrongValue) throws SQLException {
-        when(connection.prepareStatement(sql)).thenReturn(ps);
-        when(ps.executeQuery()).thenReturn(rs);
-        if (isCheckException) {
-            when(rs.getString(2)).thenReturn(wrongValue);
-        } else {
-            when(rs.getString(2)).thenReturn(exceptedValue);
-        }
-        when(rs.next()).thenReturn(true).thenReturn(false);
+        Map<String, String> actualVariables = mysqlHelperService.showVariables(HOST_AND_PORT, USERNAME_AND_PASSWORD);
+        Assertions.assertThat(variables).isEqualTo(actualVariables);
     }
 }

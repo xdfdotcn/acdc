@@ -1,10 +1,10 @@
-import React from 'react';
-import type {ProColumns} from '@ant-design/pro-table';
+import React, {useRef} from 'react';
+import type {ActionType, ProColumns} from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
 import {Button} from 'antd';
 import {EditOutlined, PlusOutlined} from '@ant-design/icons';
 import {useModel} from 'umi';
-import {queryProject} from '@/services/a-cdc/api';
+import {pagedQueryProject} from '@/services/a-cdc/api';
 import ProjectConfig from './components/ProjectConfig';
 import ProjectEditing from './components/ProjectEditing';
 
@@ -27,6 +27,8 @@ const ProjectList: React.FC = () => {
 	// Kafka集群管理页
 	const {kafkaClusterMgtModel, setKafkaClusterMgtModel} = useModel('KafkaClusterMgtModel')
 
+  const ref = useRef<ActionType>();
+
 	const projectColumns: ProColumns<API.Project>[] = [
 		{
 			title: '名称',
@@ -44,7 +46,7 @@ const ProjectList: React.FC = () => {
 			title: '描述',
 			width: "25%",
 			dataIndex: 'description',
-			search:false,
+			search: false,
 			ellipsis: true,
 		},
 		{
@@ -73,7 +75,8 @@ const ProjectList: React.FC = () => {
 					onClick={() => {
 						setProjectUserModel({
 							...projectUserModel,
-							projectId: record.id
+							projectId: record.id,
+              ownerEmail: record.ownerEmail
 						})
 						setProjectConfigModel({
 							...projectConfigModel,
@@ -88,7 +91,6 @@ const ProjectList: React.FC = () => {
 							...rdbClusterMgtModel,
 							projectId: record.id,
 						})
-
 						setKafkaClusterMgtModel({
 							...kafkaClusterMgtModel,
 							projectId: record.id
@@ -104,12 +106,12 @@ const ProjectList: React.FC = () => {
 	return (
 		<div>
 			<ProTable<API.Project>
-				rowKey={(record) => String(record.id)}
+        rowKey={(record) => String(record.id)}
 				// 请求数据API
 				columns={projectColumns}
 				// 分页设置,默认数据,不展示动态调整分页大小
 				params={{}}
-				request={queryProject}
+				request={pagedQueryProject}
 				pagination={{
 					showSizeChanger: false,
 					pageSize: 8
@@ -117,8 +119,9 @@ const ProjectList: React.FC = () => {
 				options={{
 					setting: {
 						listsHeight: 400,
-					},
+          },
 				}}
+        actionRef={ref}
 				toolBarRender={() => [
 					<Button.Group key="refs" style={{display: 'block'}}>
 						<Button
@@ -137,7 +140,7 @@ const ProjectList: React.FC = () => {
 				]}
 			/>
 
-			<ProjectEditing/>
+			<ProjectEditing tableRef={ref.current}/>
 			<ProjectConfig/>
 		</div>
 	)

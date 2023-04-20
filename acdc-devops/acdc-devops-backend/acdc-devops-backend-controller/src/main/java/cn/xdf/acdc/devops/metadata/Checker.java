@@ -1,6 +1,6 @@
 package cn.xdf.acdc.devops.metadata;
 
-import cn.xdf.acdc.devops.service.process.datasystem.check.MetadataCheckService;
+import cn.xdf.acdc.devops.service.process.check.CheckerInOrder;
 import cn.xdf.acdc.devops.service.utility.mail.DefaultEmailSender;
 import cn.xdf.acdc.devops.service.utility.mail.EmailTemplate;
 import io.micrometer.core.annotation.Timed;
@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 public class Checker {
 
     @Autowired(required = false)
-    private List<MetadataCheckService> metadataCheckServices;
+    private List<CheckerInOrder> checkerInOrderList;
 
     @Autowired
     private DefaultEmailSender emailSender;
@@ -36,13 +36,13 @@ public class Checker {
     }
 
     private void checkMetadata() {
-        if (metadataCheckServices == null) {
+        if (checkerInOrderList == null) {
             log.info("Metadata checker is not Implemented.");
             return;
         }
 
-        List<Map<String, List<String>>> messages = metadataCheckServices.stream()
-                .map(MetadataCheckService::checkMetadataAndReturnErrorMessage)
+        List<Map<String, List<String>>> messages = checkerInOrderList.stream()
+                .map(CheckerInOrder::checkMetadataAndReturnErrorMessage)
                 .filter(map -> map != null && !map.isEmpty())
                 .collect(Collectors.toList());
 

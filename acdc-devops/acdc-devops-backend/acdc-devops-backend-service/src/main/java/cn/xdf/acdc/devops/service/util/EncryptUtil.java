@@ -22,10 +22,10 @@ import java.security.NoSuchAlgorithmException;
 public final class EncryptUtil {
 
     // 秘钥盐 key
-    private static final String SALT_KEY = "bDcZpKsTPIg8QUJ4";
+    private static final String SALT_KEY = "MHbSHtzcVBRS7yJA";
 
     // 初始化向量key
-    private static final String VECTOR_KEY = "JZhkK0UdwzaFkqIk";
+    private static final String VECTOR_KEY = "fUvNFah4qHvgwhxl";
 
     // 加密算法.
     private static final String ALGORITHM = "AES";

@@ -96,7 +96,7 @@ public class HiveIntegrationOrcTest extends HiveTestBase {
         hdfsWriter.stop();
         HdfsSinkConfig config = new HdfsSinkConfig(createProps());
         hdfsWriter = new HdfsWriterCoordinator(config, context);
-        hdfsWriter.syncHiveMetaData();
+        hdfsWriter.syncHiveMetaData(TOPIC_PARTITION);
 
         Schema schema = createSchema();
         Struct expectedRecord = createRecord(schema);

@@ -18,18 +18,18 @@ import java.util.stream.Collectors;
 @Getter
 public class LoginUserDTO implements UserDetails {
 
-    private Long userid;
+    private final Long userid;
 
-    private String email;
+    private final String email;
 
-    private String domainAccount;
+    private final String domainAccount;
 
-    private String username;
+    private final String username;
 
     @JsonIgnore
-    private String password;
+    private final String password;
 
-    private List<GrantedAuthority> authorities;
+    private final List<GrantedAuthority> authorities;
 
     public LoginUserDTO(final UserDO user) {
         this.userid = user.getId();
