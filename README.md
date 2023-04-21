@@ -2,10 +2,13 @@
 
 ![image](https://user-images.githubusercontent.com/118262561/205564974-ba3a2723-7442-4602-803a-6a58fcc23802.png)
 
-ACDC，A Change Data Capture，是新东方集团架构部开源的数据平台产品。目标是成为一个完整的数据中台解决方案，为大数据团队和研发团队提供以下能力：
-1. 端到端批、流式数据同步（已部分实现，详见 [当前能力](#当前能力) ）
-2. 数据处理
-3. 数据服务
+ACDC：A Change Data Capture，是新东方集团架构部开源的数据平台产品，其目标是成为一个完整的数据集成、服务解决方案，为大数据团队和技术团队提供以下 DevOps 能力：
+1. 端到端全量、增量数据同步
+2. 数据聚合、转换
+3. 数据接口
+4. 可观测性
+
+目前 ACDC 在新东方内部承载了 1000+ 的实时数据同步链路，仍在稳定增长中。
 
 # 产品由来
 
@@ -52,7 +55,7 @@ ACDC 会在数据同步、数据处理、数据服务三个方面持续发展。
 | 状态 | 数据源 | 数据目标 |
 | ---- | ---- | ---- |
 | 已实现 | MySQL <br> TiDB（with TiCDC） | JDBC 支持的数据系统（MySQL、TiDB、SQLServer、Oracle 等）<br> Hive <br> Kafka |
-| 已实现 | TiDB (with TikvClient) <br> Oracle <br> Sqlserver <br> PostgreSQL <br> Kafka <br> Hologres | Elastic Search <br> Redis <br> MacCompute <br> Hologres <br> PostgreSQL <br> StarRocks <br> IceBerg <br> Hudi |
+| 未实现 | TiDB (with TikvClient) <br> Oracle <br> Sqlserver <br> PostgreSQL <br> Kafka <br> Hologres | Elastic Search <br> Redis <br> MacCompute <br> Hologres <br> PostgreSQL <br> StarRocks <br> IceBerg <br> Hudi |
 
 数据处理方面，主要是针对数据提供一些加工、聚合能力，例如数据变换，数据过滤，数据维度打宽等。
 
