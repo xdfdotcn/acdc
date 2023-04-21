@@ -44,7 +44,7 @@ import org.apache.kafka.connect.sink.SinkTaskContext;
 @Slf4j
 public class AtLeastOnceTopicPartitionWriter implements TopicPartitionWriter {
 
-    private final TopicPartition tp;
+    private final TopicPartition topicPartition;
 
     private final RecordWriterProvider writerProvider;
 
@@ -72,11 +72,11 @@ public class AtLeastOnceTopicPartitionWriter implements TopicPartitionWriter {
 
     public AtLeastOnceTopicPartitionWriter(
         final SinkTaskContext sinkTaskContext,
-        final TopicPartition tp,
+        final TopicPartition topicPartition,
         final StoreContext storeContext
     ) {
         // component
-        this.tp = tp;
+        this.topicPartition = topicPartition;
         this.storeConfig = storeContext.getStoreConfig();
         this.fileOperator = storeContext.getFileOperator();
         this.writerProvider = storeContext.getRecordWriterProvider();
@@ -98,8 +98,8 @@ public class AtLeastOnceTopicPartitionWriter implements TopicPartitionWriter {
     @Override
     public void buffer(final SinkRecord sinkRecord) {
         if (log.isDebugEnabled()) {
-            log.debug("Buffering record, table: {}, tp: {}, key: {}, offset: {}, value: {}",
-                table, tp, sinkRecord.kafkaOffset(), sinkRecord.key(), sinkRecord.value()
+            log.debug("Buffering record, table: {}, topic partition: {}, key: {}, offset: {}, value: {}",
+                table, topicPartition, sinkRecord.kafkaOffset(), sinkRecord.key(), sinkRecord.value()
             );
         }
 
@@ -109,8 +109,8 @@ public class AtLeastOnceTopicPartitionWriter implements TopicPartitionWriter {
     @Override
     public void write() {
         if (buffer.isEmpty()) {
-            log.warn("Buffer record is empty, table: {}, tp: {}, buffer size {}",
-                table, tp, buffer.size());
+            log.info("Buffer record is empty, table: {}, topic partition: {}, buffer size {}",
+                table, topicPartition, buffer.size());
             return;
         }
         long start = System.currentTimeMillis();
@@ -118,8 +118,8 @@ public class AtLeastOnceTopicPartitionWriter implements TopicPartitionWriter {
             writeRecord();
         }
 
-        log.info("Write Success, table: {}, tp: {}, number of processing record: {}, cost: {}",
-            table, tp, getWrittenRecordCount(), System.currentTimeMillis() - start
+        log.info("Write Success, table: {}, topic partition: {}, number of processing record: {}, cost: {}",
+            table, topicPartition, getWrittenRecordCount(), System.currentTimeMillis() - start
         );
     }
 
@@ -127,7 +127,7 @@ public class AtLeastOnceTopicPartitionWriter implements TopicPartitionWriter {
         SinkRecord sinkRecord = buffer.poll();
         String encodePartition = partitioner.encodePartition(sinkRecord);
         RecordWriter writer = getRecordWriter(encodePartition);
-        ProjectedResult projectedResult = schemaReader.projectRecord(tp, sinkRecord);
+        ProjectedResult projectedResult = schemaReader.projectRecord(topicPartition, sinkRecord);
 
         if (projectedResult.isNeedChangeSchema()) {
             log.info("Schema change should be alert table, {}, table: newest schema: {}, projected record: {}",
@@ -141,13 +141,13 @@ public class AtLeastOnceTopicPartitionWriter implements TopicPartitionWriter {
         if (log.isDebugEnabled()) {
             log.debug("Write record success, "
                     + "table: {}, "
-                    + "tp: {}, "
+                    + "topic partition: {}, "
                     + "encodePartition: {}, "
                     + "write filename: {}, "
                     + "current file size: {}, "
                     + "current schema: {}, "
                     + "projected record: {}",
-                table, tp, encodePartition, writer.fileName(), writer.fileSize(),
+                table, topicPartition, encodePartition, writer.fileName(), writer.fileSize(),
                 projectedResult.getCurrentSchema(), projectedResult.getProjectedRecord());
         }
 
@@ -179,7 +179,7 @@ public class AtLeastOnceTopicPartitionWriter implements TopicPartitionWriter {
         }
         if (rotationPolicy.shouldBeRotateFile(recordWriter)) {
             closeRecordWriter(encodePartition);
-            String commitFile = fileOperator.createCommitFileByRotation(encodePartition, tp, writerProvider.getExtension());
+            String commitFile = fileOperator.createRotationCommittedFileInTablePartitionPath(encodePartition, topicPartition, writerProvider.getExtension());
             recordWriter = writerProvider.newRecordWriter(commitFile);
             encodePartitionWriters.put(encodePartition, recordWriter);
         }
@@ -187,12 +187,12 @@ public class AtLeastOnceTopicPartitionWriter implements TopicPartitionWriter {
     }
 
     private String loadCommitFile(final String encodePartition) {
-        Optional<FileStatus> maxFile = fileOperator.findMaxVerFileByPartitionAndTp(tp, encodePartition);
+        Optional<FileStatus> maxFile = fileOperator.findCommittedFileWithMaxVersionForTopicPartitionInTablePartitionPath(topicPartition, encodePartition);
         if (maxFile.isPresent()) {
             return maxFile.get().getPath().toString();
         } else {
-            return fileOperator.createCommitFileByRotation(encodePartition,
-                tp, writerProvider.getExtension());
+            return fileOperator.createRotationCommittedFileInTablePartitionPath(encodePartition,
+                    topicPartition, writerProvider.getExtension());
         }
     }
 
@@ -201,11 +201,11 @@ public class AtLeastOnceTopicPartitionWriter implements TopicPartitionWriter {
         Preconditions.checkNotNull(recordWriter, "not exist writer");
         log.info("Trigger file rotation,close the current file, "
                 + "table: {}, "
-                + "tp: {}, "
+                + "topic partition: {}, "
                 + "encodePartition: {}, "
                 + "filename: {}, "
                 + "file size: {}, ",
-            table, tp, encodePartition, recordWriter.fileName(), recordWriter.fileSize()
+            table, topicPartition, encodePartition, recordWriter.fileName(), recordWriter.fileSize()
         );
         recordWriter.close();
     }
@@ -224,7 +224,7 @@ public class AtLeastOnceTopicPartitionWriter implements TopicPartitionWriter {
 
     @Override
     public TopicPartition topicPartition() {
-        return tp;
+        return topicPartition;
     }
 
     @Override
@@ -234,7 +234,7 @@ public class AtLeastOnceTopicPartitionWriter implements TopicPartitionWriter {
 
     @Override
     public void close() {
-        log.info("Will close all writer, tp: {}", tp);
+        log.info("Will close all writer, topic partition: {}", topicPartition);
         closeRecordWriter();
         clearWrittenRecordCount();
         rotationPolicy.reset();
@@ -242,7 +242,7 @@ public class AtLeastOnceTopicPartitionWriter implements TopicPartitionWriter {
 
     @Override
     public void commit() {
-        log.info("Will commit all writer, tp: {}", tp);
+        log.info("Will commit all writer, topic partition: {}", topicPartition);
         if (buffer.isEmpty()) {
             closeRecordWriter();
             clearWrittenRecordCount();

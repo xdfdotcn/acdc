@@ -1,16 +1,6 @@
 # ===================================================================
 # Spring Boot configuration.
 #
-# This configuration is used for unit/integration tests.
-#
-# More information on profiles: https://www.jhipster.tech/profiles/
-# More information on configuration properties: https://www.jhipster.tech/common-application-properties/
-# ===================================================================
-
-# ===================================================================
-# Standard Spring Boot properties.
-# Full reference is available at:
-# http://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html
 # ===================================================================
 
 spring:
@@ -58,19 +48,8 @@ spring:
     allow-bean-definition-overriding: true
   messages:
     basename: i18n/messages
-  task:
-    execution:
-      thread-name-prefix: acdc-devops-task-
-      pool:
-        core-size: 1
-        max-size: 50
-        queue-capacity: 10000
-    scheduling:
-      thread-name-prefix: acdc-devops-scheduling-
-      pool:
-        size: 1
   thymeleaf:
-    mode: HTML
+    node: HTML
 
 server:
   port: 10344
@@ -84,42 +63,6 @@ logging:
           descriptor:
             sql:
               BasicBinder: trace
-
-# ===================================================================
-# JHipster specific properties
-#
-# Full reference is available at: https://www.jhipster.tech/common-application-properties/
-# ===================================================================
-
-jhipster:
-  clientApp:
-    name: 'acdcDevopsApp'
-  logging:
-    # To test json console appender
-    use-json-format: false
-    logstash:
-      enabled: false
-      host: localhost
-      port: 5000
-      queue-size: 512
-  mail:
-    from: test@localhost
-    base-url: http://127.0.0.1:8080
-  security:
-    authentication:
-      jwt:
-        # This token must be encoded using Base64 (you can type `echo 'secret-key'|base64` on your command line)
-        base64-secret: YjYzNGVmYzg3YmUwNTA5YzZkN2U0MmMwNTFkNjRlNzllZTI4ZjQ0YWM5YmI4ZDAwZDE0YmIyZDgyM2I2MzdkN2M0ZmUzZDZjZjIzYTNkMzk0NjBhNWVlZjBhY2U2MzZlZDJlZjBkM2I0MDVhZTY3MTYxNTk2NDhlNDMzYmQxNjg=
-        # Token is valid 24 hours
-        token-validity-in-seconds: 86400
-# ===================================================================
-# Application specific properties
-# Add your own application properties here, see the ApplicationProperties class
-# to have type-safe configuration, like in the JHipsterProperties above
-#
-# More documentation is available at:
-# https://www.jhipster.tech/common-application-properties/
-# ===================================================================
 
 # application:
 
@@ -135,17 +78,30 @@ acdc:
       password: fake-password
   connector:
     topic:
-      schema-history-topic-config:
+      data-collection:
+        partitions: 3
+        replication-factor: 3
+      schema-history:
         partitions: 1
-        replication.factor: 3
-        cleanup.policy: delete
-        retention.ms: 9223372036854775807
-        retention.bytes: -1
-      server-topic-config:
+        replication-factor: 3
+        configs:
+          cleanup.policy: delete
+          retention.ms: 9223372036854775807
+          retention.bytes: -1
+      schema-change:
         partitions: 1
-        replication.factor: 3
-        cleanup.policy: compact
-        compression.type: lz4
+        replication-factor: 3
+        configs:
+          cleConnectionRepositorynup.policy: compact
+          compression.type: lz4
+      ticdc:
+        partitions: 12
+        replication-factor: 6
+        acl:
+          username: acdc
+          operations:
+            - READ
+            - WRITE
   runtime:
     host:
       ranges:

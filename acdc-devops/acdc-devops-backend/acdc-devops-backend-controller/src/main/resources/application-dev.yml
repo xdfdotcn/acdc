@@ -1,6 +1,16 @@
 # ===================================================================
-# Spring Boot configuration .
+# Spring Boot configuration for the "dev" profile.
 #
+# This configuration overrides the application.yml file.
+#
+# More information on profiles: https://www.jhipster.tech/profiles/
+# More information on configuration properties: https://www.jhipster.tech/common-application-properties/
+# ===================================================================
+
+# ===================================================================
+# Standard Spring Boot properties.
+# Full reference is available at:
+# http://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html
 # ===================================================================
 
 logging:
@@ -33,27 +43,80 @@ spring:
         prepStmtCacheSize: 250
         prepStmtCacheSqlLimit: 2048
         useServerPrepStmts: true
-  jpa:
-  liquibase:
-    # Remove 'faker' if you do not want the sample data to be loaded automatically
-    contexts: dev
+  mail:
+    host:
+    port:
+    username:
+    password:
+    protocol: smtp
+    properties:
+      mail:
+        smtp:
+          starttls:
+            enable: false
+          auth: true
   messages:
     cache-duration: PT1S # 1 second, see the ISO 8601 standard
   thymeleaf:
     cache: false
+  liquibase:
+    # only enable in api module when prod
+    enabled: false
 
 # application:
 acdc:
+  rdb:
+    jdbc:
+      user:
+      password:
+  hive:
+    jdbc:
+      url:
+      user:
+      password:
   connector:
     topic:
-      schema-history-topic-config:
+      data-collection:
+        partitions: 3
+        replication-factor: 3
+      schema-history:
         partitions: 1
-        replication.factor: 1
-        cleanup.policy: delete
-        retention.ms: 9223372036854775807
-        retention.bytes: -1
-      server-topic-config:
+        replication-factor: 3
+        configs:
+          cleanup.policy: delete
+          retention.ms: 9223372036854775807
+          retention.bytes: -1
+      schema-change:
         partitions: 1
-        replication.factor: 1
-        cleanup.policy: compact
-        compression.type: lz4
+        replication-factor: 3
+        configs:
+          cleanup.policy: compact
+          compression.type: lz4
+      ticdc:
+        partitions: 12
+        replication-factor: 3
+        acl:
+          username:
+          operations:
+            - WRITE
+            - CREATE
+            - DESCRIBE
+            - DESCRIBE_CONFIGS
+  mail:
+    base-url:
+    from-email-address:
+    cc-email-address:
+    dba-email-address:
+  rest:
+    connection:
+      connect-timeout: 20000
+      read-timeout: 60000
+  runtime:
+    host:
+      ranges:
+        - '%'
+        - '192.%'
+        - '192.168.%'
+        - '192.168.1.%'
+      ips:
+        - '%'

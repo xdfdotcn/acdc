@@ -1,26 +1,23 @@
 package cn.xdf.acdc.devops.service.process.connection.approval;
 
-import cn.xdf.acdc.devops.core.domain.dto.ConnectionDTO;
+import cn.xdf.acdc.devops.core.domain.dto.ConnectionDetailDTO;
 import cn.xdf.acdc.devops.core.domain.dto.ConnectionRequisitionDetailDTO;
-import cn.xdf.acdc.devops.core.domain.dto.DomainUserDTO;
-import cn.xdf.acdc.devops.core.domain.entity.ConnectionRequisitionConnectionMappingDO;
+import cn.xdf.acdc.devops.core.domain.dto.UserDTO;
 import cn.xdf.acdc.devops.core.domain.entity.enumeration.ApprovalState;
 import cn.xdf.acdc.devops.core.domain.entity.enumeration.AuthorityRoleType;
-import cn.xdf.acdc.devops.core.domain.query.ConnectionQuery;
-import cn.xdf.acdc.devops.core.domain.query.ConnectionRequisitionConnectionMappingQuery;
 import cn.xdf.acdc.devops.core.domain.query.UserAuthorityQuery;
 import cn.xdf.acdc.devops.core.domain.query.UserQuery;
 import cn.xdf.acdc.devops.repository.ConnectionRepository;
-import cn.xdf.acdc.devops.repository.ConnectionRequisitionConnectionMappingRepository;
 import cn.xdf.acdc.devops.repository.UserAuthorityRepository;
 import cn.xdf.acdc.devops.repository.UserRepository;
 import cn.xdf.acdc.devops.service.error.exceptions.ClientErrorException;
-import cn.xdf.acdc.devops.service.process.connection.ConnectionRequisitionProcessService;
+import cn.xdf.acdc.devops.service.process.connection.ConnectionRequisitionService;
 import cn.xdf.acdc.devops.service.process.connection.approval.action.ApprovalAction;
 import cn.xdf.acdc.devops.service.process.connection.approval.definition.DefaultApprovalStateMachineDefinitionFactory;
 import cn.xdf.acdc.devops.service.process.connection.approval.error.ApprovalProcessStateMatchErrorException;
 import cn.xdf.acdc.devops.service.process.connection.approval.event.ApprovalEvent;
 import cn.xdf.acdc.devops.service.process.connection.approval.event.ApprovalEventGenerator;
+import cn.xdf.acdc.devops.service.utility.mail.DomainUser;
 import com.google.common.collect.Sets;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +27,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -49,13 +45,10 @@ public class ApprovalStateMachine implements ApplicationContextAware {
     private final Map<ApprovalState, Set<ApprovalEvent>> stateEventConfig;
 
     @Autowired
-    private ConnectionRequisitionProcessService connectionRequisitionProcessService;
+    private ConnectionRequisitionService connectionRequisitionService;
 
     @Autowired
     private UserAuthorityRepository userAuthorityRepository;
-
-    @Autowired
-    private ConnectionRequisitionConnectionMappingRepository connectionRequisitionConnectionMappingRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -121,7 +114,7 @@ public class ApprovalStateMachine implements ApplicationContextAware {
      */
     @Transactional
     public ApprovalState currentState(final Long id) {
-        return connectionRequisitionProcessService.getRequisition(id).getState();
+        return connectionRequisitionService.getById(id).getState();
     }
 
     /**
@@ -132,7 +125,7 @@ public class ApprovalStateMachine implements ApplicationContextAware {
      */
     @Transactional
     public ConnectionRequisitionDetailDTO getConnectionRequisitionById(final Long id) {
-        return connectionRequisitionProcessService.getRequisitionDetail(id);
+        return connectionRequisitionService.getDetailById(id);
     }
 
     /**
@@ -142,8 +135,10 @@ public class ApprovalStateMachine implements ApplicationContextAware {
      * @return List
      */
     @Transactional
-    public List<DomainUserDTO> getSourceOwner(final Long id) {
-        return connectionRequisitionProcessService.querySourceOwner(id);
+    public List<DomainUser> getSourceOwners(final Long id) {
+        return connectionRequisitionService.getSourceOwners(id)
+                .stream().map(it -> new DomainUser(it.getEmail(), it.getName()))
+                .collect(Collectors.toList());
     }
 
     /**
@@ -153,7 +148,7 @@ public class ApprovalStateMachine implements ApplicationContextAware {
      * @return List
      */
     @Transactional
-    public List<DomainUserDTO> getDbaApprover(final Long id) {
+    public List<DomainUser> getDbaApprovalUser(final Long id) {
         UserAuthorityQuery userAuthorityQuery = UserAuthorityQuery.builder()
                 .authorityRoleTypes(Sets.newHashSet(AuthorityRoleType.ROLE_DBA))
                 .build();
@@ -170,7 +165,7 @@ public class ApprovalStateMachine implements ApplicationContextAware {
                 .build();
 
         return userRepository.query(userQuery).stream()
-                .map(DomainUserDTO::new)
+                .map(it -> new DomainUser(it.getEmail(), it.getName()))
                 .collect(Collectors.toList());
     }
 
@@ -181,8 +176,9 @@ public class ApprovalStateMachine implements ApplicationContextAware {
      * @return DomainUserDTO
      */
     @Transactional
-    public DomainUserDTO getProposer(final Long id) {
-        return connectionRequisitionProcessService.getProposer(id);
+    public DomainUser getProposer(final Long id) {
+        UserDTO userDTO = connectionRequisitionService.getProposer(id);
+        return new DomainUser(userDTO.getEmail(), userDTO.getName());
     }
 
 
@@ -193,22 +189,8 @@ public class ApprovalStateMachine implements ApplicationContextAware {
      * @return List
      */
     @Transactional
-    public List<ConnectionDTO> getConnections(final Long id) {
-        List<ConnectionRequisitionConnectionMappingDO> mappings = connectionRequisitionConnectionMappingRepository
-                .query(
-                        ConnectionRequisitionConnectionMappingQuery.builder()
-                                .connectionRequisitionId(id).build()
-                );
-
-        List<Long> connectionIds =
-                mappings.stream().map(each -> each.getConnection().getId()).collect(Collectors.toList());
-
-        if (CollectionUtils.isEmpty(connectionIds)) {
-            return Collections.EMPTY_LIST;
-        }
-
-        ConnectionQuery connectionQuery = ConnectionQuery.builder().connectionIds(connectionIds).build();
-        return connectionRepository.query(connectionQuery).stream().map(ConnectionDTO::new).collect(Collectors.toList());
+    public List<ConnectionDetailDTO> getConnections(final Long id) {
+        return connectionRequisitionService.getDetailById(id).getConnections();
     }
 
 

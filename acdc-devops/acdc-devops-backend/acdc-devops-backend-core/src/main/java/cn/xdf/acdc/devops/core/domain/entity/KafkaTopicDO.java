@@ -11,15 +11,16 @@ import lombok.experimental.SuperBuilder;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Set;
 
 @ApiModel(description = "kafka topic 信息")
 @Entity
@@ -44,37 +45,18 @@ public class KafkaTopicDO extends SoftDeletableDO implements Serializable {
     @JsonIgnoreProperties(value = {"kafkaTopics", "connectors"}, allowSetters = true)
     private KafkaClusterDO kafkaCluster;
 
-    @OneToMany(mappedBy = "kafkaTopic")
-    @JsonIgnoreProperties(value = {"connector", "rdbTable", "kafkaTopic", "connectorDataExtensions"}, allowSetters = true)
-    private Set<SourceRdbTableDO> sourceRdbTables = new HashSet<>();
+    @ApiModelProperty("关联的 data system resource")
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "source_data_system_resource_kafka_topic_mapping",
+            joinColumns = @JoinColumn(name = "kafka_topic_id"),
+            inverseJoinColumns = @JoinColumn(name = "source_data_system_resource_id")
+    )
+    private DataSystemResourceDO dataSystemResource;
 
-    // functions for jpa union feature
-    // CHECKSTYLE:OFF
-
-    public void setSourceRdbTables(Set<SourceRdbTableDO> sourceRdbTables) {
-        if (this.sourceRdbTables != null) {
-            this.sourceRdbTables.forEach(i -> i.setKafkaTopic(null));
-        }
-        if (sourceRdbTables != null) {
-            sourceRdbTables.forEach(i -> i.setKafkaTopic(this));
-        }
-        this.sourceRdbTables = sourceRdbTables;
+    public KafkaTopicDO(final Long id) {
+        this.id = id;
     }
-
-    public KafkaTopicDO addSourceRdbTable(SourceRdbTableDO sourceRdbTable) {
-        this.sourceRdbTables.add(sourceRdbTable);
-        sourceRdbTable.setKafkaTopic(this);
-        return this;
-    }
-
-    public KafkaTopicDO removeSourceRdbTable(SourceRdbTableDO sourceRdbTable) {
-        this.sourceRdbTables.remove(sourceRdbTable);
-        sourceRdbTable.setKafkaTopic(null);
-        return this;
-    }
-
-    // functions for jpa union feature
-    // CHECKSTYLE:ON
 
     @Override
     public boolean equals(final Object o) {

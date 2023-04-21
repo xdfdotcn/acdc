@@ -22,11 +22,11 @@ public class DataSetTreeNode {
     private DataSystemType dataSystemType;
 
     public DataSetTreeNode(
-        final Long id,
-        final String name,
-        final int isLeaf,
-        final DataSetTreeNodeType nodeType,
-        final DataSystemType dataSystemType) {
+            final Long id,
+            final String name,
+            final int isLeaf,
+            final DataSetTreeNodeType nodeType,
+            final DataSystemType dataSystemType) {
         this.id = id;
         this.name = name;
         this.isLeaf = isLeaf;
@@ -35,9 +35,9 @@ public class DataSetTreeNode {
     }
 
     public DataSetTreeNode(
-        final Long id,
-        final String name,
-        final DataSetTreeNodeType nodeType) {
+            final Long id,
+            final String name,
+            final DataSetTreeNodeType nodeType) {
         this.id = id;
         this.name = name;
         this.isLeaf = 0;

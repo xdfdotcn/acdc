@@ -1,6 +1,6 @@
 package cn.xdf.acdc.devops.statemachine;
 
-import cn.xdf.acdc.devops.core.domain.dto.ConnectorInfoDTO;
+import cn.xdf.acdc.devops.dto.Connector;
 import cn.xdf.acdc.devops.core.domain.enumeration.ConnectorEvent;
 import cn.xdf.acdc.devops.core.domain.enumeration.ConnectorState;
 import org.springframework.stereotype.Component;
@@ -9,14 +9,14 @@ import org.squirrelframework.foundation.fsm.StateMachineBuilder;
 @Component
 public class ConnectorStateMachineProvider {
 
-    private final StateMachineBuilder<ConnectorStateMachine, ConnectorState, ConnectorEvent, ConnectorInfoDTO> stateMachineBuilder;
+    private final StateMachineBuilder<ConnectorStateMachine, ConnectorState, ConnectorEvent, Connector> stateMachineBuilder;
 
     /**
      * Set state machine builder.
      *
      * @param stateMachineBuilder state machine builder
      */
-    public ConnectorStateMachineProvider(final StateMachineBuilder<ConnectorStateMachine, ConnectorState, ConnectorEvent, ConnectorInfoDTO> stateMachineBuilder) {
+    public ConnectorStateMachineProvider(final StateMachineBuilder<ConnectorStateMachine, ConnectorState, ConnectorEvent, Connector> stateMachineBuilder) {
         this.stateMachineBuilder = stateMachineBuilder;
     }
 

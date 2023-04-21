@@ -28,8 +28,18 @@
         <dependency>
             <groupId>cn.xdf.acdc</groupId>
             <artifactId>acdc-connect-plugins-converter-schemaless-json</artifactId>
+            <scope>provided</scope>
         </dependency>
-
+        <dependency>
+            <groupId>cn.xdf.acdc</groupId>
+            <artifactId>acdc-connect-transforms-format</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.debezium</groupId>
+            <artifactId>debezium-core</artifactId>
+            <scope>provided</scope>
+        </dependency>
         <!-- Utilities -->
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -113,6 +123,7 @@
                 <dependency>
                     <groupId>cn.xdf.acdc</groupId>
                     <artifactId>acdc-internal-connect-plugins-converter-xdf</artifactId>
+                    <scope>provided</scope>
                 </dependency>
             </dependencies>
         </profile>

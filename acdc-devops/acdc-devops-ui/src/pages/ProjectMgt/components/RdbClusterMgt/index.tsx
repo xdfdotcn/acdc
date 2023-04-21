@@ -1,34 +1,45 @@
-import React, {useState} from 'react';
+import React, {useRef} from 'react';
 import type {ProColumns} from '@ant-design/pro-table';
-import ProTable from '@ant-design/pro-table';
-import {Modal, Button} from 'antd';
+import ProTable, {ActionType} from '@ant-design/pro-table';
+import {Button} from 'antd';
 import {EditOutlined, PlusOutlined} from '@ant-design/icons';
 import {useModel} from 'umi';
-import {queryProjectRdb, queryRdb} from '@/services/a-cdc/api';
+import {pagedQueryDataSystemResource} from '@/services/a-cdc/api';
 import RdbClusterEditing from '../RdbClusterEditing';
 import RdbClusterConfig from '../RdbClusterConfig';
-const {confirm} = Modal;
+import {DataSystemResourceTypeConstant} from "@/services/a-cdc/constant/DataSystemResourceTypeConstant";
 
 const RdbClusterMgt: React.FC = () => {
 	// 数据流
 	const {rdbClusterEditingModel, setRdbClusterEditingModel} = useModel('RdbClusterEditingModel')
 	const {rdbClusterConfigModel, setRdbClusterConfigModel} = useModel('RdbClusterConfigModel')
-	const {rdbClusterMgtModel, setRdbClusterMgtModel} = useModel('RdbClusterMgtModel')
+	const {rdbClusterMgtModel} = useModel('RdbClusterMgtModel')
 	const {rdbClusterDetailModel, setRdbClusterDetailModel} = useModel('RdbClusterDetailModel')
 	const {rdbInstanceModel, setRdbInstanceModel} = useModel('RdbInstanceModel')
-	const columns: ProColumns<API.Rdb>[] = [
+
+  const ref = useRef<ActionType>();
+
+	const columns: ProColumns<API.DataSystemResource>[] = [
+    {
+      title: '数据系统类型',
+      width: "10%",
+      dataIndex: 'dataSystemType',
+      search: false,
+    },
+
 		{
 			title: '名称',
-			width: "40%",
+			width: "30%",
 			dataIndex: 'name',
 		},
 
 		{
 			title: '描述',
 			width: "40%",
-			dataIndex: 'desc',
-			search:false,
+			dataIndex: 'description',
+			search: false,
 		},
+
 		{
 			title: '操作',
 			width: "20%",
@@ -42,7 +53,7 @@ const RdbClusterMgt: React.FC = () => {
 							...rdbClusterEditingModel,
 							showDrawer: true,
 							projectId: rdbClusterMgtModel.projectId,
-							rdbId: record.id,
+							resourceId: record.id,
 							from: 'edit'
 						})
 					}}
@@ -56,17 +67,21 @@ const RdbClusterMgt: React.FC = () => {
 						setRdbClusterConfigModel({
 							...rdbClusterConfigModel,
 							showDrawer: true,
-							rdbId: record.id,
+              resourceId: record.id,
+              dataSystemType: record.dataSystemType
 						})
 
 						setRdbClusterDetailModel({
 							...rdbClusterDetailModel,
-							rdbId: record.id,
+              resourceId: record.id,
+              description: record.description,
+              dataSystemType: record.dataSystemType
 						})
 
 						setRdbInstanceModel({
 							...rdbInstanceModel,
-							rdbId: record.id,
+              resourceId: record.id,
+              dataSystemType: record.dataSystemType
 						})
 					}}
 				>
@@ -78,15 +93,17 @@ const RdbClusterMgt: React.FC = () => {
 	];
 	return (
 		<div>
-			<ProTable<API.Rdb>
+			<ProTable<API.DataSystemResource>
 				rowKey={(record) => String(record.id)}
+        actionRef={ref}
 				// 请求数据API
 				columns={columns}
 				// 分页设置,默认数据,不展示动态调整分页大小
 				params={{
-					projectId: rdbClusterMgtModel.projectId
+					projectId: rdbClusterMgtModel.projectId,
+          resourceTypes: [DataSystemResourceTypeConstant.MYSQL_CLUSTER, DataSystemResourceTypeConstant.TIDB_CLUSTER]
 				}}
-				request={queryProjectRdb}
+				request={pagedQueryDataSystemResource}
 				pagination={{
 					showSizeChanger: true,
 					pageSize: 10
@@ -114,7 +131,7 @@ const RdbClusterMgt: React.FC = () => {
 					</Button.Group>
 				]}
 			/>
-			<RdbClusterEditing />
+			<RdbClusterEditing tableRef={ref.current} />
 			<RdbClusterConfig />
 		</div>
 	)

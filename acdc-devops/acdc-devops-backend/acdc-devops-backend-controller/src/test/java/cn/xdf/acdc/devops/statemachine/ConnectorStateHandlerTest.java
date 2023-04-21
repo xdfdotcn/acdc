@@ -2,12 +2,14 @@ package cn.xdf.acdc.devops.statemachine;
 
 import cn.xdf.acdc.devops.biz.connect.ConnectClusterRest;
 import cn.xdf.acdc.devops.biz.connect.response.ConnectorStatusResponse;
-import cn.xdf.acdc.devops.core.domain.dto.ConnectorInfoDTO;
+import cn.xdf.acdc.devops.core.domain.dto.ConnectorDetailDTO;
+import cn.xdf.acdc.devops.dto.Connector;
 import cn.xdf.acdc.devops.core.domain.entity.ConnectClusterDO;
 import cn.xdf.acdc.devops.core.domain.enumeration.ConnectorState;
-import cn.xdf.acdc.devops.service.entity.ConnectClusterService;
+import cn.xdf.acdc.devops.core.domain.query.ConnectorQuery;
 import cn.xdf.acdc.devops.service.entity.ConnectorEventService;
-import cn.xdf.acdc.devops.service.process.connector.ConnectorCoreProcessService;
+import cn.xdf.acdc.devops.service.process.connector.ConnectClusterService;
+import cn.xdf.acdc.devops.service.process.connector.ConnectorService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.Lists;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -51,7 +53,7 @@ public class ConnectorStateHandlerTest {
     private ConnectorEventService connectorEventService;
 
     @MockBean
-    private ConnectorCoreProcessService connectorCoreProcessService;
+    private ConnectorService connectorService;
 
     @MockBean
     private ConnectClusterService connectClusterService;
@@ -71,9 +73,15 @@ public class ConnectorStateHandlerTest {
     @Test
     public void testPendingToStarting() {
         Assert.assertEquals(6, connectorStateHandler.getUserTriggerEventHandlers().size());
-        List<ConnectorInfoDTO> connectorInfos = Lists.newArrayList(new ConnectorInfoDTO(1L, CONNECT_CLUSTER_URL, "pendingToStarting", new HashMap<>(), ConnectorState.PENDING, ConnectorState.RUNNING));
-        Mockito.when(connectorCoreProcessService.queryConnector(ArgumentMatchers.eq(ConnectorState.PENDING), ArgumentMatchers.eq(ConnectorState.RUNNING), ArgumentMatchers.eq(CONNECT_CLUSTER_ID)))
-                .thenReturn(connectorInfos);
+        List<ConnectorDetailDTO> detailDTOList = Lists.newArrayList(
+                new Connector(1L, CONNECT_CLUSTER_URL, "pendingToStarting", new HashMap<>(), ConnectorState.PENDING, ConnectorState.RUNNING).toDetailDTO());
+        Mockito.when(connectorService.queryDetailWithDecryptConfiguration(
+                ArgumentMatchers.eq(ConnectorQuery.builder()
+                        .actualState(ConnectorState.PENDING)
+                        .desiredState(ConnectorState.RUNNING)
+                        .connectCluster(new ConnectClusterDO(CONNECT_CLUSTER_ID))
+                        .build()))
+        ).thenReturn(detailDTOList);
 
         connectorStateHandler.getUserTriggerEventHandlers().forEach((event, handler) -> {
             handler.accept(CONNECT_CLUSTER_ID, event);
@@ -91,7 +99,7 @@ public class ConnectorStateHandlerTest {
 
         ArgumentCaptor<Long> connectorIdCaptor = ArgumentCaptor.forClass(Long.class);
         ArgumentCaptor<ConnectorState> stateCaptor = ArgumentCaptor.forClass(ConnectorState.class);
-        Mockito.verify(connectorCoreProcessService).updateActualState(connectorIdCaptor.capture(), stateCaptor.capture());
+        Mockito.verify(connectorService).updateActualState(connectorIdCaptor.capture(), stateCaptor.capture());
         Assert.assertEquals((Long) 1L, connectorIdCaptor.getValue());
         Assert.assertEquals(ConnectorState.STARTING, stateCaptor.getValue());
     }
@@ -99,9 +107,15 @@ public class ConnectorStateHandlerTest {
     // U:stop, clusterId:1
     @Test
     public void testPendingToStopping() {
-        List<ConnectorInfoDTO> connectorInfos = Lists.newArrayList(new ConnectorInfoDTO(1L, CONNECT_CLUSTER_URL, "pendingToStopping", new HashMap<>(), ConnectorState.PENDING, ConnectorState.STOPPED));
-        Mockito.when(connectorCoreProcessService.queryConnector(ArgumentMatchers.eq(ConnectorState.PENDING), ArgumentMatchers.eq(ConnectorState.STOPPED), ArgumentMatchers.eq(CONNECT_CLUSTER_ID)))
-                .thenReturn(connectorInfos);
+        List<ConnectorDetailDTO> detailDTOList = Lists.newArrayList(
+                new Connector(1L, CONNECT_CLUSTER_URL, "pendingToStopping", new HashMap<>(), ConnectorState.PENDING, ConnectorState.STOPPED).toDetailDTO());
+        Mockito.when(connectorService.queryDetailWithDecryptConfiguration(
+                ArgumentMatchers.eq(ConnectorQuery.builder()
+                        .actualState(ConnectorState.PENDING)
+                        .desiredState(ConnectorState.STOPPED)
+                        .connectCluster(new ConnectClusterDO(CONNECT_CLUSTER_ID))
+                        .build()))
+        ).thenReturn(detailDTOList);
 
         connectorStateHandler.getUserTriggerEventHandlers().forEach((event, handler) -> {
             handler.accept(CONNECT_CLUSTER_ID, event);
@@ -118,7 +132,7 @@ public class ConnectorStateHandlerTest {
 
         ArgumentCaptor<Long> connectorIdCaptor = ArgumentCaptor.forClass(Long.class);
         ArgumentCaptor<ConnectorState> stateCaptor = ArgumentCaptor.forClass(ConnectorState.class);
-        Mockito.verify(connectorCoreProcessService).updateActualState(connectorIdCaptor.capture(), stateCaptor.capture());
+        Mockito.verify(connectorService).updateActualState(connectorIdCaptor.capture(), stateCaptor.capture());
         Assert.assertEquals((Long) 1L, connectorIdCaptor.getValue());
         Assert.assertEquals(ConnectorState.STOPPING, stateCaptor.getValue());
     }
@@ -126,9 +140,15 @@ public class ConnectorStateHandlerTest {
     // U:restart, clusterId:1
     @Test
     public void testStoppedToPending() {
-        List<ConnectorInfoDTO> connectorInfos = Lists.newArrayList(new ConnectorInfoDTO(1L, CONNECT_CLUSTER_URL, "stoppedToPending", new HashMap<>(), ConnectorState.STOPPED, ConnectorState.RUNNING));
-        Mockito.when(connectorCoreProcessService.queryConnector(ArgumentMatchers.eq(ConnectorState.STOPPED), ArgumentMatchers.eq(ConnectorState.RUNNING), ArgumentMatchers.eq(CONNECT_CLUSTER_ID)))
-                .thenReturn(connectorInfos);
+        List<ConnectorDetailDTO> detailDTOList = Lists.newArrayList(
+                new Connector(1L, CONNECT_CLUSTER_URL, "stoppedToPending", new HashMap<>(), ConnectorState.STOPPED, ConnectorState.RUNNING).toDetailDTO());
+        Mockito.when(connectorService.queryDetailWithDecryptConfiguration(
+                ArgumentMatchers.eq(ConnectorQuery.builder()
+                        .actualState(ConnectorState.STOPPED)
+                        .desiredState(ConnectorState.RUNNING)
+                        .connectCluster(new ConnectClusterDO(CONNECT_CLUSTER_ID))
+                        .build()))
+        ).thenReturn(detailDTOList);
 
         connectorStateHandler.getUserTriggerEventHandlers().forEach((event, handler) -> {
             handler.accept(CONNECT_CLUSTER_ID, event);
@@ -139,7 +159,7 @@ public class ConnectorStateHandlerTest {
 
         ArgumentCaptor<Long> connectorIdCaptor = ArgumentCaptor.forClass(Long.class);
         ArgumentCaptor<ConnectorState> stateCaptor = ArgumentCaptor.forClass(ConnectorState.class);
-        Mockito.verify(connectorCoreProcessService).updateActualState(connectorIdCaptor.capture(), stateCaptor.capture());
+        Mockito.verify(connectorService).updateActualState(connectorIdCaptor.capture(), stateCaptor.capture());
         Assert.assertEquals((Long) 1L, connectorIdCaptor.getValue());
         Assert.assertEquals(ConnectorState.PENDING, stateCaptor.getValue());
     }
@@ -147,11 +167,15 @@ public class ConnectorStateHandlerTest {
     // U:stop, clusterId:1
     @Test
     public void testCreationFailedToStopped() {
-        List<ConnectorInfoDTO> connectorInfos = Lists
-                .newArrayList(new ConnectorInfoDTO(1L, CONNECT_CLUSTER_URL, "creationFailedToStopped", new HashMap<>(), ConnectorState.CREATION_FAILED, ConnectorState.STOPPED));
-        Mockito.when(
-                connectorCoreProcessService.queryConnector(ArgumentMatchers.eq(ConnectorState.CREATION_FAILED), ArgumentMatchers.eq(ConnectorState.STOPPED), ArgumentMatchers.eq(CONNECT_CLUSTER_ID)))
-                .thenReturn(connectorInfos);
+        List<ConnectorDetailDTO> detailDTOList = Lists.newArrayList(
+                new Connector(1L, CONNECT_CLUSTER_URL, "creationFailedToStopped", new HashMap<>(), ConnectorState.CREATION_FAILED, ConnectorState.STOPPED).toDetailDTO());
+        Mockito.when(connectorService.queryDetailWithDecryptConfiguration(
+                ArgumentMatchers.eq(ConnectorQuery.builder()
+                        .actualState(ConnectorState.CREATION_FAILED)
+                        .desiredState(ConnectorState.STOPPED)
+                        .connectCluster(new ConnectClusterDO(CONNECT_CLUSTER_ID))
+                        .build()))
+        ).thenReturn(detailDTOList);
 
         connectorStateHandler.getUserTriggerEventHandlers().forEach((event, handler) -> {
             handler.accept(CONNECT_CLUSTER_ID, event);
@@ -162,7 +186,7 @@ public class ConnectorStateHandlerTest {
 
         ArgumentCaptor<Long> connectorIdCaptor = ArgumentCaptor.forClass(Long.class);
         ArgumentCaptor<ConnectorState> stateCaptor = ArgumentCaptor.forClass(ConnectorState.class);
-        Mockito.verify(connectorCoreProcessService).updateActualState(connectorIdCaptor.capture(), stateCaptor.capture());
+        Mockito.verify(connectorService).updateActualState(connectorIdCaptor.capture(), stateCaptor.capture());
         Assert.assertEquals((Long) 1L, connectorIdCaptor.getValue());
         Assert.assertEquals(ConnectorState.STOPPED, stateCaptor.getValue());
     }
@@ -170,11 +194,15 @@ public class ConnectorStateHandlerTest {
     // U:stop, clusterId:1
     @Test
     public void testRuntimeFailedToStopping() {
-        List<ConnectorInfoDTO> connectorInfos = Lists
-                .newArrayList(new ConnectorInfoDTO(1L, CONNECT_CLUSTER_URL, "runtimeFailedToStopping", new HashMap<>(), ConnectorState.RUNTIME_FAILED, ConnectorState.STOPPED));
-        Mockito.when(
-                connectorCoreProcessService.queryConnector(ArgumentMatchers.eq(ConnectorState.RUNTIME_FAILED), ArgumentMatchers.eq(ConnectorState.STOPPED), ArgumentMatchers.eq(CONNECT_CLUSTER_ID)))
-                .thenReturn(connectorInfos);
+        List<ConnectorDetailDTO> detailDTOList = Lists.newArrayList(
+                new Connector(1L, CONNECT_CLUSTER_URL, "runtimeFailedToStopping", new HashMap<>(), ConnectorState.RUNTIME_FAILED, ConnectorState.STOPPED).toDetailDTO());
+        Mockito.when(connectorService.queryDetailWithDecryptConfiguration(
+                ArgumentMatchers.eq(ConnectorQuery.builder()
+                        .actualState(ConnectorState.RUNTIME_FAILED)
+                        .desiredState(ConnectorState.STOPPED)
+                        .connectCluster(new ConnectClusterDO(CONNECT_CLUSTER_ID))
+                        .build()))
+        ).thenReturn(detailDTOList);
 
         connectorStateHandler.getUserTriggerEventHandlers().forEach((event, handler) -> {
             handler.accept(CONNECT_CLUSTER_ID, event);
@@ -191,7 +219,7 @@ public class ConnectorStateHandlerTest {
 
         ArgumentCaptor<Long> connectorIdCaptor = ArgumentCaptor.forClass(Long.class);
         ArgumentCaptor<ConnectorState> stateCaptor = ArgumentCaptor.forClass(ConnectorState.class);
-        Mockito.verify(connectorCoreProcessService).updateActualState(connectorIdCaptor.capture(), stateCaptor.capture());
+        Mockito.verify(connectorService).updateActualState(connectorIdCaptor.capture(), stateCaptor.capture());
         Assert.assertEquals((Long) 1L, connectorIdCaptor.getValue());
         Assert.assertEquals(ConnectorState.STOPPING, stateCaptor.getValue());
     }
@@ -199,9 +227,15 @@ public class ConnectorStateHandlerTest {
     // U:stop, clusterId:1
     @Test
     public void testRunningToStopping() {
-        List<ConnectorInfoDTO> connectorInfos = Lists.newArrayList(new ConnectorInfoDTO(1L, CONNECT_CLUSTER_URL, "runningToStopping", new HashMap<>(), ConnectorState.RUNNING, ConnectorState.STOPPED));
-        Mockito.when(connectorCoreProcessService.queryConnector(ArgumentMatchers.eq(ConnectorState.RUNNING), ArgumentMatchers.eq(ConnectorState.STOPPED), ArgumentMatchers.eq(CONNECT_CLUSTER_ID)))
-                .thenReturn(connectorInfos);
+        List<ConnectorDetailDTO> detailDTOList = Lists.newArrayList(
+                new Connector(1L, CONNECT_CLUSTER_URL, "runningToStopping", new HashMap<>(), ConnectorState.RUNNING, ConnectorState.STOPPED).toDetailDTO());
+        Mockito.when(connectorService.queryDetailWithDecryptConfiguration(
+                ArgumentMatchers.eq(ConnectorQuery.builder()
+                        .actualState(ConnectorState.RUNNING)
+                        .desiredState(ConnectorState.STOPPED)
+                        .connectCluster(new ConnectClusterDO(CONNECT_CLUSTER_ID))
+                        .build()))
+        ).thenReturn(detailDTOList);
 
         connectorStateHandler.getUserTriggerEventHandlers().forEach((event, handler) -> {
             handler.accept(CONNECT_CLUSTER_ID, event);
@@ -218,7 +252,7 @@ public class ConnectorStateHandlerTest {
 
         ArgumentCaptor<Long> connectorIdCaptor = ArgumentCaptor.forClass(Long.class);
         ArgumentCaptor<ConnectorState> stateCaptor = ArgumentCaptor.forClass(ConnectorState.class);
-        Mockito.verify(connectorCoreProcessService).updateActualState(connectorIdCaptor.capture(), stateCaptor.capture());
+        Mockito.verify(connectorService).updateActualState(connectorIdCaptor.capture(), stateCaptor.capture());
         Assert.assertEquals((Long) 1L, connectorIdCaptor.getValue());
         Assert.assertEquals(ConnectorState.STOPPING, stateCaptor.getValue());
     }
@@ -235,9 +269,14 @@ public class ConnectorStateHandlerTest {
 
         Mockito.when(connectClusterRest.getConnectorConfig(ArgumentMatchers.eq(CONNECT_CLUSTER_URL), ArgumentMatchers.eq(connectorName))).thenReturn(Maps.newHashMap("config", "v1"));
 
-        List<ConnectorInfoDTO> connectorInfos = Lists.newArrayList(new ConnectorInfoDTO(1L, CONNECT_CLUSTER_URL, connectorName, new HashMap<>(), ConnectorState.STARTING, ConnectorState.RUNNING));
-
-        Mockito.when(connectorCoreProcessService.queryConnector(ArgumentMatchers.anyLong(), ArgumentMatchers.eq(ConnectorState.STARTING))).thenReturn(connectorInfos);
+        List<ConnectorDetailDTO> detailDTOList = Lists.newArrayList(
+                new Connector(1L, CONNECT_CLUSTER_URL, connectorName, new HashMap<>(), ConnectorState.STARTING, ConnectorState.RUNNING).toDetailDTO());
+        Mockito.when(connectorService.queryDetailWithDecryptConfiguration(
+                ArgumentMatchers.eq(ConnectorQuery.builder()
+                        .actualState(ConnectorState.STARTING)
+                        .connectCluster(new ConnectClusterDO(CONNECT_CLUSTER_ID))
+                        .build()))
+        ).thenReturn(detailDTOList);
 
         connectorStateHandler.connectClusterStateWatcher(CONNECT_CLUSTER_ID);
 
@@ -246,7 +285,7 @@ public class ConnectorStateHandlerTest {
 
         ArgumentCaptor<Long> connectorIdCaptor = ArgumentCaptor.forClass(Long.class);
         ArgumentCaptor<ConnectorState> stateCaptor = ArgumentCaptor.forClass(ConnectorState.class);
-        Mockito.verify(connectorCoreProcessService).updateActualState(connectorIdCaptor.capture(), stateCaptor.capture());
+        Mockito.verify(connectorService).updateActualState(connectorIdCaptor.capture(), stateCaptor.capture());
         Assert.assertEquals((Long) 1L, connectorIdCaptor.getValue());
         Assert.assertEquals(ConnectorState.RUNNING, stateCaptor.getValue());
     }
@@ -285,9 +324,14 @@ public class ConnectorStateHandlerTest {
 
         Mockito.when(connectClusterRest.getConnectorConfig(ArgumentMatchers.eq(CONNECT_CLUSTER_URL), ArgumentMatchers.eq(connectorName))).thenReturn(Maps.newHashMap("config", "v1"));
 
-        List<ConnectorInfoDTO> connectorInfos = Lists.newArrayList(new ConnectorInfoDTO(1L, CONNECT_CLUSTER_URL, connectorName, new HashMap<>(), ConnectorState.STARTING, ConnectorState.RUNNING));
-
-        Mockito.when(connectorCoreProcessService.queryConnector(ArgumentMatchers.anyLong(), ArgumentMatchers.eq(ConnectorState.STARTING))).thenReturn(connectorInfos);
+        List<ConnectorDetailDTO> detailDTOList = Lists.newArrayList(
+                new Connector(1L, CONNECT_CLUSTER_URL, connectorName, new HashMap<>(), ConnectorState.STARTING, ConnectorState.RUNNING).toDetailDTO());
+        Mockito.when(connectorService.queryDetailWithDecryptConfiguration(
+                ArgumentMatchers.eq(ConnectorQuery.builder()
+                        .actualState(ConnectorState.STARTING)
+                        .connectCluster(new ConnectClusterDO(CONNECT_CLUSTER_ID))
+                        .build()))
+        ).thenReturn(detailDTOList);
 
         connectorStateHandler.connectClusterStateWatcher(CONNECT_CLUSTER_ID);
 
@@ -296,7 +340,7 @@ public class ConnectorStateHandlerTest {
 
         ArgumentCaptor<Long> connectorIdCaptor = ArgumentCaptor.forClass(Long.class);
         ArgumentCaptor<ConnectorState> stateCaptor = ArgumentCaptor.forClass(ConnectorState.class);
-        Mockito.verify(connectorCoreProcessService).updateActualState(connectorIdCaptor.capture(), stateCaptor.capture());
+        Mockito.verify(connectorService).updateActualState(connectorIdCaptor.capture(), stateCaptor.capture());
         Assert.assertEquals((Long) 1L, connectorIdCaptor.getValue());
         Assert.assertEquals(ConnectorState.RUNTIME_FAILED, stateCaptor.getValue());
     }
@@ -328,10 +372,15 @@ public class ConnectorStateHandlerTest {
 
         Mockito.when(connectClusterRest.getConnectorConfig(ArgumentMatchers.eq(CONNECT_CLUSTER_URL), ArgumentMatchers.eq(connectorName))).thenReturn(Maps.newHashMap("config", "v1"));
 
-        List<ConnectorInfoDTO> connectorInfos = Lists.newArrayList(new ConnectorInfoDTO(1L, CONNECT_CLUSTER_URL, connectorName, new HashMap<>(), ConnectorState.RUNNING, ConnectorState.RUNNING));
-
-        Mockito.when(connectorCoreProcessService.queryConnector(ArgumentMatchers.eq(ConnectorState.RUNNING), ArgumentMatchers.eq(ConnectorState.RUNNING), ArgumentMatchers.anyLong()))
-                .thenReturn(connectorInfos);
+        List<ConnectorDetailDTO> detailDTOList = Lists.newArrayList(
+                new Connector(1L, CONNECT_CLUSTER_URL, connectorName, new HashMap<>(), ConnectorState.RUNNING, ConnectorState.RUNNING).toDetailDTO());
+        Mockito.when(connectorService.queryDetailWithDecryptConfiguration(
+                ArgumentMatchers.eq(ConnectorQuery.builder()
+                        .actualState(ConnectorState.RUNNING)
+                        .desiredState(ConnectorState.RUNNING)
+                        .connectCluster(new ConnectClusterDO(CONNECT_CLUSTER_ID))
+                        .build()))
+        ).thenReturn(detailDTOList);
 
         connectorStateHandler.connectClusterStateWatcher(CONNECT_CLUSTER_ID);
 
@@ -340,7 +389,7 @@ public class ConnectorStateHandlerTest {
 
         ArgumentCaptor<Long> connectorIdCaptor = ArgumentCaptor.forClass(Long.class);
         ArgumentCaptor<ConnectorState> stateCaptor = ArgumentCaptor.forClass(ConnectorState.class);
-        Mockito.verify(connectorCoreProcessService).updateActualState(connectorIdCaptor.capture(), stateCaptor.capture());
+        Mockito.verify(connectorService).updateActualState(connectorIdCaptor.capture(), stateCaptor.capture());
         Assert.assertEquals((Long) 1L, connectorIdCaptor.getValue());
         Assert.assertEquals(ConnectorState.RUNTIME_FAILED, stateCaptor.getValue());
     }
@@ -357,11 +406,15 @@ public class ConnectorStateHandlerTest {
 
         Mockito.when(connectClusterRest.getConnectorConfig(ArgumentMatchers.eq(CONNECT_CLUSTER_URL), ArgumentMatchers.eq(connectorName))).thenReturn(Maps.newHashMap("config", "v1"));
 
-        List<ConnectorInfoDTO> connectorInfos = Lists
-                .newArrayList(new ConnectorInfoDTO(1L, CONNECT_CLUSTER_URL, connectorName, Maps.newHashMap("config", "v2"), ConnectorState.RUNNING, ConnectorState.RUNNING));
-
-        Mockito.when(connectorCoreProcessService.queryConnector(ArgumentMatchers.eq(ConnectorState.RUNNING), ArgumentMatchers.eq(ConnectorState.RUNNING), ArgumentMatchers.anyLong()))
-                .thenReturn(connectorInfos);
+        List<ConnectorDetailDTO> detailDTOList = Lists.newArrayList(
+                new Connector(1L, CONNECT_CLUSTER_URL, connectorName, Maps.newHashMap("config", "v2"), ConnectorState.RUNNING, ConnectorState.RUNNING).toDetailDTO());
+        Mockito.when(connectorService.queryDetailWithDecryptConfiguration(
+                ArgumentMatchers.eq(ConnectorQuery.builder()
+                        .actualState(ConnectorState.RUNNING)
+                        .desiredState(ConnectorState.RUNNING)
+                        .connectCluster(new ConnectClusterDO(CONNECT_CLUSTER_ID))
+                        .build()))
+        ).thenReturn(detailDTOList);
 
         connectorStateHandler.connectClusterStateWatcher(CONNECT_CLUSTER_ID);
 
@@ -379,7 +432,7 @@ public class ConnectorStateHandlerTest {
 
         ArgumentCaptor<Long> connectorIdCaptor = ArgumentCaptor.forClass(Long.class);
         ArgumentCaptor<ConnectorState> stateCaptor = ArgumentCaptor.forClass(ConnectorState.class);
-        Mockito.verify(connectorCoreProcessService).updateActualState(connectorIdCaptor.capture(), stateCaptor.capture());
+        Mockito.verify(connectorService).updateActualState(connectorIdCaptor.capture(), stateCaptor.capture());
         Assert.assertEquals((Long) 1L, connectorIdCaptor.getValue());
         Assert.assertEquals(ConnectorState.UPDATING, stateCaptor.getValue());
     }
@@ -391,8 +444,14 @@ public class ConnectorStateHandlerTest {
         Mockito.when(connectClusterService.findById(ArgumentMatchers.any())).thenReturn(getConnectCluster());
         Mockito.when(connectClusterRest.getAllConnectorByClusterUrl(ArgumentMatchers.any())).thenReturn(Lists.newArrayList());
 
-        List<ConnectorInfoDTO> connectorInfos = Lists.newArrayList(new ConnectorInfoDTO(1L, CONNECT_CLUSTER_URL, connectorName, new HashMap<>(), ConnectorState.STOPPING, ConnectorState.STOPPED));
-        Mockito.when(connectorCoreProcessService.queryConnector(ArgumentMatchers.anyLong(), ArgumentMatchers.eq(ConnectorState.STOPPING))).thenReturn(connectorInfos);
+        List<ConnectorDetailDTO> detailDTOList = Lists.newArrayList(
+                new Connector(1L, CONNECT_CLUSTER_URL, connectorName, new HashMap<>(), ConnectorState.STOPPING, ConnectorState.STOPPED).toDetailDTO());
+        Mockito.when(connectorService.queryDetailWithDecryptConfiguration(
+                ArgumentMatchers.eq(ConnectorQuery.builder()
+                        .actualState(ConnectorState.STOPPING)
+                        .connectCluster(new ConnectClusterDO(CONNECT_CLUSTER_ID))
+                        .build()))
+        ).thenReturn(detailDTOList);
 
         connectorStateHandler.connectClusterStateWatcher(CONNECT_CLUSTER_ID);
 
@@ -401,7 +460,7 @@ public class ConnectorStateHandlerTest {
 
         ArgumentCaptor<Long> connectorIdCaptor = ArgumentCaptor.forClass(Long.class);
         ArgumentCaptor<ConnectorState> stateCaptor = ArgumentCaptor.forClass(ConnectorState.class);
-        Mockito.verify(connectorCoreProcessService).updateActualState(connectorIdCaptor.capture(), stateCaptor.capture());
+        Mockito.verify(connectorService).updateActualState(connectorIdCaptor.capture(), stateCaptor.capture());
         Assert.assertEquals((Long) 1L, connectorIdCaptor.getValue());
         Assert.assertEquals(ConnectorState.STOPPED, stateCaptor.getValue());
     }
@@ -415,9 +474,14 @@ public class ConnectorStateHandlerTest {
 
         Mockito.when(connectClusterRest.getAllConnectorByClusterUrl(ArgumentMatchers.eq(CONNECT_CLUSTER_URL))).thenReturn(Lists.newArrayList());
 
-        List<ConnectorInfoDTO> connectorInfos = Lists.newArrayList(new ConnectorInfoDTO(1L, CONNECT_CLUSTER_URL, connectorName, new HashMap<>(), ConnectorState.STARTING, ConnectorState.RUNNING));
-
-        Mockito.when(connectorCoreProcessService.queryConnector(ArgumentMatchers.eq(CONNECT_CLUSTER_ID), ArgumentMatchers.eq(ConnectorState.STARTING))).thenReturn(connectorInfos);
+        List<ConnectorDetailDTO> detailDTOList = Lists.newArrayList(
+                new Connector(1L, CONNECT_CLUSTER_URL, connectorName, new HashMap<>(), ConnectorState.STARTING, ConnectorState.RUNNING).toDetailDTO());
+        Mockito.when(connectorService.queryDetailWithDecryptConfiguration(
+                ArgumentMatchers.eq(ConnectorQuery.builder()
+                        .actualState(ConnectorState.STARTING)
+                        .connectCluster(new ConnectClusterDO(CONNECT_CLUSTER_ID))
+                        .build()))
+        ).thenReturn(detailDTOList);
 
         connectorStateHandler.innerExtendEventWatcher(CONNECT_CLUSTER_ID);
 
@@ -430,7 +494,7 @@ public class ConnectorStateHandlerTest {
 
         ArgumentCaptor<Long> connectorIdCaptor = ArgumentCaptor.forClass(Long.class);
         ArgumentCaptor<ConnectorState> stateCaptor = ArgumentCaptor.forClass(ConnectorState.class);
-        Mockito.verify(connectorCoreProcessService).updateActualState(connectorIdCaptor.capture(), stateCaptor.capture());
+        Mockito.verify(connectorService).updateActualState(connectorIdCaptor.capture(), stateCaptor.capture());
         Assert.assertEquals((Long) 1L, connectorIdCaptor.getValue());
         Assert.assertEquals(ConnectorState.PENDING, stateCaptor.getValue());
     }
@@ -444,9 +508,14 @@ public class ConnectorStateHandlerTest {
 
         Mockito.when(connectClusterRest.getAllConnectorByClusterUrl(ArgumentMatchers.eq(CONNECT_CLUSTER_URL))).thenReturn(Lists.newArrayList(connectorName));
 
-        List<ConnectorInfoDTO> connectorInfos = Lists.newArrayList(new ConnectorInfoDTO(1L, CONNECT_CLUSTER_URL, connectorName, new HashMap<>(), ConnectorState.STOPPING, ConnectorState.STOPPED));
-
-        Mockito.when(connectorCoreProcessService.queryConnector(ArgumentMatchers.eq(CONNECT_CLUSTER_ID), ArgumentMatchers.eq(ConnectorState.STOPPING))).thenReturn(connectorInfos);
+        List<ConnectorDetailDTO> detailDTOList = Lists.newArrayList(
+                new Connector(1L, CONNECT_CLUSTER_URL, connectorName, new HashMap<>(), ConnectorState.STOPPING, ConnectorState.STOPPED).toDetailDTO());
+        Mockito.when(connectorService.queryDetailWithDecryptConfiguration(
+                ArgumentMatchers.eq(ConnectorQuery.builder()
+                        .actualState(ConnectorState.STOPPING)
+                        .connectCluster(new ConnectClusterDO(CONNECT_CLUSTER_ID))
+                        .build()))
+        ).thenReturn(detailDTOList);
 
         connectorStateHandler.innerExtendEventWatcher(CONNECT_CLUSTER_ID);
 
@@ -459,7 +528,7 @@ public class ConnectorStateHandlerTest {
 
         ArgumentCaptor<Long> connectorIdCaptor = ArgumentCaptor.forClass(Long.class);
         ArgumentCaptor<ConnectorState> stateCaptor = ArgumentCaptor.forClass(ConnectorState.class);
-        Mockito.verify(connectorCoreProcessService).updateActualState(connectorIdCaptor.capture(), stateCaptor.capture());
+        Mockito.verify(connectorService).updateActualState(connectorIdCaptor.capture(), stateCaptor.capture());
         Assert.assertEquals((Long) 1L, connectorIdCaptor.getValue());
         Assert.assertEquals(ConnectorState.RUNNING, stateCaptor.getValue());
     }
@@ -472,9 +541,14 @@ public class ConnectorStateHandlerTest {
 
         Mockito.when(connectClusterRest.getAllConnectorByClusterUrl(ArgumentMatchers.eq(CONNECT_CLUSTER_URL))).thenReturn(Lists.newArrayList(connectorName));
 
-        List<ConnectorInfoDTO> connectorInfos = Lists.newArrayList(new ConnectorInfoDTO(1L, CONNECT_CLUSTER_URL, connectorName, new HashMap<>(), ConnectorState.UPDATING, ConnectorState.RUNNING));
-
-        Mockito.when(connectorCoreProcessService.queryConnector(ArgumentMatchers.eq(CONNECT_CLUSTER_ID), ArgumentMatchers.eq(ConnectorState.UPDATING))).thenReturn(connectorInfos);
+        List<ConnectorDetailDTO> detailDTOList = Lists.newArrayList(
+                new Connector(1L, CONNECT_CLUSTER_URL, connectorName, new HashMap<>(), ConnectorState.UPDATING, ConnectorState.RUNNING).toDetailDTO());
+        Mockito.when(connectorService.queryDetailWithDecryptConfiguration(
+                ArgumentMatchers.eq(ConnectorQuery.builder()
+                        .actualState(ConnectorState.UPDATING)
+                        .connectCluster(new ConnectClusterDO(CONNECT_CLUSTER_ID))
+                        .build()))
+        ).thenReturn(detailDTOList);
 
         connectorStateHandler.innerExtendEventWatcher(CONNECT_CLUSTER_ID);
 
@@ -483,7 +557,7 @@ public class ConnectorStateHandlerTest {
 
         ArgumentCaptor<Long> connectorIdCaptor = ArgumentCaptor.forClass(Long.class);
         ArgumentCaptor<ConnectorState> stateCaptor = ArgumentCaptor.forClass(ConnectorState.class);
-        Mockito.verify(connectorCoreProcessService).updateActualState(connectorIdCaptor.capture(), stateCaptor.capture());
+        Mockito.verify(connectorService).updateActualState(connectorIdCaptor.capture(), stateCaptor.capture());
         Assert.assertEquals((Long) 1L, connectorIdCaptor.getValue());
         Assert.assertEquals(ConnectorState.RUNNING, stateCaptor.getValue());
     }
@@ -496,9 +570,14 @@ public class ConnectorStateHandlerTest {
 
         Mockito.when(connectClusterRest.getAllConnectorByClusterUrl(ArgumentMatchers.eq(CONNECT_CLUSTER_URL))).thenReturn(Lists.newArrayList());
 
-        List<ConnectorInfoDTO> connectorInfos = Lists.newArrayList(new ConnectorInfoDTO(1L, CONNECT_CLUSTER_URL, connectorName, new HashMap<>(), ConnectorState.PENDING, ConnectorState.RUNNING));
-
-        Mockito.when(connectorCoreProcessService.queryConnector(ArgumentMatchers.eq(CONNECT_CLUSTER_ID), ArgumentMatchers.eq(ConnectorState.PENDING))).thenReturn(connectorInfos);
+        List<ConnectorDetailDTO> detailDTOList = Lists.newArrayList(
+                new Connector(1L, CONNECT_CLUSTER_URL, connectorName, new HashMap<>(), ConnectorState.PENDING, ConnectorState.RUNNING).toDetailDTO());
+        Mockito.when(connectorService.queryDetailWithDecryptConfiguration(
+                ArgumentMatchers.eq(ConnectorQuery.builder()
+                        .actualState(ConnectorState.PENDING)
+                        .connectCluster(new ConnectClusterDO(CONNECT_CLUSTER_ID))
+                        .build()))
+        ).thenReturn(detailDTOList);
 
         Mockito.doThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR))
                 .when(connectClusterRest).validConnectorConfig(ArgumentMatchers.eq(CONNECT_CLUSTER_URL), ArgumentMatchers.eq(connectorName), ArgumentMatchers.anyMap());
@@ -510,7 +589,7 @@ public class ConnectorStateHandlerTest {
 
         ArgumentCaptor<Long> connectorIdCaptor = ArgumentCaptor.forClass(Long.class);
         ArgumentCaptor<ConnectorState> stateCaptor = ArgumentCaptor.forClass(ConnectorState.class);
-        Mockito.verify(connectorCoreProcessService).updateActualState(connectorIdCaptor.capture(), stateCaptor.capture());
+        Mockito.verify(connectorService).updateActualState(connectorIdCaptor.capture(), stateCaptor.capture());
         Assert.assertEquals((Long) 1L, connectorIdCaptor.getValue());
         Assert.assertEquals(ConnectorState.CREATION_FAILED, stateCaptor.getValue());
     }
@@ -523,12 +602,15 @@ public class ConnectorStateHandlerTest {
 
         Mockito.when(connectClusterRest.getAllConnectorByClusterUrl(ArgumentMatchers.eq(CONNECT_CLUSTER_URL))).thenReturn(Lists.newArrayList());
 
-        List<ConnectorInfoDTO> connectorInfos = Lists
-                .newArrayList(new ConnectorInfoDTO(8L, CONNECT_CLUSTER_URL, connectorName, new HashMap<>(), ConnectorState.CREATION_FAILED, ConnectorState.RUNNING));
-
-        Mockito.when(connectorCoreProcessService.queryConnector(
-                ArgumentMatchers.eq(ConnectorState.CREATION_FAILED), ArgumentMatchers.eq(ConnectorState.RUNNING), ArgumentMatchers.eq(CONNECT_CLUSTER_ID)))
-                .thenReturn(connectorInfos);
+        List<ConnectorDetailDTO> detailDTOList = Lists.newArrayList(
+                new Connector(8L, CONNECT_CLUSTER_URL, connectorName, new HashMap<>(), ConnectorState.CREATION_FAILED, ConnectorState.RUNNING).toDetailDTO());
+        Mockito.when(connectorService.queryDetailWithDecryptConfiguration(
+                ArgumentMatchers.eq(ConnectorQuery.builder()
+                        .actualState(ConnectorState.CREATION_FAILED)
+                        .desiredState(ConnectorState.RUNNING)
+                        .connectCluster(new ConnectClusterDO(CONNECT_CLUSTER_ID))
+                        .build()))
+        ).thenReturn(detailDTOList);
 
         connectorStateHandler.innerExtendEventWatcher(CONNECT_CLUSTER_ID);
 
@@ -537,7 +619,7 @@ public class ConnectorStateHandlerTest {
 
         ArgumentCaptor<Long> connectorIdCaptor = ArgumentCaptor.forClass(Long.class);
         ArgumentCaptor<ConnectorState> stateCaptor = ArgumentCaptor.forClass(ConnectorState.class);
-        Mockito.verify(connectorCoreProcessService).updateActualState(connectorIdCaptor.capture(), stateCaptor.capture());
+        Mockito.verify(connectorService).updateActualState(connectorIdCaptor.capture(), stateCaptor.capture());
         Assert.assertEquals((Long) 8L, connectorIdCaptor.getValue());
         Assert.assertEquals(ConnectorState.PENDING, stateCaptor.getValue());
     }
@@ -550,12 +632,15 @@ public class ConnectorStateHandlerTest {
 
         Mockito.when(connectClusterRest.getAllConnectorByClusterUrl(ArgumentMatchers.eq(CONNECT_CLUSTER_URL))).thenReturn(Lists.newArrayList());
 
-        List<ConnectorInfoDTO> connectorInfos = Lists
-                .newArrayList(new ConnectorInfoDTO(1L, CONNECT_CLUSTER_URL, connectorName, new HashMap<>(), ConnectorState.RUNTIME_FAILED, ConnectorState.RUNNING));
-
-        Mockito.when(connectorCoreProcessService.queryConnector(
-                ArgumentMatchers.eq(ConnectorState.RUNTIME_FAILED), ArgumentMatchers.eq(ConnectorState.RUNNING), ArgumentMatchers.eq(CONNECT_CLUSTER_ID)))
-                .thenReturn(connectorInfos);
+        List<ConnectorDetailDTO> detailDTOList = Lists.newArrayList(
+                new Connector(1L, CONNECT_CLUSTER_URL, connectorName, new HashMap<>(), ConnectorState.RUNTIME_FAILED, ConnectorState.RUNNING).toDetailDTO());
+        Mockito.when(connectorService.queryDetailWithDecryptConfiguration(
+                ArgumentMatchers.eq(ConnectorQuery.builder()
+                        .actualState(ConnectorState.RUNTIME_FAILED)
+                        .desiredState(ConnectorState.RUNNING)
+                        .connectCluster(new ConnectClusterDO(CONNECT_CLUSTER_ID))
+                        .build()))
+        ).thenReturn(detailDTOList);
 
         connectorStateHandler.innerExtendEventWatcher(CONNECT_CLUSTER_ID);
 
@@ -564,7 +649,7 @@ public class ConnectorStateHandlerTest {
 
         ArgumentCaptor<Long> connectorIdCaptor = ArgumentCaptor.forClass(Long.class);
         ArgumentCaptor<ConnectorState> stateCaptor = ArgumentCaptor.forClass(ConnectorState.class);
-        Mockito.verify(connectorCoreProcessService).updateActualState(connectorIdCaptor.capture(), stateCaptor.capture());
+        Mockito.verify(connectorService).updateActualState(connectorIdCaptor.capture(), stateCaptor.capture());
         Assert.assertEquals((Long) 1L, connectorIdCaptor.getValue());
         Assert.assertEquals(ConnectorState.STARTING, stateCaptor.getValue());
     }
@@ -572,9 +657,15 @@ public class ConnectorStateHandlerTest {
     @Test
     public void testThrowCreatingConflictExceptionShouldTransitAsNormal() {
         Assert.assertEquals(6, connectorStateHandler.getUserTriggerEventHandlers().size());
-        List<ConnectorInfoDTO> connectorInfos = Lists.newArrayList(new ConnectorInfoDTO(1L, CONNECT_CLUSTER_URL, "pendingToStarting", new HashMap<>(), ConnectorState.PENDING, ConnectorState.RUNNING));
-        Mockito.when(connectorCoreProcessService.queryConnector(ArgumentMatchers.eq(ConnectorState.PENDING), ArgumentMatchers.eq(ConnectorState.RUNNING), ArgumentMatchers.eq(CONNECT_CLUSTER_ID)))
-                .thenReturn(connectorInfos);
+        List<ConnectorDetailDTO> detailDTOList = Lists.newArrayList(
+                new Connector(1L, CONNECT_CLUSTER_URL, "pendingToStarting", new HashMap<>(), ConnectorState.PENDING, ConnectorState.RUNNING).toDetailDTO());
+        Mockito.when(connectorService.queryDetailWithDecryptConfiguration(
+                ArgumentMatchers.eq(ConnectorQuery.builder()
+                        .actualState(ConnectorState.PENDING)
+                        .desiredState(ConnectorState.RUNNING)
+                        .connectCluster(new ConnectClusterDO(CONNECT_CLUSTER_ID))
+                        .build()))
+        ).thenReturn(detailDTOList);
 
         ArgumentCaptor<String> connectClusterUrlCaptor = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<String> connectorNameCaptor = ArgumentCaptor.forClass(String.class);
@@ -594,7 +685,7 @@ public class ConnectorStateHandlerTest {
 
         ArgumentCaptor<Long> connectorIdCaptor = ArgumentCaptor.forClass(Long.class);
         ArgumentCaptor<ConnectorState> stateCaptor = ArgumentCaptor.forClass(ConnectorState.class);
-        Mockito.verify(connectorCoreProcessService).updateActualState(connectorIdCaptor.capture(), stateCaptor.capture());
+        Mockito.verify(connectorService).updateActualState(connectorIdCaptor.capture(), stateCaptor.capture());
         Assert.assertEquals((Long) 1L, connectorIdCaptor.getValue());
         Assert.assertEquals(ConnectorState.STARTING, stateCaptor.getValue());
     }
@@ -602,9 +693,15 @@ public class ConnectorStateHandlerTest {
     @Test
     public void testThrowExceptionShouldResetToIdleState() {
         Assert.assertEquals(6, connectorStateHandler.getUserTriggerEventHandlers().size());
-        List<ConnectorInfoDTO> connectorInfos = Lists.newArrayList(new ConnectorInfoDTO(1L, CONNECT_CLUSTER_URL, "pendingToStarting", new HashMap<>(), ConnectorState.PENDING, ConnectorState.RUNNING));
-        Mockito.when(connectorCoreProcessService.queryConnector(ArgumentMatchers.eq(ConnectorState.PENDING), ArgumentMatchers.eq(ConnectorState.RUNNING), ArgumentMatchers.eq(CONNECT_CLUSTER_ID)))
-                .thenReturn(connectorInfos);
+        List<ConnectorDetailDTO> detailDTOList = Lists.newArrayList(
+                new Connector(1L, CONNECT_CLUSTER_URL, "pendingToStarting", new HashMap<>(), ConnectorState.PENDING, ConnectorState.RUNNING).toDetailDTO());
+        Mockito.when(connectorService.queryDetailWithDecryptConfiguration(
+                ArgumentMatchers.eq(ConnectorQuery.builder()
+                        .actualState(ConnectorState.PENDING)
+                        .desiredState(ConnectorState.RUNNING)
+                        .connectCluster(new ConnectClusterDO(CONNECT_CLUSTER_ID))
+                        .build()))
+        ).thenReturn(detailDTOList);
 
         ArgumentCaptor<String> connectClusterUrlCaptor = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<String> connectorNameCaptor = ArgumentCaptor.forClass(String.class);

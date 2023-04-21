@@ -2,7 +2,7 @@ import React, {useState} from 'react';
 import ProCard from '@ant-design/pro-card';
 import ConnectionDetail from '../components/Detail';
 import ProTable, {ProColumns} from '@ant-design/pro-table';
-import {queryConnectonRequisition, querySinks} from '@/services/a-cdc/api';
+import {queryConnectonRequisition} from '@/services/a-cdc/api';
 import { format } from 'react-string-format';
 import { useAccess, Access, useModel } from 'umi';
 import {ConfigKeyConstant} from '@/services/a-cdc/constant/ConfigKeyConstant';
@@ -45,12 +45,12 @@ const ConnectionInfo: React.FC<{connectionDetail: API.ConnectionDetail}> = ({con
 	];
 
 	return (
-		<ProCard
-			tabs={{
-				type: 'card',
-				//onChange:(key)=>{message.info(key)}
-			}}
-		>
+    <ProCard
+      tabs={{
+        type: 'card',
+        //onChange:(key)=>{message.info(key)}
+      }}
+    >
 			<ProCard.TabPane key="tab1" tab="链路详情">
 				<ConnectionDetail index={connectionDetail.id} connectionDetail={connectionDetail} from='info' />
 			</ProCard.TabPane>

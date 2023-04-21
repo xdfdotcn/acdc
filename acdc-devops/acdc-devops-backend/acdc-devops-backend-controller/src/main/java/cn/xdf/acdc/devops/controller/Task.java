@@ -6,14 +6,12 @@ package cn.xdf.acdc.devops.controller;
 public interface Task {
 
     /**
-     * Start up.
+     * Start up the task.
      */
-    default void start() {
-    }
+    void start();
 
     /**
-     * Stop.
+     * stop the task.
      */
-    default void stop() {
-    }
+    void stop();
 }

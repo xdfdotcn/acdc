@@ -67,6 +67,10 @@
                     <groupId>cn.xdf.acdc</groupId>
                     <artifactId>acdc-internal-devops-backend-pandora</artifactId>
                 </dependency>
+                <dependency>
+                    <groupId>cn.xdf.acdc</groupId>
+                    <artifactId>acdc-internal-devops-backend-service</artifactId>
+                </dependency>
             </dependencies>
         </profile>
     </profiles>
@@ -77,7 +81,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>cn.xdf.acdc.devops.SchedulerApplication</mainClass>
+                    <mainClass>cn.xdf.acdc.devops.ControllerApplication</mainClass>
                 </configuration>
                 <executions>
                     <execution>

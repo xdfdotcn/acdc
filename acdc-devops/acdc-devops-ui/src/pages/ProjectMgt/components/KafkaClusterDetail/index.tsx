@@ -1,8 +1,8 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {useModel} from 'umi';
-import {Descriptions, Modal} from 'antd';
+import {Descriptions} from 'antd';
 import ProCard from '@ant-design/pro-card';
-import {getKafkaCluster, getRdb} from '@/services/a-cdc/api';
+import {getDataSystemResource} from '@/services/a-cdc/api';
 const KafkaClusterDetail: React.FC = () => {
 
 	const {kafkaClusterDetailModel} = useModel('KafkaClusterDetailModel')
@@ -13,19 +13,21 @@ const KafkaClusterDetail: React.FC = () => {
 		initData();
 	}, [kafkaClusterDetailModel.kafkaClusterId]);
 
-
 	const initData = async () => {
-		let kafkaCluster: API.KafkaCluster = await getKafkaCluster({kafkaClusterId: kafkaClusterDetailModel.kafkaClusterId})
+    // fixme: why kafkaClusterDetailModel.kafkaClusterId can by undefined
+    if (!kafkaClusterDetailModel.kafkaClusterId) {
+      return
+    }
+
+		let kafkaCluster: API.DataSystemResource = await getDataSystemResource({id: kafkaClusterDetailModel.kafkaClusterId})
 		setKafkaClusterDetail({
-			kafkaCluserType: 'USER',
-			name: kafkaCluster!.name,
-			version: '2.6.3',
-			description: kafkaCluster.description,
-			bootstrapServers: kafkaCluster.bootstrapServers,
-			securityProtocol: kafkaCluster.securityProtocol,
-			saslMechanism: kafkaCluster.saslMechanism,
-			saslUsername: kafkaCluster.saslUsername,
-			saslPassword: kafkaCluster.saslPassword
+      id: kafkaCluster.id,
+      name: kafkaCluster.name,
+      bootstrapServers: kafkaCluster.dataSystemResourceConfigurations["bootstrap.servers"].value,
+      description: kafkaCluster.description,
+      securityProtocol: kafkaCluster.dataSystemResourceConfigurations["security.protocol"].value,
+      saslMechanism: kafkaCluster.dataSystemResourceConfigurations["sasl.mechanism"] ? kafkaCluster.dataSystemResourceConfigurations["sasl.mechanism"].value : "",
+      saslUsername: kafkaCluster.dataSystemResourceConfigurations["username"] ? kafkaCluster.dataSystemResourceConfigurations["username"].value : ""
 		})
 	}
 
@@ -46,12 +48,6 @@ const KafkaClusterDetail: React.FC = () => {
 					<Descriptions.Item label="集群名称">
 						{kafkaClusterDetail.name}
 					</Descriptions.Item>
-					<Descriptions.Item label="类型">
-						{kafkaClusterDetail.kafkaCluserType}
-					</Descriptions.Item>
-					<Descriptions.Item label="版本">
-						{kafkaClusterDetail.version}
-					</Descriptions.Item>
 					<Descriptions.Item label="集群地址">
 						{kafkaClusterDetail.bootstrapServers}
 					</Descriptions.Item>
@@ -63,9 +59,6 @@ const KafkaClusterDetail: React.FC = () => {
 					</Descriptions.Item>
 					<Descriptions.Item label="sasl.jaas.config.username">
 						{kafkaClusterDetail.saslUsername}
-					</Descriptions.Item>
-					<Descriptions.Item label="sasl.jaas.config.password">
-						{kafkaClusterDetail.saslPassword}
 					</Descriptions.Item>
 				</Descriptions>
 			</ProCard>

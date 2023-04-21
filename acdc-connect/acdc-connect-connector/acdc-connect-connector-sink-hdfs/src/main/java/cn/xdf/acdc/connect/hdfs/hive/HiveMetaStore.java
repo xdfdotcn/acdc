@@ -16,10 +16,12 @@
 package cn.xdf.acdc.connect.hdfs.hive;
 
 import cn.xdf.acdc.connect.hdfs.hive.errors.HiveMetaStoreException;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -50,15 +52,15 @@ public class HiveMetaStore {
     }
 
     public HiveMetaStore(final Configuration conf, final AbstractConfig connectorConfig)
-        throws HiveMetaStoreException {
+            throws HiveMetaStoreException {
         HiveConf hiveConf = new HiveConf(conf, HiveConf.class);
         String hiveConfDir = connectorConfig.getString(HiveConfig.HIVE_CONF_DIR_CONFIG);
         String hiveMetaStoreUris = connectorConfig.getString(HiveConfig.HIVE_METASTORE_URIS_CONFIG);
         if (hiveMetaStoreUris.isEmpty()) {
             log.warn(
-                "hive.metastore.uris empty, an embedded Hive metastore will be created in the directory"
-                    + " the connector is started. You need to start Hive in that specific directory to "
-                    + "query the data."
+                    "hive.metastore.uris empty, an embedded Hive metastore will be created in the directory"
+                            + " the connector is started. You need to start Hive in that specific directory to "
+                            + "query the data."
             );
         }
         if (!"".equals(hiveConfDir)) {
@@ -66,8 +68,8 @@ public class HiveMetaStore {
             File hiveSite = new File(hiveSitePath);
             if (!hiveSite.exists()) {
                 log.warn(
-                    "hive-site.xml does not exist in provided Hive configuration directory {}.",
-                    hiveConf
+                        "hive-site.xml does not exist in provided Hive configuration directory {}.",
+                        hiveConf
                 );
             }
             hiveConf.addResource(new Path(hiveSitePath));
@@ -101,13 +103,14 @@ public class HiveMetaStore {
 
     /**
      * Add partition.
+     *
      * @param database database
-     * @param tableName tableName
-     * @param path partition path
+     * @param table    table
+     * @param path     partition path
      * @throws HiveMetaStoreException exception on invalid partition path
      */
-    public void addPartition(final String database, final String tableName, final String path)
-        throws HiveMetaStoreException {
+    public void addPartition(final String database, final String table, final String path)
+            throws HiveMetaStoreException {
         ClientAction<Void> addPartition = new ClientAction<Void>() {
             @Override
             public Void call() throws TException {
@@ -115,13 +118,13 @@ public class HiveMetaStore {
                     // purposely don't check if the partition already exists because
                     // getPartition(db, table, path) will throw an exception to indicate the
                     // partition doesn't exist also. this way, it's only one call.
-                    client.appendPartition(database, tableNameConverter(tableName), path);
+                    client.appendPartition(database, tableNameConverter(table), path);
                 } catch (AlreadyExistsException e) {
                     // this is okay
-                    System.out.println(e);
+                    log.warn("Hive table partition already exists,database:{}, table:{}, partition:{}", database, table, path);
                 } catch (InvalidObjectException e) {
                     throw new HiveMetaStoreException(
-                        "Invalid partition for " + database + "." + tableNameConverter(tableName) + ": " + path, e
+                            "Invalid partition for " + database + "." + tableNameConverter(table) + ": " + path, e
                     );
                 }
                 return null;
@@ -133,13 +136,14 @@ public class HiveMetaStore {
 
     /**
      * Drop partition.
-     * @param database database
+     *
+     * @param database  database
      * @param tableName tableName
-     * @param path partition path
+     * @param path      partition path
      * @throws HiveMetaStoreException exception on invalid partition path
      */
     public void dropPartition(final String database, final String tableName, final String path)
-        throws HiveMetaStoreException {
+            throws HiveMetaStoreException {
         ClientAction<Void> dropPartition = new ClientAction<Void>() {
             @Override
             public Void call() throws TException {
@@ -149,7 +153,7 @@ public class HiveMetaStore {
                     // this is okay
                 } catch (InvalidObjectException e) {
                     throw new HiveMetaStoreException(
-                        "Invalid partition for " + database + "." + tableNameConverter(tableName) + ": " + path, e
+                            "Invalid partition for " + database + "." + tableNameConverter(tableName) + ": " + path, e
                     );
                 }
                 return null;
@@ -161,6 +165,7 @@ public class HiveMetaStore {
 
     /**
      * Create database.
+     *
      * @param database database
      * @throws HiveMetaStoreException exception on invalid database name
      */
@@ -170,7 +175,7 @@ public class HiveMetaStore {
             public Void call() throws TException {
                 try {
                     client.createDatabase(
-                        new Database(database, "Database created by Kafka Connect", null, null)
+                            new Database(database, "Database created by Kafka Connect", null, null)
                     );
                 } catch (AlreadyExistsException e) {
                     log.warn("Hive database already exists: {}", database);
@@ -186,13 +191,14 @@ public class HiveMetaStore {
 
     /**
      * Drop database.
-     * @param name database name
+     *
+     * @param name       database name
      * @param deleteData whether to delete data
      * @throws HiveMetaStoreException exception on invalid database name
      */
     public void dropDatabase(
-        final String name,
-        final boolean deleteData
+            final String name,
+            final boolean deleteData
     ) throws HiveMetaStoreException {
         ClientAction<Void> drop = new ClientAction<Void>() {
             @Override
@@ -211,7 +217,8 @@ public class HiveMetaStore {
 
     /**
      * Create table.
-     * @param table  table
+     *
+     * @param table table
      * @throws HiveMetaStoreException exception on invalid table
      */
     public void createTable(final Table table) throws HiveMetaStoreException {
@@ -222,7 +229,7 @@ public class HiveMetaStore {
                     client.createTable(table.getTTable());
                 } catch (NoSuchObjectException e) {
                     throw new HiveMetaStoreException(
-                        "Hive table not found: " + table.getDbName() + "." + table.getTableName()
+                            "Hive table not found: " + table.getDbName() + "." + table.getTableName()
                     );
                 } catch (AlreadyExistsException e) {
                     // this is ok
@@ -240,7 +247,8 @@ public class HiveMetaStore {
 
     /**
      * Alert table.
-     * @param table  table
+     *
+     * @param table   table
      * @param cascade whether or not cascade
      * @throws HiveMetaStoreException exception on invalid table
      */
@@ -252,7 +260,7 @@ public class HiveMetaStore {
                     client.alter_table(table.getDbName(), table.getTableName(), table.getTTable(), cascade);
                 } catch (NoSuchObjectException e) {
                     throw new HiveMetaStoreException(
-                        "Hive table not found: " + table.getDbName() + "." + table.getTableName()
+                            "Hive table not found: " + table.getDbName() + "." + table.getTableName()
                     );
                 } catch (InvalidObjectException e) {
                     throw new HiveMetaStoreException("Invalid table", e);
@@ -268,7 +276,8 @@ public class HiveMetaStore {
 
     /**
      * Alert table.
-     * @param table  table
+     *
+     * @param table table
      * @throws HiveMetaStoreException exception on invalid table
      */
     public void alterTable(final Table table) throws HiveMetaStoreException {
@@ -277,6 +286,7 @@ public class HiveMetaStore {
 
     /**
      * Drop table.
+     *
      * @param database  database
      * @param tableName tableName
      * @throws HiveMetaStoreException exception on invalid table
@@ -299,14 +309,15 @@ public class HiveMetaStore {
 
     /**
      * Exists table.
+     *
      * @param database  database name
-     * @param tableName  table name
+     * @param tableName table name
      * @return boolean
      * @throws HiveMetaStoreException exception on invalid table or database
      */
     public boolean tableExists(
-        final String database,
-        final String tableName
+            final String database,
+            final String tableName
     ) throws HiveMetaStoreException {
         ClientAction<Boolean> exists = new ClientAction<Boolean>() {
             @Override
@@ -324,14 +335,15 @@ public class HiveMetaStore {
 
     /**
      * Get table.
-     * @param database database name
+     *
+     * @param database  database name
      * @param tableName table name
      * @return table
      * @throws HiveMetaStoreException exception on get table
      */
     public Table getTable(
-        final String database,
-        final String tableName
+            final String database,
+            final String tableName
     ) throws HiveMetaStoreException {
         ClientAction<Table> getTable = new ClientAction<Table>() {
             @Override
@@ -340,7 +352,7 @@ public class HiveMetaStore {
                     return new Table(client.getTable(database, tableNameConverter(tableName)));
                 } catch (NoSuchObjectException e) {
                     throw new HiveMetaStoreException(
-                        "Hive table not found: " + database + "." + tableNameConverter(tableName)
+                            "Hive table not found: " + database + "." + tableNameConverter(tableName)
                     );
                 }
             }
@@ -349,7 +361,7 @@ public class HiveMetaStore {
         Table table = doAction(getTable);
         if (table == null) {
             throw new HiveMetaStoreException(
-                "Could not find info for table: " + tableNameConverter(tableName)
+                    "Could not find info for table: " + tableNameConverter(tableName)
             );
         }
         return table;
@@ -357,22 +369,23 @@ public class HiveMetaStore {
 
     /**
      * Get table partitions.
-     * @param database database name
+     *
+     * @param database  database name
      * @param tableName table name
-     * @param max  max limit count
+     * @param max       max limit count
      * @return table
      * @throws HiveMetaStoreException exception on get partitions
      */
     public List<String> listPartitions(final String database, final String tableName, final short max)
-        throws HiveMetaStoreException {
+            throws HiveMetaStoreException {
         ClientAction<List<String>> listPartitions = new ClientAction<List<String>>() {
             @Override
             public List<String> call() throws TException {
                 try {
                     List<Partition> partitions = client.listPartitions(
-                        database,
-                        tableNameConverter(tableName),
-                        max
+                            database,
+                            tableNameConverter(tableName),
+                            max
                     );
                     List<String> paths = new ArrayList<>();
                     for (Partition partition : partitions) {
@@ -390,6 +403,7 @@ public class HiveMetaStore {
 
     /**
      * Get all tables by database.
+     *
      * @param database database name
      * @return all tables
      * @throws HiveMetaStoreException exception on get all tables by database
@@ -411,6 +425,7 @@ public class HiveMetaStore {
 
     /**
      * Get all databases.
+     *
      * @return all databases
      * @throws HiveMetaStoreException exception on get all databases
      */
@@ -431,7 +446,8 @@ public class HiveMetaStore {
 
     /**
      * Compatible with table name.
-     * @param table  table name
+     *
+     * @param table table name
      * @return compatible table name
      */
     public String tableNameConverter(final String table) {
@@ -441,10 +457,10 @@ public class HiveMetaStore {
     public interface ClientAction<R> {
 
         /**
-         *The call back method for remote procedure call.
+         * The call back method for remote procedure call.
          *
          * @return Remote call result
-         * @throws TException  remote procedure call failure
+         * @throws TException remote procedure call failure
          */
         R call() throws TException;
     }

@@ -40,12 +40,13 @@
         <renameColumn columnDataType="varchar(50)"
                       newColumnName="updated_by"
                       oldColumnName="last_modified_by"
-                      remarks="更新时间"
+                      remarks="更新人"
                       tableName="user"/>
 
+        <rollback/>
     </changeSet>
 
-    <changeSet id="devops-1_11_2" author="ACDC">
+    <changeSet id="devops-1_11_2" author="ACDC" context="xdf-community">
         <!--初始化用户数据-->
         <loadData
                 file="config/liquibase/data/user.csv"
@@ -66,10 +67,13 @@
                 separator=";"
                 tableName="user_authority">
         </loadData>
+
+        <rollback/>
     </changeSet>
 
     <changeSet id="devops-1_11_3" author="ACDC">
         <dropTable tableName="connector_requisition"/>
+        <rollback/>
     </changeSet>
 
     <changeSet id="devops-1_11_4" author="ACDC">
@@ -80,5 +84,7 @@
 
         <modifyDataType columnName="name" newDataType="varchar(200)" tableName="connector_configuration"/>
         <modifyDataType columnName="value" newDataType="text" tableName="connector_configuration"/>
+
+        <rollback/>
     </changeSet>
 </databaseChangeLog>

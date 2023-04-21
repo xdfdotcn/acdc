@@ -19,4 +19,5 @@ public class UserQuery extends PagedQuery {
 
     private String domainAccount;
 
+    private Long projectId;
 }

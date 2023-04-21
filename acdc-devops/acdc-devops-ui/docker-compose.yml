@@ -1,0 +1,22 @@
+version: "3.9"
+services:
+  # UI 服务
+  ui:
+    build:
+      context: .
+    container_name: acdc_ui
+    ports:
+      - "9603:9603"
+    environment:
+      - "LISTEN_PORT=9603"
+      - "ACDC_API_URL=http://acdc-devops-api-dev.acdc.svc.xke.test.xdf.cn:8080"
+    networks:
+      - acdcnet
+    deploy:
+      resources:
+        limits:
+          cpus: '0.10'
+          memory: 500M
+networks:
+  acdcnet:
+    driver: bridge

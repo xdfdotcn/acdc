@@ -2,7 +2,7 @@ package cn.xdf.acdc.devops.service.process.connection.approval;
 
 import cn.xdf.acdc.devops.core.domain.dto.ConnectionRequisitionDTO;
 import cn.xdf.acdc.devops.core.domain.entity.enumeration.ApprovalState;
-import cn.xdf.acdc.devops.service.process.connection.ConnectionRequisitionProcessService;
+import cn.xdf.acdc.devops.service.process.connection.ConnectionRequisitionService;
 import cn.xdf.acdc.devops.service.process.connection.approval.ActionMapping.ActionMappingKey;
 import cn.xdf.acdc.devops.service.process.connection.approval.action.ApprovalAction;
 import cn.xdf.acdc.devops.service.process.connection.approval.action.DbaApprovedAction;
@@ -64,7 +64,7 @@ public class ApprovalStateMachineTest {
     private SourceOwnerApprovedAndSkipDbaApprovalAction sourceOwnerApprovedAndSkipDbaApprovalAction;
 
     @Mock
-    private ConnectionRequisitionProcessService connectionRequisitionProcessService;
+    private ConnectionRequisitionService connectionRequisitionService;
 
     private Map<String, ApprovalAction> actionMap = new HashMap<>();
 
@@ -95,7 +95,7 @@ public class ApprovalStateMachineTest {
     public void testApprovingToSourceOwnerApproving() {
         ApprovalStateMachine machine = createStateMachine();
 
-        when(connectionRequisitionProcessService.getRequisition(any()))
+        when(connectionRequisitionService.getById(any()))
                 .thenReturn(ConnectionRequisitionDTO.builder().state(ApprovalState.APPROVING).build());
 
         machine.fire(ApprovalEvent.PASS, new ApprovalContext());
@@ -112,7 +112,7 @@ public class ApprovalStateMachineTest {
     public void testApprovingToSourceOwnerApproved() {
         ApprovalStateMachine machine = createStateMachine();
 
-        when(connectionRequisitionProcessService.getRequisition(any()))
+        when(connectionRequisitionService.getById(any()))
                 .thenReturn(ConnectionRequisitionDTO.builder().state(ApprovalState.APPROVING).build());
 
         machine.fire(ApprovalEvent.PASS_AND_SKIP_REMAIN, new ApprovalContext());
@@ -128,7 +128,7 @@ public class ApprovalStateMachineTest {
     @Test
     public void testSourceOwnerApprovingToDbaApproving() {
         ApprovalStateMachine machine = createStateMachine();
-        when(connectionRequisitionProcessService.getRequisition(any()))
+        when(connectionRequisitionService.getById(any()))
                 .thenReturn(ConnectionRequisitionDTO.builder().state(ApprovalState.SOURCE_OWNER_APPROVING).build());
 
         machine.fire(ApprovalEvent.PASS, new ApprovalContext());
@@ -145,7 +145,7 @@ public class ApprovalStateMachineTest {
     @Test
     public void testSourceOwnerApprovingToApproved() {
         ApprovalStateMachine machine = createStateMachine();
-        when(connectionRequisitionProcessService.getRequisition(any()))
+        when(connectionRequisitionService.getById(any()))
                 .thenReturn(ConnectionRequisitionDTO.builder().state(ApprovalState.SOURCE_OWNER_APPROVING).build());
 
         machine.fire(ApprovalEvent.PASS_AND_SKIP_REMAIN, new ApprovalContext());
@@ -162,7 +162,7 @@ public class ApprovalStateMachineTest {
     @Test
     public void testSourceOwnerApprovingToSourceOwnerRefused() {
         ApprovalStateMachine machine = createStateMachine();
-        when(connectionRequisitionProcessService.getRequisition(any()))
+        when(connectionRequisitionService.getById(any()))
                 .thenReturn(ConnectionRequisitionDTO.builder().state(ApprovalState.SOURCE_OWNER_APPROVING).build());
 
         machine.fire(ApprovalEvent.REFUSED, new ApprovalContext());
@@ -180,7 +180,7 @@ public class ApprovalStateMachineTest {
     public void testSourceOwnerRefusedToDbaApproving() {
         ApprovalStateMachine machine = createStateMachine();
 
-        when(connectionRequisitionProcessService.getRequisition(any()))
+        when(connectionRequisitionService.getById(any()))
                 .thenReturn(ConnectionRequisitionDTO.builder().state(ApprovalState.SOURCE_OWNER_REFUSED).build());
 
         machine.fire(ApprovalEvent.PASS, new ApprovalContext());
@@ -197,7 +197,7 @@ public class ApprovalStateMachineTest {
     @Test
     public void testSourceOwnerRefusedToApproved() {
         ApprovalStateMachine machine = createStateMachine();
-        when(connectionRequisitionProcessService.getRequisition(any()))
+        when(connectionRequisitionService.getById(any()))
                 .thenReturn(ConnectionRequisitionDTO.builder().state(ApprovalState.SOURCE_OWNER_REFUSED).build());
 
         machine.fire(ApprovalEvent.PASS_AND_SKIP_REMAIN, new ApprovalContext());
@@ -214,7 +214,7 @@ public class ApprovalStateMachineTest {
     @Test
     public void testDbaApprovingToApproved() {
         ApprovalStateMachine machine = createStateMachine();
-        when(connectionRequisitionProcessService.getRequisition(any()))
+        when(connectionRequisitionService.getById(any()))
                 .thenReturn(ConnectionRequisitionDTO.builder().state(ApprovalState.DBA_APPROVING).build());
 
         machine.fire(ApprovalEvent.PASS, new ApprovalContext());
@@ -231,7 +231,7 @@ public class ApprovalStateMachineTest {
     @Test
     public void testDbaApprovingToDbaRefused() {
         ApprovalStateMachine machine = createStateMachine();
-        when(connectionRequisitionProcessService.getRequisition(any()))
+        when(connectionRequisitionService.getById(any()))
                 .thenReturn(ConnectionRequisitionDTO.builder().state(ApprovalState.DBA_APPROVING).build());
 
         machine.fire(ApprovalEvent.REFUSED, new ApprovalContext());
@@ -248,7 +248,7 @@ public class ApprovalStateMachineTest {
     @Test
     public void testDbaRefusedToApproved() {
         ApprovalStateMachine machine = createStateMachine();
-        when(connectionRequisitionProcessService.getRequisition(any()))
+        when(connectionRequisitionService.getById(any()))
                 .thenReturn(ConnectionRequisitionDTO.builder().state(ApprovalState.DBA_REFUSED).build());
 
         machine.fire(ApprovalEvent.PASS, new ApprovalContext());
@@ -393,7 +393,7 @@ public class ApprovalStateMachineTest {
             final List<ApprovalEvent> otherEvents
     ) {
 
-        when(connectionRequisitionProcessService.getRequisition(any()))
+        when(connectionRequisitionService.getById(any()))
                 .thenReturn(ConnectionRequisitionDTO.builder().state(currentState).build());
 
         otherEvents.forEach(it -> {
@@ -416,7 +416,7 @@ public class ApprovalStateMachineTest {
     private ApprovalStateMachine createStateMachine() {
         ApprovalStateMachine machine = new ApprovalStateMachine();
         ReflectionTestUtils.setField(machine, "applicationContext", applicationContext);
-        ReflectionTestUtils.setField(machine, "connectionRequisitionProcessService", connectionRequisitionProcessService);
+        ReflectionTestUtils.setField(machine, "connectionRequisitionService", connectionRequisitionService);
         return machine;
     }
 }

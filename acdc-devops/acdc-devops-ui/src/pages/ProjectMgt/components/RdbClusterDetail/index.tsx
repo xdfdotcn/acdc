@@ -1,8 +1,8 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {useModel} from 'umi';
-import {Descriptions, Modal} from 'antd';
+import {Descriptions} from 'antd';
 import ProCard from '@ant-design/pro-card';
-import {getRdb} from '@/services/a-cdc/api';
+import {getDataSystemResource} from '@/services/a-cdc/api';
 const RdbClusterDetail: React.FC = () => {
 	// 项目详情页面的数据model
 	const {rdbClusterDetailModel} = useModel('RdbClusterDetailModel')
@@ -10,20 +10,18 @@ const RdbClusterDetail: React.FC = () => {
 
 	useEffect(() => {
 		initData();
-	}, [rdbClusterDetailModel.rdbId]);
-
+	}, [rdbClusterDetailModel.resourceId]);
 
 	const initData = async () => {
-		let rdb: API.Rdb = await getRdb({rdbId: rdbClusterDetailModel.rdbId})
+		let rdb: API.DataSystemResource = await getDataSystemResource({id: rdbClusterDetailModel.resourceId})
 		setRdbClusterDetail({
-			id: rdbClusterDetailModel.rdbId,
+			id: rdb.id,
 			name: rdb!.name,
-			desc: rdb!.desc,
-			rdbType: rdb!.rdbType,
-			username: rdb!.username,
+      		description: rdb!.description,
+			rdbType: rdb!.dataSystemType,
+			username: rdb!.name,
 		})
 	}
-
 
 	return (
 		<div>
@@ -39,11 +37,8 @@ const RdbClusterDetail: React.FC = () => {
 					<Descriptions.Item label="类型">
 						{rdbClusterDetail.rdbType}
 					</Descriptions.Item>
-					<Descriptions.Item label="用户名">
-						{rdbClusterDetail.username}
-					</Descriptions.Item>
 					<Descriptions.Item label="描述">
-						{rdbClusterDetail.desc}
+						{rdbClusterDetail.description}
 					</Descriptions.Item>
 				</Descriptions>
 			</ProCard>

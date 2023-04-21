@@ -20,6 +20,7 @@ import org.springframework.data.jpa.domain.Specification;
 /**
  * Connector event.
  */
+// TODO 与process service 进行合并
 public interface ConnectorEventService {
 
     /**

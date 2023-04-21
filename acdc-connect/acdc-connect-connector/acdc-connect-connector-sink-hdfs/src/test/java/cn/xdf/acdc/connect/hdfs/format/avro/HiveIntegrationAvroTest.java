@@ -95,7 +95,7 @@ public class HiveIntegrationAvroTest extends HiveTestBase {
 
         hdfsWriter = new HdfsWriterCoordinator(config, context);
 
-        hdfsWriter.syncHiveMetaData();
+        hdfsWriter.syncHiveMetaData(TOPIC_PARTITION);
 
         List<String> expectedColumnNames = new ArrayList<>();
         for (Field field : schema.fields()) {

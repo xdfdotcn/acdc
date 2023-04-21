@@ -52,7 +52,7 @@ public class KafkaClusterDTO {
      *
      * @return kafka cluster domain object
      */
-    public KafkaClusterDO toKafkaClusterDO() {
+    public KafkaClusterDO toDO() {
         return KafkaClusterDO.builder()
                 .id(id)
                 .name(name)

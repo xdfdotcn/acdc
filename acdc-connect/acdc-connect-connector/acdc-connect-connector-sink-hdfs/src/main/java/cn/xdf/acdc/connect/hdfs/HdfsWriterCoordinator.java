@@ -30,13 +30,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import io.confluent.common.utils.SystemTime;
 import io.confluent.common.utils.Time;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -48,6 +41,17 @@ import org.apache.kafka.connect.errors.ConnectException;
 import org.apache.kafka.connect.sink.SinkRecord;
 import org.apache.kafka.connect.sink.SinkTaskContext;
 import org.joda.time.DateTimeZone;
+
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 @Slf4j
 public class HdfsWriterCoordinator {
@@ -76,17 +80,17 @@ public class HdfsWriterCoordinator {
     private volatile boolean isRunning;
 
     public HdfsWriterCoordinator(
-        final HdfsSinkConfig hdfsSinkConfig,
-        final SinkTaskContext context
+            final HdfsSinkConfig hdfsSinkConfig,
+            final SinkTaskContext context
     ) {
         this(hdfsSinkConfig, context, SYSTEM_TIME);
 
     }
 
     public HdfsWriterCoordinator(
-        final HdfsSinkConfig hdfsSinkConfig,
-        final SinkTaskContext context,
-        final Time time
+            final HdfsSinkConfig hdfsSinkConfig,
+            final SinkTaskContext context,
+            final Time time
     ) {
         this.time = time;
         this.hdfsSinkConf = hdfsSinkConfig;
@@ -119,15 +123,15 @@ public class HdfsWriterCoordinator {
 
     private void configureKerberosAuthentication(final Configuration hadoopConfiguration) {
         SecurityUtil.setAuthenticationMethod(
-            UserGroupInformation.AuthenticationMethod.KERBEROS,
-            hadoopConfiguration
+                UserGroupInformation.AuthenticationMethod.KERBEROS,
+                hadoopConfiguration
         );
 
         if (this.hdfsSinkConf.connectHdfsPrincipal() == null
-            || this.hdfsSinkConf.connectHdfsKeytab() == null) {
+                || this.hdfsSinkConf.connectHdfsKeytab() == null) {
             throw new ConfigException(
-                "Hadoop is using Kerberos for authentication, you need to provide both a connect "
-                    + "principal and the path to the keytab of the principal.");
+                    "Hadoop is using Kerberos for authentication, you need to provide both a connect "
+                            + "principal and the path to the keytab of the principal.");
         }
 
         hadoopConfiguration.set("hadoop.security.authentication", "kerberos");
@@ -137,8 +141,8 @@ public class HdfsWriterCoordinator {
             String hostname = InetAddress.getLocalHost().getCanonicalHostName();
 
             String namenodePrincipal = SecurityUtil.getServerPrincipal(
-                hdfsSinkConf.hdfsNamenodePrincipal(),
-                hostname
+                    hdfsSinkConf.hdfsNamenodePrincipal(),
+                    hostname
             );
 
             // namenode principal is needed for multi-node hadoop cluster
@@ -146,13 +150,13 @@ public class HdfsWriterCoordinator {
                 hadoopConfiguration.set("dfs.namenode.kerberos.principal", namenodePrincipal);
             }
             log.info("Hadoop namenode principal: {}",
-                hadoopConfiguration.get("dfs.namenode.kerberos.principal"));
+                    hadoopConfiguration.get("dfs.namenode.kerberos.principal"));
 
             UserGroupInformation.setConfiguration(hadoopConfiguration);
             // replace the _HOST specified in the principal config to the actual host
             String principal = SecurityUtil.getServerPrincipal(
-                hdfsSinkConf.connectHdfsPrincipal(),
-                hostname
+                    hdfsSinkConf.connectHdfsPrincipal(),
+                    hostname
             );
             UserGroupInformation.loginUserFromKeytab(principal, hdfsSinkConf.connectHdfsKeytab());
             final UserGroupInformation ugi = UserGroupInformation.getLoginUser();
@@ -162,22 +166,22 @@ public class HdfsWriterCoordinator {
             this.ticketRenewThread = new Thread(() -> renewKerberosTicket(ugi));
         } catch (UnknownHostException e) {
             throw new ConnectException(
-                String.format(
-                    "Could not resolve local hostname for Kerberos authentication: %s",
-                    e.getMessage()
-                ),
-                e
+                    String.format(
+                            "Could not resolve local hostname for Kerberos authentication: %s",
+                            e.getMessage()
+                    ),
+                    e
             );
         } catch (IOException e) {
             throw new ConnectException(
-                String.format("Could not authenticate with Kerberos: %s", e.getMessage()),
-                e
+                    String.format("Could not authenticate with Kerberos: %s", e.getMessage()),
+                    e
             );
         }
 
         log.info(
-            "Starting the Kerberos ticket renew thread with period {} ms.",
-            hdfsSinkConf.kerberosTicketRenewPeriodMs()
+                "Starting the Kerberos ticket renew thread with period {} ms.",
+                hdfsSinkConf.kerberosTicketRenewPeriodMs()
         );
         ticketRenewThread.start();
     }
@@ -191,6 +195,7 @@ public class HdfsWriterCoordinator {
 
     /**
      * Write batch record to hdfs.
+     *
      * @param records need write records
      */
     public void write(final Collection<SinkRecord> records) {
@@ -209,6 +214,7 @@ public class HdfsWriterCoordinator {
 
     /**
      * Recover WAL log,offset from hdfs .
+     *
      * @param tp kafka topic partition
      */
     public void recover(final TopicPartition tp) {
@@ -217,25 +223,35 @@ public class HdfsWriterCoordinator {
 
     /**
      * Recover WAL log,offset from hdfs .
+     *
      * @param assignment assigned topic partitions
      */
     public void recover(final Set<TopicPartition> assignment) {
-        for (TopicPartition tp : assignment) {
-            topicPartitionWriters.get(tp).recover();
+        if (Objects.nonNull(assignment) && !assignment.isEmpty()) {
+            List<TopicPartition> assignmentList = new ArrayList<>(assignment);
+            for (TopicPartition tp : assignmentList) {
+                topicPartitionWriters.get(tp).recover();
+            }
+
+            // 1. 目前 sink connector 实例 为 table 纬度, 每个 topicPartitionWriter 被分配到的 topic partition 都来自一个 topic,即同一个表
+            // 2. 为了减少 hive 元数据访问,同步hive元数据的逻辑只获取其中一个 topic partition 处理即可
+            syncHiveMetaData(assignmentList.get(0));
         }
-        syncHiveMetaData();
     }
 
     /**
      * Sync hive create table ,or add partitions.
+     *
+     * @param topicPartition topic partition
      */
-    public void syncHiveMetaData() {
-        this.storeContext.getHiveMetaRestorer().syncHiveMetaData();
+    public void syncHiveMetaData(final TopicPartition topicPartition) {
+        this.storeContext.getHiveMetaRestorer().syncHiveMetaData(topicPartition);
     }
 
     /**
      * Assigned topic partitions and recover .
-     * @param partitions  assigned topic partitions
+     *
+     * @param partitions assigned topic partitions
      */
     public void open(final Collection<TopicPartition> partitions) {
         for (TopicPartition tp : partitions) {
@@ -299,8 +315,7 @@ public class HdfsWriterCoordinator {
     }
 
     /**
-     * By convention, the consumer stores the offset that corresponds to the next record to consume.
-     * To follow this convention, this methods returns each offset that is one more than the last offset
+     * By convention, the consumer stores the offset that corresponds to the next record to consume. To follow this convention, this methods returns each offset that is one more than the last offset
      * committed to HDFS.
      *
      * @return Map from TopicPartition to next offset after the most recently committed offset to HDFS
@@ -308,7 +323,7 @@ public class HdfsWriterCoordinator {
     public Map<TopicPartition, Long> getCommittedOffsets() {
         Map<TopicPartition, Long> offsets = new HashMap<>();
         log.debug("Writer looking for last offsets for topic partitions {}",
-            topicPartitionWriters.keySet()
+                topicPartitionWriters.keySet()
         );
         for (TopicPartition tp : topicPartitionWriters.keySet()) {
             long committedOffset = topicPartitionWriters.get(tp).offset();
@@ -327,7 +342,7 @@ public class HdfsWriterCoordinator {
                     HdfsWriterCoordinator.this.wait(hdfsSinkConf.kerberosTicketRenewPeriodMs());
                     if (isRunning) {
                         log.debug(" "
-                            + "Attempting re-LOGin from keytab for user: {}", ugi.getUserName());
+                                + "Attempting re-LOGin from keytab for user: {}", ugi.getUserName());
                         ugi.reloginFromKeytab();
                     }
                 } catch (IOException e) {
@@ -345,40 +360,40 @@ public class HdfsWriterCoordinator {
 
     private void verifyConf() {
         StorageMode storageMode = StorageMode
-            .valueOf(hdfsSinkConf.getString(HdfsSinkConfig.STORAGE_MODE));
+                .valueOf(hdfsSinkConf.getString(HdfsSinkConfig.STORAGE_MODE));
 
         Format format = Format
-            .valueOf(hdfsSinkConf.getString(HdfsSinkConfig.STORAGE_FORMAT));
+                .valueOf(hdfsSinkConf.getString(HdfsSinkConfig.STORAGE_FORMAT));
 
         HiveIntegrationMode hiveIntegrationMode = HiveIntegrationMode
-            .valueOf(hdfsSinkConf.getString(HdfsSinkConfig.HIVE_INTEGRATION_MODE));
+                .valueOf(hdfsSinkConf.getString(HdfsSinkConfig.HIVE_INTEGRATION_MODE));
 
         StorageSchemaCompatibility compatibility = StorageSchemaCompatibility
-            .getCompatibility(
-                hdfsSinkConf
-                    .getString(StorageSinkConnectorConfig.SCHEMA_COMPATIBILITY_CONFIG)
-            );
+                .getCompatibility(
+                        hdfsSinkConf
+                                .getString(StorageSinkConnectorConfig.SCHEMA_COMPATIBILITY_CONFIG)
+                );
 
         checkTimeZoneConfig();
 
         Preconditions.checkArgument(
-            !Strings.isNullOrEmpty(hdfsSinkConf.url()),
-            "HDFS url must be set."
+                !Strings.isNullOrEmpty(hdfsSinkConf.url()),
+                "HDFS url must be set."
         );
 
         Preconditions.checkArgument(
-            !(storageMode.isAtLeastOnce() && (format != Format.TEXT || !hiveIntegrationMode.isWithHiveMetaData())),
-            "At least once writer only support TEXT format and Hive integration mode must be WITH_HIVE_META_DATA"
+                !(storageMode.isAtLeastOnce() && (format != Format.TEXT || !hiveIntegrationMode.isWithHiveMetaData())),
+                "At least once writer only support TEXT format and Hive integration mode must be WITH_HIVE_META_DATA"
         );
 
         Preconditions.checkArgument(
-            !(storageMode.isExactlyOnce() && hiveIntegrationMode.isWithHiveMetaData() && (format != Format.ORC || format != Format.PARQUET)),
-            "Exactly once writer only support ORC,PARQUET format when Hive integration mode is WITH_HIVE_META_DATA "
+                !(storageMode.isExactlyOnce() && hiveIntegrationMode.isWithHiveMetaData() && (format != Format.ORC || format != Format.PARQUET)),
+                "Exactly once writer only support ORC,PARQUET format when Hive integration mode is WITH_HIVE_META_DATA "
         );
 
         Preconditions.checkArgument(
-            !(hiveIntegrationMode.isAutoCreateTable() && compatibility == StorageSchemaCompatibility.NONE),
-            "Hive Integration requires schema compatibility to be BACKWARD, FORWARD or FULL."
+                !(hiveIntegrationMode.isAutoCreateTable() && compatibility == StorageSchemaCompatibility.NONE),
+                "Hive Integration requires schema compatibility to be BACKWARD, FORWARD or FULL."
         );
     }
 
@@ -388,7 +403,7 @@ public class HdfsWriterCoordinator {
             String timeZoneString = hdfsSinkConf.getString(PartitionerConfig.TIMEZONE_CONFIG);
             if (Strings.isNullOrEmpty(timeZoneString)) {
                 throw new ConfigException(PartitionerConfig.TIMEZONE_CONFIG,
-                    timeZoneString, "Timezone cannot be empty when using scheduled file rotation."
+                        timeZoneString, "Timezone cannot be empty when using scheduled file rotation."
                 );
             }
             DateTimeZone.forID(timeZoneString);
@@ -408,7 +423,7 @@ public class HdfsWriterCoordinator {
     }
 
     /**
-     Finish processing a batch records ,should be flush disk.
+     * Finish processing a batch records ,should be flush disk.
      */
     public void commit() {
         for (TopicPartition tp : topicPartitionWriters.keySet()) {
@@ -417,25 +432,28 @@ public class HdfsWriterCoordinator {
     }
 
     /**
-     Get partitioner .
-     @return partitioner
+     * Get partitioner .
+     *
+     * @return partitioner
      */
     public Partitioner getPartitioner() {
         return this.storeContext.getPartitioner();
     }
 
     /**
-     Get topicPartitionWriter.
-     @param tp kafka topic partition
-     @return topicPartitionWriter
+     * Get topicPartitionWriter.
+     *
+     * @param tp kafka topic partition
+     * @return topicPartitionWriter
      */
     public TopicPartitionWriter getBucketWriter(final TopicPartition tp) {
         return topicPartitionWriters.get(tp);
     }
 
     /**
-     Get store context only or test use .
-     @return StoreContext
+     * Get store context only or test use .
+     *
+     * @return StoreContext
      */
     public StoreContext getStoreContext() {
         return storeContext;

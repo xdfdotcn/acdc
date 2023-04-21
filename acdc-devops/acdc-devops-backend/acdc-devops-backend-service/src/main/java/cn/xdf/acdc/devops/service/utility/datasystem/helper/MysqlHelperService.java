@@ -1,70 +1,303 @@
 package cn.xdf.acdc.devops.service.utility.datasystem.helper;
 
-import cn.xdf.acdc.devops.core.constant.SystemConstant;
-import cn.xdf.acdc.devops.core.constant.SystemConstant.Symbol;
-import cn.xdf.acdc.devops.core.domain.dto.FieldDTO;
-import cn.xdf.acdc.devops.core.domain.dto.HostAndPortDTO;
-import cn.xdf.acdc.devops.core.domain.entity.RdbDO;
-import cn.xdf.acdc.devops.core.domain.entity.RdbInstanceDO;
-import cn.xdf.acdc.devops.core.domain.entity.enumeration.RoleType;
-import cn.xdf.acdc.devops.repository.RdbInstanceRepository;
-import cn.xdf.acdc.devops.service.config.RuntimeConfig;
-import cn.xdf.acdc.devops.service.error.ErrorMsg.Authorization;
-import cn.xdf.acdc.devops.service.error.ErrorMsg.DataSystem;
-import cn.xdf.acdc.devops.service.error.NotFoundException;
+import cn.xdf.acdc.devops.core.domain.entity.enumeration.DataSystemType;
+import cn.xdf.acdc.devops.service.config.RuntimeProperties;
+import cn.xdf.acdc.devops.service.error.ErrorMsg;
 import cn.xdf.acdc.devops.service.error.exceptions.ServerErrorException;
-import cn.xdf.acdc.devops.service.util.EncryptUtil;
+import cn.xdf.acdc.devops.service.util.UrlUtil;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.googlecode.aviator.AviatorEvaluator;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+/**
+ * A utility service for Mysql, such as show tables of a database.
+ *
+ * <p>Make sure every password argument is decrypted.
+ */
 @Slf4j
 @Service
-public class MysqlHelperService extends AbstractMysqlHelperService {
+public class MysqlHelperService {
 
-    //CHECKSTYLE:OFF
-    @Autowired
-    protected RuntimeConfig runtimeConfig;
-    //CHECKSTYLE:ON
+    protected static final String SHOW_VARIABLES_SQL = "show variables";
+
+    protected static final String ALL_PRIVILEGES = "ALL PRIVILEGES";
+
+    protected static final String SQL_SHOW_DATABASES = " SHOW DATABASES ";
+
+    protected static final String SQL_SHOW_TABLES = " SHOW TABLES ";
+
+    protected static final String SQL_DESC_TABLE = new StringBuilder()
+            .append("SELECT ")
+            .append("info_schema_columns.column_name,")
+            .append("info_schema_columns.column_type,")
+            .append("info_schema_statistics.index_name")
+            .append(" FROM ")
+            .append("(SELECT  column_name,column_type FROM information_schema.columns WHERE table_schema='%s' AND table_name='%s') info_schema_columns")
+            .append(" LEFT JOIN ")
+            .append("(SELECT  index_name,column_name FROM information_schema.statistics WHERE non_unique=0 AND table_schema='%s' AND table_name='%s') info_schema_statistics")
+            .append(" ON ")
+            .append("info_schema_columns.column_name = info_schema_statistics.column_name")
+            .toString();
+
+    protected static final String CONNECTION_PROPERTY = "useSSL=false";
+
+    private static final String SHOW_GRANTS_SQL_PATTERN = "show grants for %s@'%s'";
+
+    private static final String SHOW_GRANTS_RESULT_KEYWORD_ON = " ON ";
+
+    private static final String SHOW_GRANTS_RESULT_KEYWORD_GRANT = "GRANT ";
+
+    private static final String SHOW_GRANTS_RESULT_SPLIT = ",";
+
+    static {
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            log.warn("Init mysql jdbc driver exception", e);
+            throw new ServerErrorException(e);
+        }
+    }
+
+    private RuntimeProperties runtimeProperties;
 
     @Autowired
-    private RdbInstanceRepository rdbInstanceRepository;
+    public MysqlHelperService(final RuntimeProperties runtimeProperties) {
+        this.runtimeProperties = runtimeProperties;
+    }
 
     /**
-     * 获取数据库列表.
+     * Execute a query sql to mysql.
      *
-     * @param ip       ip
-     * @param port     port
-     * @param username username
-     * @param password password
-     * @return 返回实例下的所有数据库
+     * @param hostAndPort         host and port model
+     * @param usernameAndPassword username and password model
+     * @param sql                 sql
+     * @param callback            callback function
+     * @param <R>                 callback function method return value
+     * @return jdbc query result
      */
-    public List<String> showDataBases(final String ip, final int port, final String username, final String password) {
-        Preconditions.checkArgument(Strings.isNotBlank(ip), "Ip is empty.");
-        Preconditions.checkArgument(port > 0, "Port is illegal.");
+    public <R> R executeQuery(
+            final HostAndPort hostAndPort,
+            final UsernameAndPassword usernameAndPassword,
+            final String sql,
+            final Function<ResultSet, R> callback) {
+        return executeQuery(hostAndPort, usernameAndPassword, null, sql, callback);
+    }
 
-        Connection conn = createConnection(urlOfRdbInstance(ip, port), username, password);
-        return executeQuery(conn, sqlOfShowDatabase(), rs -> {
+    /**
+     * Execute a query sql to mysql in a database.
+     *
+     * @param hostAndPort         host and port model
+     * @param usernameAndPassword username and password model
+     * @param database            database name
+     * @param sql                 sql
+     * @param callback            callback function
+     * @param <R>                 callback function method return value
+     * @return jdbc query result
+     */
+    public <R> R executeQuery(
+            final HostAndPort hostAndPort,
+            final UsernameAndPassword usernameAndPassword,
+            final String database,
+            final String sql,
+            final Function<ResultSet, R> callback) {
+        return executeQuery(createConnection(generateMysqlUrl(hostAndPort, database), usernameAndPassword), sql, callback);
+    }
+
+    /**
+     * Execute a query sql to mysql in a database.
+     *
+     * @param url                 jdbc url
+     * @param usernameAndPassword username and password model
+     * @param sql                 sql
+     * @param callback            callback function
+     * @param <R>                 callback function method return value
+     * @return jdbc query result
+     */
+    public <R> R executeQuery(
+            final String url,
+            final UsernameAndPassword usernameAndPassword,
+            final String sql,
+            final Function<ResultSet, R> callback) {
+        return executeQuery(createConnection(url, usernameAndPassword), sql, callback);
+    }
+
+    /**
+     * Execute a query sql to mysql in a database.
+     *
+     * @param url                 jdbc url
+     * @param usernameAndPassword username and password model
+     * @param sql                 sql
+     * @param prepareFun          preprocessing function
+     * @param callback            callback function
+     * @param <R>                 callback function method return value
+     * @return jdbc query result
+     */
+    public <R> R executeQuery(
+            final String url,
+            final UsernameAndPassword usernameAndPassword,
+            final String sql,
+            final Consumer<PreparedStatement> prepareFun,
+            final Function<ResultSet, R> callback) {
+        return executeQuery(createConnection(url, usernameAndPassword), sql, prepareFun, callback);
+    }
+
+    protected <R> R executeQuery(
+            final Connection connection,
+            final String sql,
+            final Function<ResultSet, R> callback) {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        try {
+            conn = connection;
+            stmt = conn.prepareStatement(sql);
+            rs = stmt.executeQuery();
+            R result = callback.apply(rs);
+            return result;
+        } catch (SQLException e) {
+            throw new ServerErrorException(e);
+        } finally {
+            close(conn, stmt, rs);
+        }
+    }
+
+    protected <R> R executeQuery(
+            final Connection connection,
+            final String sql,
+            final Consumer<PreparedStatement> prepareFun,
+            final Function<ResultSet, R> callback
+    ) {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        try {
+            conn = connection;
+            stmt = conn.prepareStatement(sql);
+            prepareFun.accept(stmt);
+            rs = stmt.executeQuery();
+            R result = callback.apply(rs);
+            return result;
+        } catch (SQLException e) {
+            throw new ServerErrorException(e);
+        } finally {
+            close(conn, stmt, rs);
+        }
+    }
+
+    /**
+     * Show grants of a user and client host.
+     *
+     * @param hostAndPort         host and port model
+     * @param usernameAndPassword username and password model
+     * @param clientHost          client host
+     * @return grants set
+     */
+    public Set<String> showGrants(
+            final HostAndPort hostAndPort,
+            final UsernameAndPassword usernameAndPassword,
+            final String clientHost) {
+        String selectGrantsSql = String.format(SHOW_GRANTS_SQL_PATTERN, usernameAndPassword.getUsername(), clientHost);
+        return executeQuery(createConnection(generateMysqlUrl(hostAndPort), usernameAndPassword), selectGrantsSql, resultSet -> {
+            Set<String> permissions = Sets.newHashSet();
+            try {
+                while (resultSet.next()) {
+                    // todo: PolarDB-x 's show grants result is different with mysql, which contains three columns.
+                    permissions.addAll(extractPermissionsFromShowGrantsResult(resultSet.getString(1)));
+                }
+            } catch (SQLException e) {
+                throw new ServerErrorException(
+                        String.format("error while execute show grants error for user '%s'@'%s' in rdb instance '%s:%s'", usernameAndPassword.getUsername(), clientHost, hostAndPort.getHost(),
+                                hostAndPort.getPort()), e);
+            }
+
+            if (log.isDebugEnabled()) {
+                log.debug("extract permissions successfully. [mysqlHost]:{}, [port]:{}, [permissions]:{}, [readyForCheckHost]:{}", hostAndPort.getHost(), hostAndPort.getPort(), permissions,
+                        clientHost);
+            }
+
+            return permissions;
+        });
+    }
+
+    protected Set<String> extractPermissionsFromShowGrantsResult(final String grantedPermissionsString) {
+        /*
+         * grantedPermissionsString's format is like:
+         * GRANT SELECT, REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO 'root'@'%'
+         * result's format is like:
+         * SELECT,REPLICATION SLAVE,REPLICATION CLIENT
+         */
+        if (!grantedPermissionsString.contains(SHOW_GRANTS_RESULT_KEYWORD_GRANT)
+                || !grantedPermissionsString.contains(SHOW_GRANTS_RESULT_KEYWORD_ON)) {
+            return Collections.emptySet();
+        }
+        String substring = grantedPermissionsString.substring(6, grantedPermissionsString.indexOf(SHOW_GRANTS_RESULT_KEYWORD_ON)).toUpperCase();
+        return Arrays.stream(substring.split(SHOW_GRANTS_RESULT_SPLIT)).map(String::trim).collect(Collectors.toSet());
+    }
+
+    /**
+     * Show variables of a mysql instance.
+     *
+     * @param hostAndPort         host and port model
+     * @param usernameAndPassword username and password model
+     * @return variables map
+     */
+    public Map<String, String> showVariables(
+            final HostAndPort hostAndPort,
+            final UsernameAndPassword usernameAndPassword) {
+        return executeQuery(createConnection(generateMysqlUrl(hostAndPort), usernameAndPassword), SHOW_VARIABLES_SQL, resultSet -> {
+            Map<String, String> variables = new HashMap<>();
+            try {
+                while (resultSet.next()) {
+                    variables.put(resultSet.getString(1), resultSet.getString(2));
+                }
+            } catch (SQLException e) {
+                throw new ServerErrorException(String.format("error while execute show variables at mysql instance '%s:%s'", hostAndPort.getHost(), hostAndPort.getPort()), e);
+            }
+
+            if (log.isDebugEnabled()) {
+                log.debug("execute show variables successfully, variables: {}", variables);
+            }
+
+            return variables;
+        });
+    }
+
+    /**
+     * Get database names of an instance.
+     *
+     * @param hostAndPort         host and port model
+     * @param usernameAndPassword username and password model
+     * @return database name list
+     */
+    public List<String> showDataBases(final HostAndPort hostAndPort, final UsernameAndPassword usernameAndPassword) {
+        Preconditions.checkArgument(!Strings.isNullOrEmpty(hostAndPort.getHost()), "Ip is empty.");
+        Preconditions.checkArgument(hostAndPort.getPort() > 0, "Port is illegal.");
+
+        return executeQuery(hostAndPort, usernameAndPassword, sqlOfShowDatabase(), rs -> {
             List<String> databases = Lists.newArrayList();
             try {
                 while (rs.next()) {
@@ -79,75 +312,61 @@ public class MysqlHelperService extends AbstractMysqlHelperService {
     }
 
     /**
-     * 获取数据库列表.
+     * Get database names of an instance.
      *
-     * @param ip        ip
-     * @param port      port
-     * @param username  username
-     * @param password  password
-     * @param predicate predicate
-     * @return 返回实例下的所有数据库
+     * @param hostAndPort         host and port model
+     * @param usernameAndPassword username and password model
+     * @param predicate           filter function
+     * @return database list
      */
-    public List<String> showDataBases(final String ip, final int port, final String username, final String password, final Predicate<String> predicate) {
-        return showDataBases(ip, port, username, password).stream()
+    public List<String> showDataBases(final HostAndPort hostAndPort, final UsernameAndPassword usernameAndPassword, final Predicate<String> predicate) {
+        return showDataBases(hostAndPort, usernameAndPassword).stream()
                 .filter(predicate)
                 .collect(Collectors.toList());
     }
 
     /**
-     * 获取数据库列表.
+     * Get database names of an instances.
      *
-     * @param rdb       rdb
-     * @param predicate predicate
-     * @return 返回实例下的所有数据库
+     * @param hostAndPorts        host and port model
+     * @param usernameAndPassword username and password model
+     * @param predicate           filter function
+     * @return database list
      */
-    public List<String> showDataBases(final RdbDO rdb, final Predicate<String> predicate) {
-        RdbInstanceDO instance = getRdbDdlReadInstance(rdb);
-
-        String username = rdb.getUsername();
-        String password = EncryptUtil.decrypt(rdb.getPassword());
-        return showDataBases(instance.getHost(), instance.getPort(), username, password, predicate);
-    }
-
-    private RdbInstanceDO getRdbDdlReadInstance(final RdbDO rdb) {
-        List<RdbInstanceDO> rdbInstanceDOs = rdbInstanceRepository.findRdbInstanceDOSByRdbId(rdb.getId());
-
-        return rdbInstanceDOs.stream()
-                .filter(rdbInstance ->
-                        Objects.equals(rdbInstance.getRole(), RoleType.MASTER) || Objects.equals(rdbInstance.getRole(), RoleType.DATA_SOURCE)
-                )
-                .findFirst()
-                .orElseThrow(() -> new ServerErrorException("Master and data source instance is not set."));
+    public List<String> showDataBases(final Set<HostAndPort> hostAndPorts, final UsernameAndPassword usernameAndPassword, final Predicate<String> predicate) {
+        HostAndPort hostAndPort = choiceAvailableInstance(hostAndPorts, usernameAndPassword);
+        return showDataBases(hostAndPort, usernameAndPassword).stream()
+                .filter(predicate)
+                .collect(Collectors.toList());
     }
 
     /**
-     * Check rdb permissions.
+     * Get table names of a mysql database.
      *
-     * @param rdb rdb
+     * @param hostAndPorts        host and port model
+     * @param database            database name
+     * @param usernameAndPassword username and password model
+     * @return table list
      */
-    public void checkRdbPermissions(final RdbDO rdb) {
-        List<RdbInstanceDO> rdbInstances = new ArrayList<>(rdb.getRdbInstances());
-        String username = rdb.getUsername();
-        String password = EncryptUtil.decrypt(rdb.getPassword());
-        checkUserPermissionsAndBinlogConfiguration(rdbInstances, username, password);
+    public List<String> showTables(final Set<HostAndPort> hostAndPorts, final UsernameAndPassword usernameAndPassword, final String database) {
+        HostAndPort hostAndPort = choiceAvailableInstance(hostAndPorts, usernameAndPassword);
+        return showTables(hostAndPort, usernameAndPassword, database);
     }
 
     /**
-     * show tables.
+     * Get table names of a mysql database.
      *
-     * @param host     host
-     * @param port     port
-     * @param username username
-     * @param password password
-     * @param database database
-     * @return java.util.List
+     * @param hostAndPort         host and port model
+     * @param database            database name
+     * @param usernameAndPassword username and password model
+     * @return table list
      */
-    public List<String> showTables(final String host, final int port, final String username, final String password, final String database) {
-        Preconditions.checkArgument(Strings.isNotBlank(host), "Ip is illegal.");
-        Preconditions.checkArgument(port > 0, "Port is illegal.");
-        Preconditions.checkArgument(Strings.isNotBlank(database), "Database is illegal.");
+    public List<String> showTables(final HostAndPort hostAndPort, final UsernameAndPassword usernameAndPassword, final String database) {
+        Preconditions.checkArgument(!Strings.isNullOrEmpty(hostAndPort.getHost()), "Ip is illegal.");
+        Preconditions.checkArgument(hostAndPort.getPort() > 0, "Port is illegal.");
+        Preconditions.checkArgument(!Strings.isNullOrEmpty(database), "Database is illegal.");
 
-        Connection conn = createConnection(urlOfRdbDatabase(host, port, database), username, password);
+        Connection conn = createConnection(generateMysqlUrl(hostAndPort, database), usernameAndPassword);
         return executeQuery(conn, sqlOfShowTable(), rs -> {
             List<String> tables = Lists.newArrayList();
             try {
@@ -163,174 +382,100 @@ public class MysqlHelperService extends AbstractMysqlHelperService {
     }
 
     /**
-     * 获取数据库下的所有表.
-     *
-     * @param rdb      rdb
-     * @param database database
-     * @return 数据库下的所有表
-     */
-    public List<String> showTables(final RdbDO rdb, final String database) {
-        RdbInstanceDO instance = getRdbDdlReadInstance(rdb);
-
-        String username = rdb.getUsername();
-        String password = EncryptUtil.decrypt(rdb.getPassword());
-        return showTables(instance.getHost(), instance.getPort(), username, password, database);
-    }
-
-    /**
      * 从 rdb 实例中选择一个可用的，读取并返回某张 rdb 表的 ddl 信息.
      *
-     * @param hosts    hosts
-     * @param username username
-     * @param password password
-     * @param database database
-     * @param table    table
-     * @return java.util.List
+     * @param hostAndPosts        host and port model
+     * @param usernameAndPassword username and password model
+     * @param database            database name
+     * @param table               table name
+     * @return table filed list
      */
-    public List<FieldDTO> descTable(final Set<HostAndPortDTO> hosts, final String username, final String password, final String database, final String table) {
-        HostAndPortDTO host = choiceAvailableInstance(hosts, username, password);
-        return descTable(host.getHost(), host.getPort(), username, password, database, table);
+    public List<RelationalDatabaseTableField> descTable(final Set<HostAndPort> hostAndPosts, final UsernameAndPassword usernameAndPassword, final String database, final String table) {
+        HostAndPort hostAndPort = choiceAvailableInstance(hostAndPosts, usernameAndPassword);
+        return descTable(hostAndPort, usernameAndPassword, database, table);
     }
 
     /**
      * 获取表结构.
      *
-     * @param ip       ip
-     * @param port     port
-     * @param username username
-     * @param password password
-     * @param database database
-     * @param table    table
-     * @return 表结构
+     * @param hostAndPort         host and port model
+     * @param usernameAndPassword username and password model
+     * @param database            database name
+     * @param table               table name
+     * @return table field list
      */
-    public List<FieldDTO> descTable(final String ip, final int port, final String username, final String password, final String database, final String table) {
-        Preconditions.checkArgument(Strings.isNotBlank(ip), "Ip is illegal.");
-        Preconditions.checkArgument(port > 0, "Port is illegal.");
-        Preconditions.checkArgument(Strings.isNotBlank(database), "Database is illegal.");
-        Preconditions.checkArgument(Strings.isNotBlank(table), "Database is illegal.");
+    public List<RelationalDatabaseTableField> descTable(final HostAndPort hostAndPort, final UsernameAndPassword usernameAndPassword, final String database, final String table) {
+        Preconditions.checkArgument(!Strings.isNullOrEmpty(hostAndPort.getHost()), "Ip is illegal.");
+        Preconditions.checkArgument(hostAndPort.getPort() > 0, "Port is illegal.");
+        Preconditions.checkArgument(!Strings.isNullOrEmpty(database), "Database is illegal.");
+        Preconditions.checkArgument(!Strings.isNullOrEmpty(table), "Database is illegal.");
 
-        Connection conn = createConnection(urlOfRdbDatabase(ip, port, database), username, password);
-        return executeQuery(conn, sqlOfDescTable(table), rs -> {
-            List<FieldDTO> fields = Lists.newArrayList();
+        Connection conn = createConnection(generateMysqlUrl(hostAndPort, database), usernameAndPassword);
+        return executeQuery(conn, sqlOfDescTable(database, table), rs -> {
+            Map<String, RelationalDatabaseTableField> nameToFields = new HashMap<>();
             try {
                 while (rs.next()) {
-                    FieldDTO fieldDTO = FieldDTO.builder()
-                            .name(rs.getString(1))
-                            .dataType(rs.getString(2))
-                            .allowNull(rs.getString(3))
-                            .keyType(rs.getString(4))
-                            .defaultValue(rs.getString(5))
-                            .extra(rs.getString(6))
-                            .build();
-                    fields.add(fieldDTO);
+                    String columnName = rs.getString(1);
+                    String columnType = rs.getString(2);
+                    String columnUniqueIndexName = rs.getString(3);
+
+                    nameToFields.computeIfAbsent(columnName, key -> RelationalDatabaseTableField.builder()
+                            .name(columnName)
+                            .type(columnType)
+                            .build());
+
+                    if (!Strings.isNullOrEmpty(columnUniqueIndexName)) {
+                        nameToFields.get(columnName).getUniqueIndexNames().add(columnUniqueIndexName);
+                    }
                 }
             } catch (SQLException e) {
                 throw new ServerErrorException(e);
             }
 
-            if (CollectionUtils.isEmpty(fields)) {
-                throw new NotFoundException("Not exist fields,table is: " + table);
+            if (nameToFields.isEmpty()) {
+                throw new ServerErrorException("Not exist fields, table is: " + table);
             }
-            return fields;
+
+            return new ArrayList<>(nameToFields.values());
         });
     }
 
     /**
-     * 检查用户权限、binlog配置.
+     * Check rdb instance permissions.
      *
-     * @param instances 实例列表
-     * @param username  rdb用户名
-     * @param password  rdb密码
-     * @date 2022/8/3 8:35 下午
+     * @param hostAndPort         instance host and port
+     * @param usernameAndPassword username and password
+     * @param requiredPermissions required permissions
      */
-    public void checkUserPermissionsAndBinlogConfiguration(final List<RdbInstanceDO> instances, final String username, final String password) {
-        log.info("checking permissions and binlog configuration for rdb instances '{}'", instances);
-
-        // 只有role为1-master、3-DataSource时需要检查权限，且master和DataSource需要分开校验
-        for (RdbInstanceDO instance : instances) {
-            if (RoleType.MASTER.equals(instance.getRole())) {
-                log.info("checking permissions for user '{}' in master rdb instance '{}:{}'", username, instance.getHost(), instance.getPort());
-                checkPermissions(instance.getHost(), instance.getPort(), username, password, Constant.PERMISSIONS_FOR_MASTER);
-                checkSqlMode(instance.getHost(), instance.getPort(), username, password);
-            } else if (RoleType.DATA_SOURCE.equals(instance.getRole())) {
-                log.info("checking permissions for user '{}' in data source rdb instance '{}:{}'", username, instance.getHost(), instance.getPort());
-                checkPermissions(instance.getHost(), instance.getPort(), username, password, Constant.PERMISSIONS_FOR_DATASOURCE);
-                log.info("checking binlog configuration for data source rdb instance '{}:{}'", instance.getHost(), instance.getPort());
-                checkBinlogConfiguration(instance.getHost(), instance.getPort(), username, password);
-            }
-        }
-
-        log.info("successfully check permissions and binlog configuration for rdb instances '{}'", instances);
-    }
-
-    /**
-     * 1. 对于host范围: 只要有一个host配置满足一个校验集合即可
-     * 2. 对于ip：需要所有ip均校验通过，才返回成功，如果有多个校验集合，满足一个校验集合即可
-     */
-    protected void checkPermissions(final String host, final Integer port, final String username, final String password, final List<String[]> permissions) {
+    public void checkPermissions(final HostAndPort hostAndPort, final UsernameAndPassword usernameAndPassword,
+            final List<String[]> requiredPermissions) {
         // check host range first
-        for (String each : runtimeConfig.getHost().getRanges()) {
+        for (String each : runtimeProperties.getHost().getRanges()) {
             try {
-                checkPermissions(host, port, username, password, permissions, each);
+                checkPermissions(hostAndPort, usernameAndPassword, requiredPermissions, each);
                 if (log.isDebugEnabled()) {
-                    log.debug("successfully check permissions for user '{}'@'{}' in rdb instance '{}:{}'", username, each, host, port);
+                    log.debug("successfully check permissions for user '{}'@'{}' in rdb instance '{}:{}'", usernameAndPassword.getUsername(), each, hostAndPort.getHost(), hostAndPort.getPort());
                 }
                 // 有一个校验通过即可
                 return;
             } catch (ServerErrorException e) {
-                log.warn(String.format(Authorization.INSUFFICIENT_PERMISSIONS + " for user '%s'@'%s' in rdb instance '%s:%s'", username, each, host, port), e);
+                log.warn(String.format(ErrorMsg.Authorization.INSUFFICIENT_PERMISSIONS + " for user '%s'@'%s' in rdb instance '%s:%s'",
+                        usernameAndPassword.getUsername(), each, hostAndPort.getHost(), hostAndPort.getPort()), e);
             }
         }
 
         try {
             // if no permissions for host range, check for each ip
-            for (String each : runtimeConfig.getHost().getIps()) {
-                checkPermissions(host, port, username, password, permissions, each);
+            for (String each : runtimeProperties.getHost().getIps()) {
+                checkPermissions(hostAndPort, usernameAndPassword, requiredPermissions, each);
             }
         } catch (ServerErrorException e) {
-            throw new ServerErrorException(String.format("%s for user '%s'", Authorization.INSUFFICIENT_PERMISSIONS, username), e);
+            throw new ServerErrorException(String.format("%s for user '%s'", ErrorMsg.Authorization.INSUFFICIENT_PERMISSIONS, usernameAndPassword.getUsername()), e);
         }
     }
 
-    protected void checkPermissions(final String mysqlHost, final Integer port, final String username, final String password, final List<String[]> requiredPermissions, final String clientHost) {
-        String selectGrantsSql = String.format(Constant.SHOW_GRANTS_SQL_PATTERN, username, clientHost);
-        Set<String> grantedPermissions = executeQuery(createConnection(urlOfRdbDatabase(mysqlHost, port, ""), username, password), selectGrantsSql, rs -> {
-            try {
-                Set<String> permissionsInResultSet = Sets.newHashSet();
-                while (rs.next()) {
-                    // todo: PolarDB-x 's show grants result is different with mysql, which contains three columns.
-                    permissionsInResultSet.addAll(extractPermissionsFromShowGrantsResult(rs.getString(1)));
-                }
-                return permissionsInResultSet;
-            } catch (SQLException e) {
-                throw new ServerErrorException(String.format("error while execute show grants error for user '%s'@'%s' in rdb instance '%s:%s'", username, clientHost, mysqlHost, port), e);
-            }
-        });
-        if (log.isDebugEnabled()) {
-            log.debug("extract permissions successfully. [mysqlHost]:{}, [port]:{}, [permissions]:{}, [readyForCheckHost]:{}", mysqlHost, port, grantedPermissions, clientHost);
-        }
-        // 判断权限集
-        checkPermissions(grantedPermissions, requiredPermissions);
-    }
-
-    protected Set<String> extractPermissionsFromShowGrantsResult(final String grantedPermissionsString) {
-        /*
-         * grantedPermissionsString's format is like:
-         * GRANT SELECT, REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO 'root'@'%'
-         * result's format is like:
-         * SELECT,REPLICATION SLAVE,REPLICATION CLIENT
-         */
-        if (!grantedPermissionsString.contains(Constant.SHOW_GRANTS_RESULT_KEYWORD_GRANT)
-                || !grantedPermissionsString.contains(Constant.SHOW_GRANTS_RESULT_KEYWORD_ON)) {
-            return Collections.emptySet();
-        }
-        String substring = grantedPermissionsString.substring(6, grantedPermissionsString.indexOf(Constant.SHOW_GRANTS_RESULT_KEYWORD_ON)).toUpperCase();
-        return Arrays.stream(substring.split(Constant.SHOW_GRANTS_RESULT_SPLIT)).map(String::trim).collect(Collectors.toSet());
-    }
-
-    //CHECKSTYLE:OFF
     protected void checkPermissions(final Set<String> grantedPermissions, final List<String[]> requiredPermissions) {
-        if (grantedPermissions.contains(Constant.ALL_PRIVILEGES)) {
+        if (grantedPermissions.contains(ALL_PRIVILEGES)) {
             return;
         }
         for (String[] permissions : requiredPermissions) {
@@ -340,148 +485,88 @@ public class MysqlHelperService extends AbstractMysqlHelperService {
                 }
                 if (i == permissions.length - 1) {
                     log.error("check permission failed for {}", permissions[i]);
-                    throw new ServerErrorException(String.format("%s: %s", Authorization.INSUFFICIENT_PERMISSIONS, permissions[i]));
+                    throw new ServerErrorException(String.format("%s: %s", ErrorMsg.Authorization.INSUFFICIENT_PERMISSIONS, permissions[i]));
                 }
             }
         }
     }
-    //CHECKSTYLE:ON
 
-    protected void checkBinlogConfiguration(final String host, final Integer port, final String username, final String password) {
-        for (int i = 0; i < Constant.TO_CHECK_BINLOG_CONFIGURATION.length; i++) {
-            String result = executeSqlLikeShowVariables(host, port, username, password, Constant.TO_CHECK_BINLOG_CONFIGURATION[i]).toUpperCase();
-            // 使用表达式引擎Aviator计算比较结果
-            executeExpression(Constant.EXPECTED_BINLOG_CONFIGURATION_VALUE_EXPRESSION[i], Constant.TO_CHECK_BINLOG_CONFIGURATION[i],
-                    Constant.EXPECTED_BINLOG_CONFIGURATION_VALUE[i], result);
-        }
+    private void checkPermissions(final HostAndPort hostAndPort, final UsernameAndPassword usernameAndPassword,
+            final List<String[]> requiredPermissions, final String clientHost) {
+        Set<String> grantedPermissions = this.showGrants(hostAndPort, usernameAndPassword, clientHost);
+        // check if permission is enough
+        checkPermissions(grantedPermissions, requiredPermissions);
     }
 
-    protected void checkSqlMode(final String host, final Integer port, final String username, final String password) {
-        String result = executeSqlLikeShowVariables(host, port, username, password, Constant.SQL_MODE).toUpperCase();
-        if (!result.contains(Constant.EXPECTED_SQL_MODE_VALUE)) {
-            log.error("check sql_mode failed. [should have]:{} [actual]:{}", Constant.EXPECTED_SQL_MODE_VALUE, result);
-            throw new ServerErrorException(String.format(DataSystem.UNEXPECTED_CONFIGURATION_VALUE, Constant.SQL_MODE, Constant.EXPECTED_SQL_MODE_VALUE, result));
-        }
-    }
-
-    protected String executeSqlLikeShowVariables(final String host, final Integer port, final String username, final String password, final String variables) {
-        String sql = String.format(Constant.SHOW_VARIABLES_SQL, variables);
-        return executeQuery(createConnection(urlOfRdbDatabase(host, port, ""), username, password), sql, rs -> {
-            try {
-                if (rs.next()) {
-                    return rs.getString(2);
+    private HostAndPort choiceAvailableInstance(final Set<HostAndPort> hostAndPorts, final UsernameAndPassword usernameAndPassword) {
+        if (!CollectionUtils.isEmpty(hostAndPorts)) {
+            for (HostAndPort each : hostAndPorts) {
+                try {
+                    showDataBases(each, usernameAndPassword);
+                    return each;
+                } catch (ServerErrorException e) {
+                    log.warn("Execute DDL exception,host: {}, A CDC db user: {}, message: {}", each, usernameAndPassword.getUsername(), e.getMessage());
                 }
-                return SystemConstant.EMPTY_STRING;
-            } catch (SQLException e) {
-                throw new ServerErrorException(e);
-            }
-        });
-    }
-
-    protected void executeExpression(final String expression, final String config, final String exceptedValue, final String result) {
-        Map<String, Object> param = Maps.newHashMapWithExpectedSize(1);
-        if (StringUtils.isNumeric(result)) {
-            param.put(Constant.RESULT, Integer.parseInt(result));
-        } else {
-            param.put(Constant.RESULT, result);
-        }
-        boolean executeResult = (Boolean) AviatorEvaluator.execute(expression, param);
-        if (!executeResult) {
-            log.error("check config failed. [config]:{} [expected]:{} [actual]:{}", config, exceptedValue, result);
-            throw new ServerErrorException(String.format(DataSystem.UNEXPECTED_CONFIGURATION_VALUE, config, exceptedValue, result));
-        }
-    }
-
-    private HostAndPortDTO choiceAvailableInstance(final Set<HostAndPortDTO> hosts, final String username, final String password) {
-        Preconditions.checkArgument(!CollectionUtils.isEmpty(hosts));
-
-        for (HostAndPortDTO it : hosts) {
-            try {
-                showDataBases(it.getHost(), it.getPort(), username, password);
-                return it;
-            } catch (ServerErrorException e) {
-                log.warn("Execute DDL exception,host: {}, A CDC db user: {}, message: {}", it, username, e.getMessage());
             }
         }
-        throw new ServerErrorException("No available rdb instance host: " + hosts);
+        throw new ServerErrorException("No available rdb instance host: " + hostAndPorts);
     }
 
     protected String sqlOfShowTable() {
-        return Constant.SQL_SHOW_TABLES;
+        return SQL_SHOW_TABLES;
     }
 
     protected String sqlOfShowDatabase() {
-        return Constant.SQL_SHOW_DATABASES;
+        return SQL_SHOW_DATABASES;
     }
 
-    protected String sqlOfDescTable(final String table) {
-        return String.format(Constant.SQL_DESC_TABLE, table);
+    protected String sqlOfDescTable(final String database, final String table) {
+        return String.format(SQL_DESC_TABLE, database, table, database, table);
     }
 
-    protected String urlOfRdbInstance(final String ip, int port) {
-        return urlOfRdbDatabase(ip, port, null);
+    protected String generateMysqlUrl(final HostAndPort hostAndPort) {
+        return generateMysqlUrl(hostAndPort, null);
     }
 
-    protected String urlOfRdbDatabase(final String ip, int port, final String database) {
-        StringBuilder append = new StringBuilder()
-                .append(Constant.JDBC_SCHEMA)
-                .append(ip)
-                .append(Symbol.PORT_SEPARATOR)
-                .append(port);
-        if (StringUtils.isNotBlank(database)) {
-            append.append(Symbol.URL_PATH_SEPARATOR)
-                    .append(database);
+    protected String generateMysqlUrl(final HostAndPort hostAndPort, final String database) {
+        return UrlUtil.generateJDBCUrl(DataSystemType.MYSQL.name().toLowerCase(), hostAndPort.getHost(), hostAndPort.getPort(), database, CONNECTION_PROPERTY);
+    }
+
+    protected Connection createConnection(
+            final String url,
+            final UsernameAndPassword usernameAndPassword) {
+        try {
+            return DriverManager.getConnection(
+                    url,
+                    usernameAndPassword.getUsername(),
+                    usernameAndPassword.getPassword());
+        } catch (SQLException e) {
+            throw new ServerErrorException(String.format("Can not connect to %s with user %s", url, usernameAndPassword.getUsername()), e);
         }
-        append.append(Constant.CONNECTION_PROPERTY);
-        return append.toString();
     }
 
-    /**
-     * MysqlHelperService相关常量.
-     *
-     * @since 2022/9/22 2:04 下午
-     */
-    static class Constant {
+    protected void close(final Connection conn, final Statement stmt, final ResultSet rs) {
+        if (Objects.nonNull(conn)) {
+            try {
+                conn.close();
+            } catch (SQLException e) {
+                throw new ServerErrorException(e);
+            }
+        }
+        if (Objects.nonNull(stmt)) {
+            try {
+                stmt.close();
+            } catch (SQLException e) {
+                throw new ServerErrorException(e);
+            }
+        }
 
-        private static final String SQL_SHOW_DATABASES = " SHOW DATABASES ";
-
-        private static final String SQL_SHOW_TABLES = " SHOW TABLES ";
-
-        private static final String SQL_DESC_TABLE = " DESC `%s` ";
-
-        private static final String RESULT = "result";
-
-        private static final String JDBC_SCHEMA = "jdbc:mysql://";
-
-        private static final String CONNECTION_PROPERTY = "?useSSL=false";
-
-        private static final String SHOW_GRANTS_SQL_PATTERN = "show grants for %s@'%s'";
-
-        private static final String SHOW_GRANTS_RESULT_KEYWORD_ON = " ON ";
-
-        private static final String SHOW_GRANTS_RESULT_KEYWORD_GRANT = "GRANT ";
-
-        private static final String SHOW_GRANTS_RESULT_SPLIT = ",";
-
-        private static final String SHOW_VARIABLES_SQL = "show variables like '%s'";
-
-        private static final String SQL_MODE = "sql_mode";
-
-        private static final String EXPECTED_SQL_MODE_VALUE = "STRICT_TRANS_TABLES";
-
-        private static final String[] TO_CHECK_BINLOG_CONFIGURATION = new String[]{"log_bin", "binlog_format", "binlog_row_image", "expire_logs_days"};
-
-        private static final String[] EXPECTED_BINLOG_CONFIGURATION_VALUE_EXPRESSION = new String[]{"string.contains(result,'ON')",
-                "string.contains(result,'ROW')", "string.contains(result,'FULL')", "result>=4 || result==0"};
-
-        private static final String[] EXPECTED_BINLOG_CONFIGURATION_VALUE = new String[]{"ON", "ROW", "FULL", "4"};
-
-        private static final String ALL_PRIVILEGES = "ALL PRIVILEGES";
-
-        private static final List<String[]> PERMISSIONS_FOR_MASTER = Lists.newArrayList(new String[]{"SELECT"}, new String[]{"INSERT"}, new String[]{"UPDATE"},
-                new String[]{"DELETE"});
-
-        private static final List<String[]> PERMISSIONS_FOR_DATASOURCE = Lists.newArrayList(new String[]{"SELECT"}, new String[]{"REPLICATION SLAVE"},
-                new String[]{"REPLICATION CLIENT"}, new String[]{"RELOAD", "LOCK TABLES"});
+        if (Objects.nonNull(rs)) {
+            try {
+                rs.close();
+            } catch (SQLException e) {
+                throw new ServerErrorException(e);
+            }
+        }
     }
 }

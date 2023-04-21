@@ -133,7 +133,7 @@ public class TextRecordAppendWriterProviderTest extends HiveTestBase {
         hiveMetaStore.createTable(table);
         // write
         TextRecordAppendWriterProvider textRecordAppendWriterProvider = new TextRecordAppendWriterProvider(hdfsFileOperator, storeConfig);
-        String commitFileName = hdfsFileOperator.createCommitFileByRotation(
+        String commitFileName = hdfsFileOperator.createRotationCommittedFileInTablePartitionPath(
             partitioner.encodePartition(null),
             TOPIC_PARTITION,
             textRecordAppendWriterProvider.getExtension());
@@ -192,7 +192,7 @@ public class TextRecordAppendWriterProviderTest extends HiveTestBase {
         hiveMetaStore.createTable(table);
         // Write
         TextRecordAppendWriterProvider textRecordAppendWriterProvider = new TextRecordAppendWriterProvider(hdfsFileOperator, storeConfig);
-        String commitFileName = hdfsFileOperator.createCommitFileByRotation(
+        String commitFileName = hdfsFileOperator.createRotationCommittedFileInTablePartitionPath(
             partitioner.encodePartition(null),
             TOPIC_PARTITION,
             textRecordAppendWriterProvider.getExtension());

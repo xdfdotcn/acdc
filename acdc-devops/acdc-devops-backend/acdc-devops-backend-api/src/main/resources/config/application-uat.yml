@@ -17,9 +17,6 @@ spring:
       additional-exclude: static/**
     livereload:
       enabled: false # we use Webpack dev server + BrowserSync for livereload
-  jackson:
-    serialization:
-      indent-output: true
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
     url:
@@ -33,10 +30,6 @@ spring:
         prepStmtCacheSize: 250
         prepStmtCacheSqlLimit: 2048
         useServerPrepStmts: true
-  jpa:
-  liquibase:
-    # Remove 'faker' if you do not want the sample data to be loaded automatically
-    contexts: dev
   mail:
     host:
     port:
@@ -53,6 +46,9 @@ spring:
     cache-duration: PT1S # 1 second, see the ISO 8601 standard
   thymeleaf:
     cache: false
+#  kafka:
+#    value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
 server:
   port: 8080
 
@@ -62,13 +58,56 @@ server:
 
 # application:
 acdc:
+  rdb:
+    jdbc:
+      user:
+      password:
   hive:
     jdbc:
       url:
       user:
       password:
-  login:
-    skip: true
+  connector:
+    topic:
+      data-collection:
+        partitions: 3
+        replication-factor: 3
+      schema-history:
+        partitions: 1
+        replication-factor: 3
+        configs:
+          cleanup.policy: delete
+          retention.ms: 9223372036854775807
+          retention.bytes: -1
+      schema-change:
+        partitions: 1
+        replication-factor: 3
+        configs:
+          cleanup.policy: compact
+          compression.type: lz4
+      ticdc:
+        partitions: 12
+        replication-factor: 3
+        acl:
+          username:
+          operations:
+            - WRITE
+  ui:
+    config:
+      grafana:
+        url:
+          connectors:
+          connection-for-operator:
+          connection-for-user:
+          mysql-source-connector:
+          tidb-source-connector:
+  api:
+    security:
+      e2:
+        e2-client-id:
+        e2-client-secret:
+        e2-login-domain:
+      skip-login: true
   mail:
     from-email-address:
     cc-email-address:
@@ -80,6 +119,29 @@ acdc:
     connection:
       connect-timeout: 3000
       read-timeout: 5000
+  oa:
+    flow-id:
+    flows-creation-url:
+    flow-process-invalid-url:
+    flow-step-comment-url:
+    user-org-url:
+    token-url:
+    flow-title:
+    kafka:
+      listener:
+        listener-id:
+        topic:
+      consumer:
+        consumer-config:
+          bootstrap.servers:
+          security.protocol:
+          sasl.mechanism:
+          sasl.jaas.config:
+          key.deserializer:
+          value.deserializer:
+          enable.auto.commit:
+          auto.offset.reset:
+          max.poll.records:
   runtime:
     host:
       ranges:
@@ -89,12 +151,3 @@ acdc:
         - '192.168.1.%'
       ips:
         - '%'
-  ui:
-    config:
-      grafana:
-        url:
-          connectors:
-          connection-for-operator:
-          connection-for-user:
-          mysql-source-connector:
-          tidb-source-connector:

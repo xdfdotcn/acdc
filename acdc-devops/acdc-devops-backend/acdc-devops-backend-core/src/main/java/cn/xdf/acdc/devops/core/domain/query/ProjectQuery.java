@@ -14,13 +14,13 @@ import java.util.Set;
 @Builder
 public class ProjectQuery extends PagedQuery {
 
-    public enum RANGE {
-        ALL, CURRENT_USER
-    }
-
     private Long id;
 
     private String name;
+
+    private String ownerDomainAccount;
+
+    private String memberDomainAccount;
 
     private String description;
 
@@ -35,4 +35,10 @@ public class ProjectQuery extends PagedQuery {
     private RANGE queryRange;
 
     private Set<Long> projectIds;
+
+    private Boolean deleted;
+
+    public enum RANGE {
+        ALL, CURRENT_USER
+    }
 }

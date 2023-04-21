@@ -5,7 +5,10 @@ import cn.xdf.acdc.devops.core.domain.dto.LoginUserDTO;
 import cn.xdf.acdc.devops.core.domain.dto.PageDTO;
 import cn.xdf.acdc.devops.core.domain.dto.ProjectDTO;
 import cn.xdf.acdc.devops.core.domain.query.ProjectQuery;
-import cn.xdf.acdc.devops.service.process.project.ProjectProcessService;
+import cn.xdf.acdc.devops.core.domain.query.ProjectQuery.RANGE;
+import cn.xdf.acdc.devops.service.process.project.ProjectService;
+import cn.xdf.acdc.devops.service.process.user.UserService;
+import cn.xdf.acdc.devops.service.util.UserUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,12 +21,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("api")
+@RequestMapping("api/v1")
 @Transactional
 public class ProjectController {
 
     @Autowired
-    private ProjectProcessService projectProcessService;
+    private ProjectService projectService;
+
+    @Autowired
+    private UserService userService;
 
     /**
      * 查询项目列表.
@@ -32,9 +38,13 @@ public class ProjectController {
      * @return Page
      */
     @GetMapping("/projects")
-    public PageDTO<ProjectDTO> queryProject(final ProjectQuery projectQuery) {
+    public PageDTO<ProjectDTO> pagedQuery(final ProjectQuery projectQuery) {
         LoginUserDTO currentUser = ApiSecurityUtils.getCurrentUserDetails();
-        Page<ProjectDTO> page = projectProcessService.query(projectQuery, currentUser.getDomainAccount());
+        boolean isAdmin = UserUtil.isAdmin(currentUser);
+        if (projectQuery.getQueryRange() == RANGE.CURRENT_USER && !isAdmin) {
+            projectQuery.setMemberDomainAccount(currentUser.getDomainAccount());
+        }
+        Page<ProjectDTO> page = projectService.pagedQuery(projectQuery);
         return PageDTO.of(page.getContent(), page.getTotalElements());
     }
 
@@ -46,8 +56,8 @@ public class ProjectController {
      * @date 2022/8/1 4:26 下午
      */
     @GetMapping("/projects/{id}")
-    public ProjectDTO queryProject(@PathVariable("id") final Long id) {
-        return projectProcessService.getProject(id);
+    public ProjectDTO getById(@PathVariable("id") final Long id) {
+        return projectService.getById(id);
     }
 
     /**
@@ -57,8 +67,8 @@ public class ProjectController {
      * @date 2022/8/2 2:53 下午
      */
     @PostMapping("/projects")
-    public void createProject(@RequestBody final ProjectDTO projectDTO) {
-        projectProcessService.saveProject(projectDTO);
+    public void create(@RequestBody final ProjectDTO projectDTO) {
+        projectService.create(projectDTO);
     }
 
     /**
@@ -68,7 +78,7 @@ public class ProjectController {
      * @date 2022/8/2 2:53 下午
      */
     @PatchMapping("/projects")
-    public void updateProject(@RequestBody final ProjectDTO projectDTO) {
-        projectProcessService.updateProject(projectDTO);
+    public void update(@RequestBody final ProjectDTO projectDTO) {
+        projectService.update(projectDTO);
     }
 }

@@ -1,5 +1,4 @@
 /**
-
 路由地址常量类
 */
 
@@ -15,4 +14,3 @@ let RoutesConstant = {
 export {
 	RoutesConstant,
 }
-

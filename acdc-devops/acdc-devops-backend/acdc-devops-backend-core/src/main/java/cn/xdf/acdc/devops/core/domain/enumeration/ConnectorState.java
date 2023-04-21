@@ -27,5 +27,5 @@ public enum ConnectorState {
     RUNTIME_FAILED,
 
     // 8
-    CREATION_FAILED;
+    CREATION_FAILED
 }

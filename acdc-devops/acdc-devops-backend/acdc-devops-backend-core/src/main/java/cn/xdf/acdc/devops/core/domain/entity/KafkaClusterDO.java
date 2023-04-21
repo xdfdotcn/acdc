@@ -71,6 +71,9 @@ public class KafkaClusterDO extends BaseDO implements Serializable {
     )
     private Set<ConnectorDO> connectors = new HashSet<>();
 
+    public KafkaClusterDO(final Long id) {
+        this.id = id;
+    }
     // functions for jpa union features
     // CHECKSTYLE:OFF
 

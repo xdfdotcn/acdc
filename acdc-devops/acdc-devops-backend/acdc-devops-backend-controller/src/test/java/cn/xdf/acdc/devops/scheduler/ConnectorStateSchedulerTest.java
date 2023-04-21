@@ -1,7 +1,7 @@
 package cn.xdf.acdc.devops.scheduler;
 
 import cn.xdf.acdc.devops.core.domain.entity.ConnectClusterDO;
-import cn.xdf.acdc.devops.service.entity.ConnectClusterService;
+import cn.xdf.acdc.devops.service.process.connector.ConnectClusterService;
 import cn.xdf.acdc.devops.statemachine.ConnectorStateHandler;
 import com.google.common.collect.Lists;
 import org.junit.Before;

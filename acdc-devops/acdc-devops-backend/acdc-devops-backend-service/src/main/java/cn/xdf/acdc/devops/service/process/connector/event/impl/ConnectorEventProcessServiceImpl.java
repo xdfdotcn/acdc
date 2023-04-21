@@ -18,7 +18,7 @@ public class ConnectorEventProcessServiceImpl implements ConnectorEventProcessSe
 
     @Override
     public Page<ConnectorEventDTO> queryEvent(final ConnectorEventQuery query) {
-        Pageable pageable = PagedQuery.ofPage(query.getCurrent(), query.getPageSize(), ConnectorEventQuery.SORT_FIELD);
+        Pageable pageable = PagedQuery.pageOf(query.getCurrent(), query.getPageSize(), ConnectorEventQuery.SORT_FIELD);
         return connectorEventService.query(query, pageable).map(ConnectorEventDTO::new);
     }
 }

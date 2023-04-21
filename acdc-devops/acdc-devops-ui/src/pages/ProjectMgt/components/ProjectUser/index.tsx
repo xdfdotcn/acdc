@@ -22,7 +22,7 @@ const ProjectUser: React.FC = () => {
 		4. 每次添加record记录的时候默认返回最新的值,保证动态添加一定会有不重复的唯一
 		key
 	*/
-	
+
 	const [recordId, setRecordId] = useState<number>(-99)
 
 	// 使用form ref 获取表格中的数据,这样使用起来更加方便,不用额外使用state
@@ -78,8 +78,7 @@ const ProjectUser: React.FC = () => {
 				let body: API.AcdcUser[] = [];
 				talbeUsers.forEach((val, idx, arr) => {
 					body.push({
-						email: val.email,
-						ownerFlag: val.ownerFlag,
+						email: val.email
 					})
 				}
 				)
@@ -123,11 +122,10 @@ const ProjectUser: React.FC = () => {
 		{
 			title: '名称',
 			width: "46%",
-			dataIndex: 'ownerFlag',
 			editable: false,
 			render: (dom, entity) => {
 				return (
-					<>{entity.ownerFlag == 1 ? '项目负责人' : '普通用户'}</>
+					<>{entity.email == projectUserModel.ownerEmail ? '项目负责人' : '普通用户'}</>
 				);
 			},
 		},
@@ -140,7 +138,7 @@ const ProjectUser: React.FC = () => {
 				<a
 					key={"delete" + record.id}
 					onClick={() => {
-						if (record.ownerFlag == 1) {
+						if (record.email == projectUserModel.ownerEmail) {
 							message.warn("项目负责人不能删除")
 							return
 						}
@@ -196,7 +194,7 @@ const ProjectUser: React.FC = () => {
 							{
 								position: 'top',
 								record: (__, records) => {
-									return {id: recordId,ownerFlag:0}
+									return {id: recordId}
 								},
 							}
 						}

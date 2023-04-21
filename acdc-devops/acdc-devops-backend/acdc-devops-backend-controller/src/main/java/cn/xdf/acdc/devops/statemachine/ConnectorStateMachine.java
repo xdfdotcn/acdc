@@ -1,6 +1,6 @@
 package cn.xdf.acdc.devops.statemachine;
 
-import cn.xdf.acdc.devops.core.domain.dto.ConnectorInfoDTO;
+import cn.xdf.acdc.devops.dto.Connector;
 import cn.xdf.acdc.devops.core.domain.enumeration.ConnectorEvent;
 import cn.xdf.acdc.devops.core.domain.enumeration.ConnectorState;
 import cn.xdf.acdc.devops.core.util.SpringUtils;
@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
-public class ConnectorStateMachine extends AbstractStateMachine<ConnectorStateMachine, ConnectorState, ConnectorEvent, ConnectorInfoDTO> {
+public class ConnectorStateMachine extends AbstractStateMachine<ConnectorStateMachine, ConnectorState, ConnectorEvent, Connector> {
 
     private static final String RESOURCE_ACCESS_EXCEPTION_COUNTER_METRICS = "scheduler.statemachine.exception.connect.cluster.access";
 
@@ -31,28 +31,28 @@ public class ConnectorStateMachine extends AbstractStateMachine<ConnectorStateMa
     private static final Map<String, Counter> COUNTERS = new HashMap<>();
 
     @Override
-    protected void afterTransitionCausedException(final ConnectorState from, final ConnectorState to, final ConnectorEvent event, final ConnectorInfoDTO connectorInfoDTO) {
+    protected void afterTransitionCausedException(final ConnectorState from, final ConnectorState to, final ConnectorEvent event, final Connector connector) {
         Throwable exception = getLastException().getTargetException();
         if (exception instanceof ResourceAccessException) {
             log.error("ResourceAccessException: {}", exception.getMessage());
-            counterMetrics(RESOURCE_ACCESS_EXCEPTION_COUNTER_METRICS, connectorInfoDTO);
+            counterMetrics(RESOURCE_ACCESS_EXCEPTION_COUNTER_METRICS, connector);
         } else if (exception instanceof HttpClientErrorException) {
-            log.error("Request to connect cluster error: connectorId:{}, from:{}, to:{}, event:{}, exception:{}", connectorInfoDTO.getId(), from, to, event, exception);
-            counterMetrics(REQUEST_EXCEPTION_COUNTER_METRICS, connectorInfoDTO);
+            log.error("Request to connect cluster error: connectorId:{}, from:{}, to:{}, event:{}, exception:{}", connector.getId(), from, to, event, exception);
+            counterMetrics(REQUEST_EXCEPTION_COUNTER_METRICS, connector);
         } else {
-            log.error("State machine error: connectorId:{}, from:{}, to:{}, event:{}, exception:{}", connectorInfoDTO.getId(), from, to, event, exception);
-            counterMetrics(UNEXPECT_EXCEPTION_COUNTER_METRICS, connectorInfoDTO);
+            log.error("State machine error: connectorId:{}, from:{}, to:{}, event:{}, exception:{}", connector.getId(), from, to, event, exception);
+            counterMetrics(UNEXPECT_EXCEPTION_COUNTER_METRICS, connector);
         }
         setStatus(StateMachineStatus.IDLE);
     }
 
-    private void counterMetrics(final String counterMetrics, final ConnectorInfoDTO connectorInfoDTO) {
-        String counterCacheKey = counterMetrics + DOT + connectorInfoDTO.getConnectClusterUrl();
+    private void counterMetrics(final String counterMetrics, final Connector connector) {
+        String counterCacheKey = counterMetrics + DOT + connector.getConnectClusterUrl();
         if (!COUNTERS.containsKey(counterCacheKey)) {
             try {
                 MeterRegistry meterRegistry = SpringUtils.getBean(MeterRegistry.class);
                 Counter counter = Counter.builder(counterMetrics)
-                        .tag(METRICS_LABEL_KEY_CONNECT_CLUSTER, connectorInfoDTO.getConnectClusterUrl())
+                        .tag(METRICS_LABEL_KEY_CONNECT_CLUSTER, connector.getConnectClusterUrl())
                         .register(meterRegistry);
                 COUNTERS.put(counterCacheKey, counter);
             } catch (NullPointerException exception) {

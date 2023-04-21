@@ -1,6 +1,5 @@
 package cn.xdf.acdc.devops.service.utility.mail;
 
-import cn.xdf.acdc.devops.core.domain.dto.DomainUserDTO;
 import com.google.common.base.CaseFormat;
 import com.google.common.base.Preconditions;
 import lombok.extern.slf4j.Slf4j;
@@ -121,15 +120,15 @@ public class MailUtilityService {
      */
     public void sendEmailFromTemplate(
             final String from,
-            final List<DomainUserDTO> to,
-            final List<DomainUserDTO> cc,
+            final List<DomainUser> to,
+            final List<DomainUser> cc,
             final String subjectI18nCode,
             final String templateName,
             final Object model
     ) {
         Preconditions.checkNotNull(model, "Email model must not be null.");
         Preconditions.checkArgument(!CollectionUtils.isEmpty(to), "The receiver  must not be empty.");
-        List<DomainUserDTO> ccList = CollectionUtils.isEmpty(cc) ? Collections.EMPTY_LIST : cc;
+        List<DomainUser> ccList = CollectionUtils.isEmpty(cc) ? Collections.EMPTY_LIST : cc;
 
         Locale locale = Locale.getDefault();
         Context context = new Context(locale);

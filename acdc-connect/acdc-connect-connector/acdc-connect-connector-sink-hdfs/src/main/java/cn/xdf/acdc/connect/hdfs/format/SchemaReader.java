@@ -16,33 +16,38 @@
 package cn.xdf.acdc.connect.hdfs.format;
 
 import cn.xdf.acdc.connect.hdfs.hive.HiveFactory;
+
 import java.io.Closeable;
+
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.connect.sink.SinkRecord;
 
 /**
  * Interface for reading a schema from the storage.
- *
  */
 public interface SchemaReader extends Closeable {
 
     /**
      * Project record.
-     * @param tp  Kafka topic partition.
-     * @param sinkRecord Kafka connect sinkRecord.
+     *
+     * @param topicPartition Kafka topic partition.
+     * @param sinkRecord     Kafka connect sinkRecord.
      * @return Projected record
      */
-    ProjectedResult projectRecord(TopicPartition tp, SinkRecord sinkRecord);
+    ProjectedResult projectRecord(TopicPartition topicPartition, SinkRecord sinkRecord);
 
     /**
      * Get HiveFactory.
+     *
      * @return The hive util factory
      */
     HiveFactory getHiveFactory();
 
     /**
      * Get table status.
+     *
+     * @param topicPartition topic partition
      * @return The hive table info ,schema and hdfs partition dir list
      */
-    TableSchemaAndDataStatus getTableSchemaAndDataStatus();
+    TableSchemaAndDataStatus getTableSchemaAndDataStatus(TopicPartition topicPartition);
 }

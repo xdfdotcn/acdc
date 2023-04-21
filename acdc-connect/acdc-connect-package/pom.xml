@@ -16,25 +16,6 @@
     <name>${project.artifactId}</name>
     <packaging>jar</packaging>
 
-    <dependencies>
-        <dependency>
-            <groupId>cn.xdf.acdc</groupId>
-            <artifactId>acdc-connect-connector-sink-jdbc</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>cn.xdf.acdc</groupId>
-            <artifactId>acdc-connect-connector-sink-hdfs</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>cn.xdf.acdc</groupId>
-            <artifactId>acdc-connect-connector-sink-kafka</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>cn.xdf.acdc</groupId>
-            <artifactId>acdc-connect-connector-source-tidb</artifactId>
-        </dependency>
-    </dependencies>
-
     <build>
         <plugins>
             <plugin>
@@ -52,11 +33,15 @@
                 <configuration>
                     <executable>src/main/resources/shell/package-jar.sh</executable>
                     <arguments>
+                        <argument>${package.profile}</argument>
                         <argument>${basedir}/../acdc-connect-connector/acdc-connect-connector-sink-jdbc</argument>
                         <argument>${basedir}/../acdc-connect-connector/acdc-connect-connector-source-tidb</argument>
                         <argument>${basedir}/../acdc-connect-connector/acdc-connect-connector-sink-hdfs</argument>
                         <argument>${basedir}/../acdc-connect-connector/acdc-connect-connector-sink-kafka</argument>
-                        <argument>${basedir}/../acdc-connect-smt/acdc-connect-smt-value-mapper</argument>
+                        <argument>${basedir}/../acdc-connect-plugins/acdc-connect-plugins-converter-schemaless-json</argument>
+                        <argument>${basedir}/../acdc-connect-transforms/acdc-connect-transforms-format</argument>
+                        <argument>${basedir}/../acdc-connect-transforms/acdc-connect-transforms-value-mapper</argument>
+                        <argument>${basedir}/../../acdc-internal/acdc-internal-connect-plugins-converter-xdf</argument>
                     </arguments>
                 </configuration>
             </plugin>

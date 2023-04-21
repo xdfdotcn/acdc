@@ -132,37 +132,38 @@ public class TidbStreamingChangeEventSource implements StreamingChangeEventSourc
         String databaseName = ((TicdcEventData) event.getData()).getTicdcEventKey().getScm();
         String tableName = ((TicdcEventData) event.getData()).getTicdcEventKey().getTbl();
         TicdcEventRowChange ticdcEventRowChange = (TicdcEventRowChange) ((TicdcEventData) event.getData()).getTicdcEventValue();
-        taskContext.getOffsetContext().setOffset(offset(ticdcEventRowChange.getKafkaPartition(), ticdcEventRowChange.getKafkaOffset(), event.getOrder(), event.getType().getDesc()));
+        TidbOffsetContext offsetContext = taskContext.getOffsetContext();
+        offsetContext.setOffset(offset(ticdcEventRowChange.getKafkaPartition(), ticdcEventRowChange.getKafkaOffset(), event.getOrder(), event.getType().getDesc()));
         if (!schema.isIncludedTable(schema.getTableId(databaseName, null, tableName))) {
             markTicdcEventAsDone(ticdcEventRowChange.getKafkaPartition(), ticdcEventRowChange.getKafkaOffset(), event.getOrder());
             return;
         }
         switch (ticdcEventRowChange.getUpdateOrDelete()) {
             case TICDC_EVENT_DELETE:
-                handleChange(DATA_EVENT_TYPE_DELETE,
+                handleChange(offsetContext, DATA_EVENT_TYPE_DELETE,
                     () -> schema.getTableId(databaseName, null, tableName),
                     ticdcEventRowChange::getOldColumns,
                     ticdcEventRowChange::getColumns,
                     (tableId, oldColumns, newColumns) ->
-                        eventDispatcher.dispatchDataChangeEvent(tableId, new TidbChangeRecordEmitter(taskContext.getOffsetContext(), clock, Envelope.Operation.DELETE, newColumns, null)));
+                        eventDispatcher.dispatchDataChangeEvent(tableId, new TidbChangeRecordEmitter(offsetContext, clock, Envelope.Operation.DELETE, newColumns, null)));
                 break;
             case TICDC_EVENT_UPSERT:
                 if (ticdcEventRowChange.getOldColumns() == null) {
                     // insert
-                    handleChange(DATA_EVENT_TYPE_INSERT,
+                    handleChange(offsetContext, DATA_EVENT_TYPE_INSERT,
                         () -> schema.getTableId(databaseName, null, tableName),
                         ticdcEventRowChange::getOldColumns,
                         ticdcEventRowChange::getColumns,
                         (tableId, oldColumns, newColumns) ->
-                            eventDispatcher.dispatchDataChangeEvent(tableId, new TidbChangeRecordEmitter(taskContext.getOffsetContext(), clock, Envelope.Operation.CREATE, null, newColumns)));
+                            eventDispatcher.dispatchDataChangeEvent(tableId, new TidbChangeRecordEmitter(offsetContext, clock, Envelope.Operation.CREATE, null, newColumns)));
                 } else {
                     // update
-                    handleChange(DATA_EVENT_TYPE_UPDATE,
+                    handleChange(offsetContext, DATA_EVENT_TYPE_UPDATE,
                         () -> schema.getTableId(databaseName, null, tableName),
                         ticdcEventRowChange::getOldColumns,
                         ticdcEventRowChange::getColumns,
                         (tableId, oldColumns, newColumns) ->
-                            eventDispatcher.dispatchDataChangeEvent(tableId, new TidbChangeRecordEmitter(taskContext.getOffsetContext(), clock, Envelope.Operation.UPDATE, oldColumns, newColumns)));
+                            eventDispatcher.dispatchDataChangeEvent(tableId, new TidbChangeRecordEmitter(offsetContext, clock, Envelope.Operation.UPDATE, oldColumns, newColumns)));
                 }
                 break;
             default:
@@ -170,12 +171,12 @@ public class TidbStreamingChangeEventSource implements StreamingChangeEventSourc
         }
     }
 
-    private void handleChange(final String changeType, final TableIdProvider tableIdProvider, final ColumnDataProvider oldColumnDataProvider,
+    private void handleChange(final TidbOffsetContext offsetContext, final String changeType, final TableIdProvider tableIdProvider, final ColumnDataProvider oldColumnDataProvider,
                               final ColumnDataProvider newColumnDataProvider, final TicdcChangeEmitter changeEmitter)
             throws InterruptedException {
         // Update table schema if changed.
         schema.updateTableSchemaIfChanged(tableIdProvider.getTableId(), newColumnDataProvider.getData());
-
+        offsetContext.event(tableIdProvider.getTableId(), null);
         changeEmitter.emit(tableIdProvider.getTableId(), oldColumnDataProvider.getData(), newColumnDataProvider.getData());
         if (log.isDebugEnabled()) {
             log.debug("Emitted record, change type: {}, partition:{}, offset:{}",

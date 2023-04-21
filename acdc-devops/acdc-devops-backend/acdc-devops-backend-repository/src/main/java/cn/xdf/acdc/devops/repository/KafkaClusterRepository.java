@@ -26,7 +26,7 @@ import java.util.Optional;
  */
 @SuppressWarnings("unused")
 @Repository
-public interface KafkaClusterRepository extends JpaRepository<KafkaClusterDO, Long>, JpaSpecificationExecutor {
+public interface KafkaClusterRepository extends JpaRepository<KafkaClusterDO, Long>, JpaSpecificationExecutor<KafkaClusterDO> {
 
     /**
      * 根据集群类型查询.

@@ -2,17 +2,13 @@ package cn.xdf.acdc.devops.core.domain.dto;
 
 import cn.xdf.acdc.devops.core.constant.SystemConstant;
 import cn.xdf.acdc.devops.core.domain.entity.AuthorityDO;
-import cn.xdf.acdc.devops.core.domain.entity.UserAuthorityDO;
 import cn.xdf.acdc.devops.core.domain.entity.UserDO;
 import cn.xdf.acdc.devops.core.domain.entity.enumeration.AuthorityRoleType;
 import cn.xdf.acdc.devops.core.util.UserUtil;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.experimental.Accessors;
 import org.springframework.util.CollectionUtils;
 
 import java.util.Collections;
@@ -20,13 +16,9 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Getter
-@Setter
-@ToString
-@AllArgsConstructor
+@Data
 @NoArgsConstructor
-@Builder
-
+@Accessors(chain = true)
 public class UserDetailDTO {
 
     private Long id;
@@ -56,7 +48,7 @@ public class UserDetailDTO {
      *
      * @return UserDO
      */
-    public UserDO toUserDO() {
+    public UserDO toDO() {
         return UserDO.builder()
                 .id(this.id)
                 .name(this.name)
@@ -69,26 +61,7 @@ public class UserDetailDTO {
                 .build();
     }
 
-    /**
-     * To user authority set.
-     *
-     * @return authority set
-     */
-    public Set<UserAuthorityDO> toUserAuthorityDOSet() {
-        if (CollectionUtils.isEmpty(authoritySet)) {
-            return Collections.EMPTY_SET;
-        }
-        return authoritySet.stream()
-                .map(it -> new UserAuthorityDO(this.id, it))
-                .collect(Collectors.toSet());
-    }
-
-    /**
-     * To AuthorityDO set.
-     *
-     * @return Set
-     */
-    public Set<AuthorityDO> toAuthorityDOSet() {
+    private Set<AuthorityDO> toAuthorityDOSet() {
         Set<AuthorityRoleType> newAuthorityRoleTypes = CollectionUtils.isEmpty(authoritySet)
                 ? new HashSet<>() : authoritySet;
         newAuthorityRoleTypes.add(AuthorityRoleType.ROLE_USER);

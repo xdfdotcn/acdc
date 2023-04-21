@@ -200,7 +200,7 @@ public class HiveMetaReader extends AbstractSchemaFileReader {
     }
 
     @Override
-    public ProjectedResult projectRecord(final TopicPartition tp, final SinkRecord sinkRecord) {
+    public ProjectedResult projectRecord(final TopicPartition topicPartition, final SinkRecord sinkRecord) {
         Schema sourceSchema = sinkRecord.valueSchema();
         Preconditions.checkNotNull(sourceSchema);
 
@@ -210,7 +210,7 @@ public class HiveMetaReader extends AbstractSchemaFileReader {
             String targetKey = schemaUniqueKey(currentSchema);
             if (Objects.equals(sourceKey, targetKey)) {
                 log.info("Read meta schema from cache, check the schema not change, will keep using cache schema, "
-                    + "source: {}, target: {}, tp: {}", sourceKey, targetKey, tp);
+                    + "source: {}, target: {}, tp: {}", sourceKey, targetKey, topicPartition);
 
                 return ProjectedResult.builder()
                     .projectedRecord(project(sinkRecord, currentSchema))
@@ -221,7 +221,7 @@ public class HiveMetaReader extends AbstractSchemaFileReader {
             if (!Objects.equals(sourceKey, targetKey) && !isSupportSchemaChange) {
                 log.info("Read meta schema from cache, check the schema changed,"
                     + "but configuration not supported schema change, will keep using cache schema, "
-                    + "source:{}, target:{}, tp: {}", sourceKey, targetKey, tp);
+                    + "source:{}, target:{}, tp: {}", sourceKey, targetKey, topicPartition);
 
                 // 不支持 schema 变更，但是应该校验修改后的数据类型是否兼容
                 schemaProjector.checkCompatibility(sourceSchema, currentSchema);
@@ -234,7 +234,7 @@ public class HiveMetaReader extends AbstractSchemaFileReader {
 
             log.info("Read meta schema from cache, check the schema changed, "
                     + "configuration supported schema change, will read schema from meta, source: {}, target: {}, tp: {}",
-                sourceKey, targetKey, tp
+                sourceKey, targetKey, topicPartition
             );
         }
 
@@ -245,7 +245,7 @@ public class HiveMetaReader extends AbstractSchemaFileReader {
         // 配置不支持 schema 变更，直接使用 sink 端的 schema
         if (!isSupportSchemaChange) {
             log.info("Read meta schema from metastore, configuration not supported schema change, "
-                + "will keep using hive meta schema, will cache schema tp: {}", tp);
+                + "will keep using hive meta schema, will cache schema tp: {}", topicPartition);
 
             return ProjectedResult.builder()
                 .projectedRecord(project(sinkRecord, currentSchema))
@@ -260,7 +260,7 @@ public class HiveMetaReader extends AbstractSchemaFileReader {
 
         // 如果没有增加字段忽略 schema 变更
         if (!shouldChangeSchema) {
-            log.info("Read meta schema from metastore, check the schema not change, will cache schema tp: {}.", tp);
+            log.info("Read meta schema from metastore, check the schema not change, will cache schema tp: {}.", topicPartition);
 
             return ProjectedResult.builder()
                 .projectedRecord(project(sinkRecord, currentSchema))
@@ -280,7 +280,7 @@ public class HiveMetaReader extends AbstractSchemaFileReader {
             .build();
         currentSchema = NULL_SCHEMA;
 
-        log.info("Read meta schema from metastore, check the schema changed, will lose efficacy cache's schema, tp: {}.", tp);
+        log.info("Read meta schema from metastore, check the schema changed, will lose efficacy cache's schema, tp: {}.", topicPartition);
 
         return result;
     }

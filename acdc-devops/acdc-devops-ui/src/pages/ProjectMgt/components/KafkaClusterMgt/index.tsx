@@ -1,21 +1,22 @@
-import React, {useState} from 'react';
+import React, {useRef} from 'react';
 import type {ProColumns} from '@ant-design/pro-table';
-import ProTable from '@ant-design/pro-table';
-import {Modal, Button} from 'antd';
+import ProTable, {ActionType} from '@ant-design/pro-table';
+import {Button} from 'antd';
 import {EditOutlined, PlusOutlined} from '@ant-design/icons';
 import {useModel} from 'umi';
-import {queryKafkaCluster} from '@/services/a-cdc/api';
+import {pagedQueryDataSystemResource} from '@/services/a-cdc/api';
 import KafkaClusterEditing from '../KafkaClusterEditing';
 import KafkaClusterConfig from '../KafkaClusterConfig';
-const {confirm} = Modal;
 
 const KafkaClusterMgt: React.FC = () => {
 	// 数据流
 	const {kafkaClusterEditingModel, setKafkaClusterEditingModel} = useModel('KafkaClusterEditingModel')
 	const {kafkaClusterConfigModel, setKafkaClusterConfigModel} = useModel('KafkaClusterConfigModel')
-	const {kafkaClusterMgtModel, setKafkaClusterMgtModel} = useModel('KafkaClusterMgtModel')
-	const {kafkaClusterDetailModel, setKafkaClusterDetailModel} = useModel('KafkaClusterDetailModel')
-	const columns: ProColumns<API.KafkaCluster>[] = [
+	const {kafkaClusterMgtModel} = useModel('KafkaClusterMgtModel')
+
+  const ref = useRef<ActionType>();
+
+	const columns: ProColumns<API.DataSystemResource>[] = [
 		{
 			title: '名称',
 			width: "30%",
@@ -25,8 +26,8 @@ const KafkaClusterMgt: React.FC = () => {
 		{
 			title: '集群地址',
 			width: "30%",
-			dataIndex: 'bootstrapServers',
-			search:false,
+			dataIndex: ['dataSystemResourceConfigurations', 'bootstrap.servers', 'value'],
+			search: false,
 		},
 
 		{
@@ -75,15 +76,17 @@ const KafkaClusterMgt: React.FC = () => {
 	];
 	return (
 		<div>
-			<ProTable<API.KafkaCluster>
+			<ProTable<API.DataSystemResource, API.DataSystemResourceQuery>
 				rowKey={(record) => String(record.id)}
 				// 请求数据API
 				columns={columns}
 				// 分页设置,默认数据,不展示动态调整分页大小
 				params={{
-					projectId: kafkaClusterMgtModel.projectId
+					projectId: kafkaClusterMgtModel.projectId,
+          resourceTypes: ["KAFKA_CLUSTER"]
 				}}
-				request={queryKafkaCluster}
+				request={pagedQueryDataSystemResource}
+        actionRef={ref}
 				pagination={{
 					showSizeChanger: true,
 					pageSize: 10
@@ -111,7 +114,7 @@ const KafkaClusterMgt: React.FC = () => {
 					</Button.Group>
 				]}
 			/>
-			<KafkaClusterEditing />
+			<KafkaClusterEditing tableRef={ref.current} />
 			<KafkaClusterConfig />
 		</div>
 	)

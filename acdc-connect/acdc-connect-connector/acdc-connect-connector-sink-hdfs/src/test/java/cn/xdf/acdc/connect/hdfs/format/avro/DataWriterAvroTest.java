@@ -31,6 +31,7 @@ import cn.xdf.acdc.connect.hdfs.wal.WALFile.Writer;
 import cn.xdf.acdc.connect.hdfs.wal.WALFileTest.CorruptWriter;
 import cn.xdf.acdc.connect.hdfs.writer.ExactlyOnceTopicPartitionWriterTest;
 import io.confluent.common.utils.Time;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -40,17 +41,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.Path;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.connect.errors.ConnectException;
 import org.apache.kafka.connect.sink.SinkRecord;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -97,10 +101,10 @@ public class DataWriterAvroTest extends TestWithMiniDFSCluster {
         StoreConfig storeConfig = defaultStoreContext.getStoreConfig();
         HdfsFileOperator fileOperator = defaultStoreContext.getFileOperator();
         fs.delete(new Path(FilePath.of(storeConfig.tablePath())
-                .join(String.valueOf(TOPIC_PARTITION.partition()))
-                .build().path()
-            ),
-            true
+                        .join(String.valueOf(TOPIC_PARTITION.partition()))
+                        .build().path()
+                ),
+                true
         );
 
         HdfsStorage storage = new HdfsStorage(connectorConfig, url);
@@ -116,14 +120,14 @@ public class DataWriterAvroTest extends TestWithMiniDFSCluster {
             long startOffset = i * 10;
             long endOffset = (i + 1) * 10 - 1;
             String tempfile = FilePath.of(storeConfig.tablePath())
-                .join(getDirectory())
-                .join(fileOperator.tempFileName(extension))
-                .build().path();
+                    .join(getDirectory())
+                    .join(fileOperator.generateTempFileName(extension))
+                    .build().path();
             fs.createNewFile(new Path(tempfile));
             String committedFile = FilePath.of(storeConfig.tablePath())
-                .join(getDirectory())
-                .join(fileOperator.commitFileName(storeConfig.table(), TOPIC_PARTITION, startOffset, endOffset, extension))
-                .build().path();
+                    .join(getDirectory())
+                    .join(fileOperator.generateCommittedFileName(TOPIC_PARTITION, startOffset, endOffset, extension))
+                    .build().path();
             wal.append(tempfile, committedFile);
         }
         wal.append(WAL.endMarker, "");
@@ -149,10 +153,10 @@ public class DataWriterAvroTest extends TestWithMiniDFSCluster {
         StoreConfig storeConfig = defaultStoreContext.getStoreConfig();
         HdfsFileOperator fileOperator = defaultStoreContext.getFileOperator();
         fs.delete(new Path(FilePath.of(storeConfig.tablePath())
-                .join(String.valueOf(TOPIC_PARTITION.partition()))
-                .build().path()
-            ),
-            true
+                        .join(String.valueOf(TOPIC_PARTITION.partition()))
+                        .build().path()
+                ),
+                true
         );
 
         HdfsStorage storage = new HdfsStorage(connectorConfig, url);
@@ -166,7 +170,7 @@ public class DataWriterAvroTest extends TestWithMiniDFSCluster {
                 if (getWriter().getClass() != CorruptWriter.class) {
                     try {
                         setWriter(new CorruptWriter(storage.conf(), Writer.file(new Path(this.getLogFile())),
-                            Writer.appendIfExists(true)));
+                                Writer.appendIfExists(true)));
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -180,14 +184,14 @@ public class DataWriterAvroTest extends TestWithMiniDFSCluster {
             long startOffset = i * 10;
             long endOffset = (i + 1) * 10 - 1;
             String tempfile = FilePath.of(storeConfig.tablePath())
-                .join(getDirectory())
-                .join(fileOperator.tempFileName(extension))
-                .build().path();
+                    .join(getDirectory())
+                    .join(fileOperator.generateTempFileName(extension))
+                    .build().path();
             fs.createNewFile(new Path(tempfile));
             String committedFile = FilePath.of(storeConfig.tablePath())
-                .join(getDirectory())
-                .join(fileOperator.commitFileName(storeConfig.table(), TOPIC_PARTITION, startOffset, endOffset, extension))
-                .build().path();
+                    .join(getDirectory())
+                    .join(fileOperator.generateCommittedFileName(TOPIC_PARTITION, startOffset, endOffset, extension))
+                    .build().path();
 
             wal.append(tempfile, committedFile);
         }
@@ -231,7 +235,7 @@ public class DataWriterAvroTest extends TestWithMiniDFSCluster {
         }
 
         List<SinkRecord> sinkRecords = createSinkRecordsInterleaved(7 * context.assignment().size(), 0,
-            context.assignment());
+                context.assignment());
 
         hdfsWriter.write(sinkRecords);
         hdfsWriter.close();
@@ -247,7 +251,7 @@ public class DataWriterAvroTest extends TestWithMiniDFSCluster {
         partitioner = hdfsWriter.getPartitioner();
 
         List<SinkRecord> sinkRecords = createSinkRecordsInterleaved(7 * context.assignment().size(), 9,
-            context.assignment());
+                context.assignment());
 
         hdfsWriter.write(sinkRecords);
         hdfsWriter.close();
@@ -267,22 +271,22 @@ public class DataWriterAvroTest extends TestWithMiniDFSCluster {
 
         for (int i = 0; i < startOffsets.length; ++i) {
             Path path = new Path(
-                fileOperator.createCommitFileByPartitionAndTp(
-                    directory,
-                    TOPIC_PARTITION,
-                    startOffsets[i],
-                    endOffsets[i],
-                    extension
-                ));
+                    fileOperator.createCommittedFileInTablePartitionPath(
+                            directory,
+                            TOPIC_PARTITION,
+                            startOffsets[i],
+                            endOffsets[i],
+                            extension
+                    ));
             fs.createNewFile(path);
         }
-        Path path = new Path(fileOperator.createTempFileByPartition(directory, extension));
+        Path path = new Path(fileOperator.createTempFileInTempTablePartitionPath(directory, extension));
         fs.createNewFile(path);
 
         path = new Path(FilePath.of(storeConfig.tablePath())
-            .join(directory)
-            .join("abcd")
-            .build().path()
+                .join(directory)
+                .join("abcd")
+                .build().path()
         );
         fs.createNewFile(path);
 
@@ -455,16 +459,16 @@ public class DataWriterAvroTest extends TestWithMiniDFSCluster {
         props.put(HdfsSinkConfig.FLUSH_SIZE_CONFIG, FLUSH_SIZE_CONFIG);
         props.put(HdfsSinkConfig.ROTATE_INTERVAL_MS_CONFIG, ROTATE_INTERVAL_MS_CONFIG);
         props.put(
-            PartitionerConfig.PARTITION_DURATION_MS_CONFIG,
-            String.valueOf(TimeUnit.DAYS.toMillis(1))
+                PartitionerConfig.PARTITION_DURATION_MS_CONFIG,
+                String.valueOf(TimeUnit.DAYS.toMillis(1))
         );
         props.put(
-            PartitionerConfig.TIMESTAMP_EXTRACTOR_CLASS_CONFIG,
-            ExactlyOnceTopicPartitionWriterTest.MockedWallclockTimestampExtractor.class.getName()
+                PartitionerConfig.TIMESTAMP_EXTRACTOR_CLASS_CONFIG,
+                ExactlyOnceTopicPartitionWriterTest.MockedWallclockTimestampExtractor.class.getName()
         );
         props.put(
-            PartitionerConfig.PARTITIONER_CLASS_CONFIG,
-            TimeBasedPartitioner.class.getName()
+                PartitionerConfig.PARTITIONER_CLASS_CONFIG,
+                TimeBasedPartitioner.class.getName()
         );
         HdfsSinkConfig connectorConfig = new HdfsSinkConfig(props);
         context.assignment().add(TOPIC_PARTITION);
@@ -523,7 +527,7 @@ public class DataWriterAvroTest extends TestWithMiniDFSCluster {
                 String fileContents = new String(buffer.array());
                 int index;
                 assertTrue((index = fileContents.indexOf("avro.codec")) > 0
-                    && fileContents.indexOf("snappy", index) > 0);
+                        && fileContents.indexOf("snappy", index) > 0);
             }
         }
     }

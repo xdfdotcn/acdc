@@ -17,6 +17,7 @@ public enum ApproveResult {
 
     /**
      * get value.
+     *
      * @return value
      */
     public String getValue() {

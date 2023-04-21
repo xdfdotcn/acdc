@@ -22,7 +22,7 @@ public class I18nService {
      * 获取国际化之后的信息.
      *
      * @param i18nKey 国际化key
-     * @param args    占位符
+     * @param args    占位符参数
      * @return 国际化之后的信息
      */
     public String msg(final String i18nKey, final Object... args) {

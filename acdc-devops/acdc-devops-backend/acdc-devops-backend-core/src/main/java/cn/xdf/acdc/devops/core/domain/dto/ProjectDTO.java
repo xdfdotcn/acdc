@@ -2,20 +2,18 @@ package cn.xdf.acdc.devops.core.domain.dto;
 
 import cn.xdf.acdc.devops.core.constant.SystemConstant;
 import cn.xdf.acdc.devops.core.domain.entity.ProjectDO;
-import cn.xdf.acdc.devops.core.domain.entity.enumeration.ProjectSourceType;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
+import cn.xdf.acdc.devops.core.domain.entity.UserDO;
+import cn.xdf.acdc.devops.core.domain.entity.enumeration.MetadataSourceType;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
 
-import java.time.Instant;
+import java.util.Date;
 import java.util.Objects;
 
-// CHECKSTYLE:OFF
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@Accessors(chain = true)
 public class ProjectDTO extends PageDTO {
 
     private Long id;
@@ -24,42 +22,54 @@ public class ProjectDTO extends PageDTO {
 
     private String description;
 
-    private Long owner;
+    private Long ownerId;
 
     private String ownerEmail;
 
-    private ProjectSourceType source;
+    private String ownerName;
+
+    private MetadataSourceType source;
 
     private Long originalId;
 
-    private Instant creationTime;
+    private Date creationTime;
+
+    private Date updateTime;
 
     public ProjectDTO(final ProjectDO project) {
         this.id = project.getId();
         this.name = project.getName();
         this.description = project.getDescription();
-        this.ownerEmail = Objects.nonNull(project.getOwner()) ? project.getOwner().getEmail() : SystemConstant.EMPTY_STRING;
-    }
 
-    public static ProjectDTO toProjectDTO(final ProjectDO project) {
-        ProjectDTOBuilder builder = ProjectDTO.builder()
-            .id(project.getId())
-            .name(project.getName())
-            .description(project.getDescription())
-            .creationTime(project.getCreationTime());
         if (Objects.nonNull(project.getOwner())) {
-            builder.ownerEmail = project.getOwner().getEmail();
+            this.ownerId = project.getOwner().getId();
         }
-        return builder.build();
+
+        this.ownerEmail = Objects.nonNull(project.getOwner()) ? project.getOwner().getEmail() : SystemConstant.EMPTY_STRING;
+        this.ownerName = Objects.nonNull(project.getOwner()) ? project.getOwner().getName() : SystemConstant.EMPTY_STRING;
+        this.source = project.getSource();
+        this.originalId = project.getOriginalId();
+        this.creationTime = project.getCreationTime();
+        this.updateTime = project.getUpdateTime();
     }
 
-    public static ProjectDO toProjectDO(final ProjectDTO projectDTO) {
+    public ProjectDTO(final Long id) {
+        this.id = id;
+    }
+
+    /**
+     * Convert to ProjectDO.
+     *
+     * @return ProjectDO
+     */
+    public ProjectDO toDO() {
         ProjectDO projectDO = new ProjectDO();
-        projectDO.setName(projectDTO.getName());
-        projectDO.setId(projectDTO.getId());
-        projectDO.setDescription(projectDTO.getDescription());
-        projectDO.setSource(projectDTO.getSource());
-        projectDO.setOriginalId(projectDTO.getOriginalId());
+        projectDO.setName(this.getName());
+        projectDO.setId(this.getId());
+        projectDO.setOwner(new UserDO(this.ownerId));
+        projectDO.setDescription(this.getDescription());
+        projectDO.setSource(this.getSource());
+        projectDO.setOriginalId(this.getOriginalId());
         return projectDO;
     }
 }

@@ -4,11 +4,13 @@ import cn.xdf.acdc.devops.core.domain.entity.enumeration.DataSystemType;
 import cn.xdf.acdc.devops.core.domain.entity.enumeration.RequisitionState;
 import cn.xdf.acdc.devops.core.domain.enumeration.ConnectionState;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.experimental.SuperBuilder;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -17,14 +19,21 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinColumns;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "connection")
-@Data
+@Getter
+@Setter
+//@EqualsAndHashCode
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
@@ -42,10 +51,10 @@ public class ConnectionDO extends SoftDeletableDO implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private ProjectDO sourceProject;
 
-    @Column(name = "source_data_set_id", nullable = false)
-    private Long sourceDataSetId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    private DataSystemResourceDO sourceDataCollection;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     private ConnectorDO sourceConnector;
 
     @Column(name = "sink_data_system_type", nullable = false)
@@ -55,11 +64,11 @@ public class ConnectionDO extends SoftDeletableDO implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private ProjectDO sinkProject;
 
-    @Column(name = "sink_instance_id")
-    private Long sinkInstanceId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    private DataSystemResourceDO sinkDataCollection;
 
-    @Column(name = "sink_data_set_id", nullable = false)
-    private Long sinkDataSetId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private DataSystemResourceDO sinkInstance;
 
     @OneToOne(fetch = FetchType.LAZY)
     private ConnectorDO sinkConnector;
@@ -82,10 +91,40 @@ public class ConnectionDO extends SoftDeletableDO implements Serializable {
     @Enumerated(EnumType.ORDINAL)
     private ConnectionState actualState;
 
-    @OneToOne(optional = false, fetch = FetchType.LAZY)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     private UserDO user;
+
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumns({
+            @JoinColumn(updatable = false, name = "connection_id", referencedColumnName = "id"),
+            @JoinColumn(updatable = false, name = "connection_version", referencedColumnName = "version")
+    })
+    private Set<ConnectionColumnConfigurationDO> connectionColumnConfigurations = new HashSet<>();
+
+    @OneToMany(mappedBy = "connection", fetch = FetchType.LAZY)
+    private Set<ConnectionRequisitionConnectionMappingDO> connectionRequisitionConnectionMappings = new HashSet<>();
 
     public ConnectionDO(final Long id) {
         this.id = id;
+    }
+
+    // TODO
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof ConnectionDO)) {
+            return false;
+        }
+
+        ConnectionDO other = (ConnectionDO) o;
+        return id != null && id.equals(other.id);
+    }
+
+    @Override
+    public int hashCode() {
+        // see https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
+        return getClass().hashCode();
     }
 }

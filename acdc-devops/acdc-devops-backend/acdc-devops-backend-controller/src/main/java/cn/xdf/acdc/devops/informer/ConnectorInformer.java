@@ -2,26 +2,26 @@ package cn.xdf.acdc.devops.informer;
 
 import cn.xdf.acdc.devops.core.domain.dto.ConnectorDTO;
 import cn.xdf.acdc.devops.core.domain.query.ConnectorQuery;
-import cn.xdf.acdc.devops.service.process.connector.ConnectorQueryProcessService;
+import cn.xdf.acdc.devops.service.process.connector.ConnectorService;
 import org.springframework.scheduling.TaskScheduler;
 
-import java.time.Instant;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
 public class ConnectorInformer extends AbstractInformer<ConnectorDTO> {
 
-    private final ConnectorQueryProcessService connectorQueryProcessService;
+    private final ConnectorService connectorService;
 
-    public ConnectorInformer(final TaskScheduler scheduler, final ConnectorQueryProcessService connectorQueryProcessService) {
+    public ConnectorInformer(final TaskScheduler scheduler, final ConnectorService connectorService) {
         super(scheduler);
-        this.connectorQueryProcessService = connectorQueryProcessService;
+        this.connectorService = connectorService;
     }
 
     @Override
     List<ConnectorDTO> query() {
         ConnectorQuery query = ConnectorQuery.builder().beginUpdateTime(super.getLastUpdateTime()).build();
-        return connectorQueryProcessService.query(query);
+        return connectorService.query(query);
     }
 
     @Override
@@ -40,7 +40,7 @@ public class ConnectorInformer extends AbstractInformer<ConnectorDTO> {
     }
 
     @Override
-    Instant getUpdateTime(final ConnectorDTO connectorDTO) {
+    Date getUpdateTime(final ConnectorDTO connectorDTO) {
         return connectorDTO.getUpdateTime();
     }
 

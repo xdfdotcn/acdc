@@ -23,7 +23,9 @@ import cn.xdf.acdc.connect.hdfs.partitioner.DefaultPartitioner;
 import cn.xdf.acdc.connect.hdfs.partitioner.PartitionerConfig;
 import cn.xdf.acdc.connect.hdfs.writer.StoreContext;
 import io.confluent.connect.avro.AvroData;
+
 import java.io.IOException;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.connect.data.Schema;
@@ -63,33 +65,36 @@ public class HdfsSinkConnectorTestBase extends StorageSinkTestBase {
 //        props.put(StorageCommonConfig.STORE_URL_CONFIG, url);
         props.put(HdfsSinkConfig.FLUSH_SIZE_CONFIG, "3");
         props.put(
-            StorageCommonConfig.STORAGE_CLASS_CONFIG,
-            "cn.xdf.acdc.connect.hdfs.storage.HdfsStorage"
+                StorageCommonConfig.STORAGE_CLASS_CONFIG,
+                "cn.xdf.acdc.connect.hdfs.storage.HdfsStorage"
         );
         props.put(
-            PartitionerConfig.PARTITIONER_CLASS_CONFIG,
-            DefaultPartitioner.class.getName()
+                PartitionerConfig.PARTITIONER_CLASS_CONFIG,
+                DefaultPartitioner.class.getName()
         );
         props.put(PartitionerConfig.PARTITION_FIELD_NAME_CONFIG, "int");
         props.put(
-            PartitionerConfig.PARTITION_DURATION_MS_CONFIG,
-            String.valueOf(TimeUnit.HOURS.toMillis(1))
+                PartitionerConfig.PARTITION_DURATION_MS_CONFIG,
+                String.valueOf(TimeUnit.HOURS.toMillis(1))
         );
         props.put(PartitionerConfig.PATH_FORMAT_CONFIG, "'year'=YYYY/'month'=MM/'day'=dd/'hour'=HH/");
         props.put(PartitionerConfig.LOCALE_CONFIG, "en");
         props.put(PartitionerConfig.TIMEZONE_CONFIG, "America/Los_Angeles");
         props.put(HdfsSinkConfig.HIVE_INTEGRATION_MODE, HiveIntegrationMode.NONE.name());
 
+        // The default based on default configuration of 10
+        props.put(HdfsSinkConfig.FILENAME_OFFSET_ZERO_PAD_WIDTH_CONFIG, "10");
+
         return props;
     }
 
     protected Struct createRecord(final Schema schema, int ibase, float fbase) {
         return new Struct(schema)
-            .put("boolean", true)
-            .put("int", ibase)
-            .put("long", (long) ibase)
-            .put("float", fbase)
-            .put("double", (double) fbase);
+                .put("boolean", true)
+                .put("int", ibase)
+                .put("long", (long) ibase)
+                .put("float", fbase)
+                .put("double", (double) fbase);
     }
 
     // Create a batch of records with incremental numeric field values. Total number of records is

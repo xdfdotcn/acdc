@@ -1,6 +1,6 @@
 package cn.xdf.acdc.devops.controller;
 
-import cn.xdf.acdc.devops.core.domain.dto.ConnectionDetailDTO;
+import cn.xdf.acdc.devops.core.domain.dto.ConnectionDTO;
 import cn.xdf.acdc.devops.core.domain.dto.ConnectorDTO;
 import cn.xdf.acdc.devops.core.domain.entity.enumeration.ConnectorType;
 import cn.xdf.acdc.devops.core.domain.enumeration.ConnectionState;
@@ -8,16 +8,13 @@ import cn.xdf.acdc.devops.core.domain.enumeration.ConnectorState;
 import cn.xdf.acdc.devops.informer.AbstractInformer;
 import cn.xdf.acdc.devops.informer.ConnectionInformer;
 import cn.xdf.acdc.devops.informer.ConnectorInformer;
-import cn.xdf.acdc.devops.service.process.connection.ConnectionProcessService;
-import cn.xdf.acdc.devops.service.process.connector.ConnectorCoreProcessService;
-import cn.xdf.acdc.devops.service.process.connector.ConnectorQueryProcessService;
+import cn.xdf.acdc.devops.service.process.connection.ConnectionService;
+import cn.xdf.acdc.devops.service.process.connector.ConnectorService;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.TaskScheduler;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import javax.annotation.concurrent.NotThreadSafe;
 import java.util.HashSet;
 import java.util.Map;
@@ -32,38 +29,34 @@ import java.util.function.Supplier;
 /**
  * Connection controller controls data exchanges between connection and connector.
  */
-@Service
+@Component
 @NotThreadSafe
 @Slf4j
-public class ConnectionController implements Controller {
+public class ConnectionController extends Controller {
 
     private static final int MAX_WAIT_TIME_IN_SECOND = 60;
 
     private final TaskScheduler taskScheduler;
 
-    private final ConnectionProcessService connectionProcessService;
+    private final ConnectionService connectionService;
 
-    private final ConnectorCoreProcessService connectorCoreProcessService;
-
-    private final ConnectorQueryProcessService connectorQueryProcessService;
+    private final ConnectorService connectorService;
 
     private final Map<Long, Set<Long>> connectorIdToConnectionId = new ConcurrentHashMap<>();
 
-    private AbstractInformer<ConnectionDetailDTO> connectionInformer;
+    private AbstractInformer<ConnectionDTO> connectionInformer;
 
     private AbstractInformer<ConnectorDTO> connectorInformer;
 
-    public ConnectionController(final TaskScheduler taskScheduler, final ConnectionProcessService connectionProcessService,
-            final ConnectorCoreProcessService connectorCoreProcessService, final ConnectorQueryProcessService connectorQueryProcessService) {
+    public ConnectionController(final TaskScheduler taskScheduler, final ConnectionService connectionService,
+            final ConnectorService connectorService) {
         this.taskScheduler = taskScheduler;
-        this.connectionProcessService = connectionProcessService;
-        this.connectorCoreProcessService = connectorCoreProcessService;
-        this.connectorQueryProcessService = connectorQueryProcessService;
+        this.connectionService = connectionService;
+        this.connectorService = connectorService;
     }
 
-    @PostConstruct
     @Override
-    public void start() {
+    public void doStart() {
         initConnectionInformer();
         initConnectorInformer();
 
@@ -78,35 +71,29 @@ public class ConnectionController implements Controller {
         connectionInformer.waitForInitialized(AbstractInformer.DEFAULT_INFORMER_INITIALIZATION_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
     }
 
-    @PreDestroy
     @Override
-    public void stop() {
+    public void doStop() {
         connectorInformer.stop();
         connectionInformer.stop();
     }
 
     private void initConnectionInformer() {
-        connectionInformer = new ConnectionInformer(taskScheduler, connectionProcessService)
+        connectionInformer = new ConnectionInformer(taskScheduler, connectionService)
                 .whenAdd(this::onConnectionAdd)
                 .whenUpdate(this::onConnectionUpdate)
                 .whenDelete(this::onConnectionDelete);
     }
 
     private void initConnectorInformer() {
-        connectorInformer = new ConnectorInformer(taskScheduler, connectorQueryProcessService)
+        connectorInformer = new ConnectorInformer(taskScheduler, connectorService)
                 .whenAdd(this::onConnectorActualStateChanged)
                 .whenUpdate(this::onConnectorActualStateChanged);
     }
 
     /**
-     * Connector state change will cause connection state updated, only response state change below witch means ignore other
-     *      state and these state change don't impact connection state before.
-     * source connector desired state, source connector actual state, sink connector desired state,
-     *      sink connector actual state  =>  connection actual state
-     *    running, running, running, running  =>  running
-     *    any,     any,     stopped, stopped  =>  stopped
-     *    any,     any,     any,     failed   =>  failed
-     *    any,     failed,  any,     any      =>  failed
+     * Connector state change will cause connection state updated, only response state change below witch means ignore other state and these state change don't impact connection state before. source
+     * connector desired state, source connector actual state, sink connector desired state, sink connector actual state  =>  connection actual state running, running, running, running  =>  running
+     * any,     any,     stopped, stopped  =>  stopped any,     any,     any,     failed   =>  failed any,     failed,  any,     any      =>  failed
      */
     private void onConnectorActualStateChanged(final ConnectorDTO connectorDto) {
         Long connectorId = connectorDto.getId();
@@ -118,37 +105,37 @@ public class ConnectionController implements Controller {
         }
 
         connectionIds.forEach(connectionId -> {
-            ConnectionDetailDTO connectionDetailDto = waitForNonNull(() -> connectionInformer.get(connectionId));
+            ConnectionDTO connectionDTO = waitForNonNull(() -> connectionInformer.get(connectionId));
 
             ConnectorDTO sourceConnectorDto;
             ConnectorDTO sinkConnectorDto;
-            if (Objects.equals(connectionDetailDto.getSourceConnectorId(), connectorId)) {
+            if (Objects.equals(connectionDTO.getSourceConnectorId(), connectorId)) {
                 sourceConnectorDto = connectorDto;
-                sinkConnectorDto = connectorInformer.get(connectionDetailDto.getSinkConnectorId());
+                sinkConnectorDto = connectorInformer.get(connectionDTO.getSinkConnectorId());
             } else {
-                sourceConnectorDto = connectorInformer.get(connectionDetailDto.getSourceConnectorId());
+                sourceConnectorDto = connectorInformer.get(connectionDTO.getSourceConnectorId());
                 sinkConnectorDto = connectorDto;
             }
 
             if (Objects.nonNull(sourceConnectorDto) && Objects.nonNull(sinkConnectorDto)) {
                 Optional<ConnectionState> connectionState = generateConnectionState(sourceConnectorDto.getDesiredState(), sourceConnectorDto.getActualState(),
                         sinkConnectorDto.getDesiredState(), sinkConnectorDto.getActualState());
-                connectionState.ifPresent(state -> refreshAndUpdateConnectionActualState(connectionDetailDto, state));
+                connectionState.ifPresent(state -> refreshAndUpdateConnectionActualState(connectionDTO, state));
 
                 // TODO: When deleting a connection, we should clean all the things in memory,
                 // such as connector id to connection id mapping cache.
                 // we should do the clean in the sink connector stopped/deleted event, but not connection.
-//                if (connectionDetailDto.getDeleted()) {
-//                    cleanConnectorIdToConnectionId(connectionDetailDto);
+//                if (connectionDTO.getDeleted()) {
+//                    cleanConnectorIdToConnectionId(connectionDTO);
 //                }
             }
         });
     }
 
-    private void cleanConnectorIdToConnectionId(final ConnectionDetailDTO connectionDetailDto) {
-        Long connectionId = connectionDetailDto.getId();
+    private void cleanConnectorIdToConnectionId(final ConnectionDTO connectionDTO) {
+        Long connectionId = connectionDTO.getId();
 
-        Long sourceConnectorId = connectionDetailDto.getSourceConnectorId();
+        Long sourceConnectorId = connectionDTO.getSourceConnectorId();
         if (sourceConnectorId != null) {
             Set<Long> connectionIds = connectorIdToConnectionId.get(sourceConnectorId);
             connectionIds.remove(connectionId);
@@ -157,7 +144,7 @@ public class ConnectionController implements Controller {
             }
         }
 
-        Long sinkConnectorId = connectionDetailDto.getSinkConnectorId();
+        Long sinkConnectorId = connectionDTO.getSinkConnectorId();
         if (sinkConnectorId != null) {
             connectorIdToConnectionId.remove(sinkConnectorId);
         }
@@ -204,20 +191,20 @@ public class ConnectionController implements Controller {
         return Optional.empty();
     }
 
-    private void onConnectionAdd(final ConnectionDetailDTO connectionDetailDto) {
-        if (createConnectorIfNeeded(connectionDetailDto)) {
+    private void onConnectionAdd(final ConnectionDTO connectionDTO) {
+        if (createConnectorIfNeeded(connectionDTO)) {
             return;
         }
-        startOrStopConnectionIfNeeded(connectionDetailDto);
-        mappingConnectorIdWithConnectionId(connectionDetailDto);
+        startOrStopConnectionIfNeeded(connectionDTO);
+        mappingConnectorIdWithConnectionId(connectionDTO);
     }
 
-    private void mappingConnectorIdWithConnectionId(final ConnectionDetailDTO connectionDetailDto) {
-        Long connectionId = connectionDetailDto.getId();
-        Long sourceConnectorId = connectionDetailDto.getSourceConnectorId();
-        Long sinkConnectorId = connectionDetailDto.getSinkConnectorId();
+    private void mappingConnectorIdWithConnectionId(final ConnectionDTO connectionDTO) {
+        Long connectionId = connectionDTO.getId();
+        Long sourceConnectorId = connectionDTO.getSourceConnectorId();
+        Long sinkConnectorId = connectionDTO.getSinkConnectorId();
 
-        // one source connector may mapping to many connection
+        // one source connector maybe source for many connection
         if (Objects.nonNull(sourceConnectorId)) {
             Set<Long> connectionIds = connectorIdToConnectionId.getOrDefault(sourceConnectorId, new HashSet<>());
             connectionIds.add(connectionId);
@@ -229,39 +216,38 @@ public class ConnectionController implements Controller {
         }
     }
 
-    private boolean createConnectorIfNeeded(final ConnectionDetailDTO connectionDetailDto) {
-        if (!Objects.isNull(connectionDetailDto.getSinkConnectorId())) {
+    private boolean createConnectorIfNeeded(final ConnectionDTO connectionDTO) {
+        if (!Objects.isNull(connectionDTO.getSinkConnectorId())) {
             return false;
         }
 
-        if (ConnectionState.RUNNING.equals(connectionDetailDto.getDesiredState())) {
-            refreshAndUpdateConnectionActualState(connectionDetailDto, ConnectionState.STARTING);
+        if (ConnectionState.RUNNING.equals(connectionDTO.getDesiredState())) {
+            refreshAndUpdateConnectionActualState(connectionDTO, ConnectionState.STARTING);
 
-            ConnectionDetailDTO appliedConnection = connectionProcessService.applyConnectionToConnector(connectionDetailDto);
-
+            ConnectionDTO appliedConnection = connectionService.applyConnectionToConnector(connectionDTO.getId());
             // refresh connectionDto in memory
-            connectionDetailDto.setSinkConnectorId(appliedConnection.getSinkConnectorId());
-            connectionDetailDto.setSourceConnectorId(appliedConnection.getSourceConnectorId());
-            mappingConnectorIdWithConnectionId(connectionDetailDto);
+            connectionDTO.setSinkConnectorId(appliedConnection.getSinkConnectorId());
+            connectionDTO.setSourceConnectorId(appliedConnection.getSourceConnectorId());
+            mappingConnectorIdWithConnectionId(connectionDTO);
         }
         return true;
     }
 
-    private void onConnectionUpdate(final ConnectionDetailDTO connectionDetailDto) {
-        if (createConnectorIfNeeded(connectionDetailDto)) {
+    private void onConnectionUpdate(final ConnectionDTO connectionDTO) {
+        if (createConnectorIfNeeded(connectionDTO)) {
             return;
         }
-        startOrStopConnectionIfNeeded(connectionDetailDto);
+        startOrStopConnectionIfNeeded(connectionDTO);
     }
 
-    private void startOrStopConnectionIfNeeded(final ConnectionDetailDTO connectionDetailDto) {
-        if (!Objects.equals(connectionDetailDto.getActualState(), connectionDetailDto.getDesiredState())) {
-            switch (connectionDetailDto.getDesiredState()) {
+    private void startOrStopConnectionIfNeeded(final ConnectionDTO connectionDTO) {
+        if (!Objects.equals(connectionDTO.getActualState(), connectionDTO.getDesiredState())) {
+            switch (connectionDTO.getDesiredState()) {
                 case RUNNING:
-                    startConnector(connectionDetailDto);
+                    startConnector(connectionDTO);
                     break;
                 case STOPPED:
-                    stopConnector(connectionDetailDto);
+                    stopConnector(connectionDTO);
                     break;
                 default:
                     break;
@@ -269,35 +255,27 @@ public class ConnectionController implements Controller {
         }
     }
 
-    private void stopConnector(final ConnectionDetailDTO connectionDetailDto) {
-        refreshAndUpdateConnectionActualState(connectionDetailDto, ConnectionState.STOPPING);
+    private void stopConnector(final ConnectionDTO connectionDTO) {
+        refreshAndUpdateConnectionActualState(connectionDTO, ConnectionState.STOPPING);
 
-        updateConnectorDesiredState(connectionDetailDto.getSinkConnectorId(), ConnectorState.STOPPED);
+        connectorService.stop(connectionDTO.getSinkConnectorId());
     }
 
-    private void startConnector(final ConnectionDetailDTO connectionDetailDto) {
-        refreshAndUpdateConnectionActualState(connectionDetailDto, ConnectionState.STARTING);
+    // todo check 页面更改配置时会同时更新connection和connector的配置
+    private void startConnector(final ConnectionDTO connectionDTO) {
+        refreshAndUpdateConnectionActualState(connectionDTO, ConnectionState.STARTING);
 
-        flushConnectionConfigToConnector(connectionDetailDto);
-        updateConnectorDesiredState(connectionDetailDto.getSinkConnectorId(), ConnectorState.RUNNING);
+        connectorService.start(connectionDTO.getSinkConnectorId());
     }
 
-    private void updateConnectorDesiredState(final Long connectorId, final ConnectorState state) {
-        connectorCoreProcessService.updateDesiredState(connectorId, state);
-    }
-
-    private void flushConnectionConfigToConnector(final ConnectionDetailDTO connectionDetailDto) {
-        connectionProcessService.flushConnectionConfigToConnector(connectionDetailDto);
-    }
-
-    private void onConnectionDelete(final ConnectionDetailDTO connectionDetailDto) {
+    private void onConnectionDelete(final ConnectionDTO connectionDTO) {
         // stop connection if it is not actually stopped
-        startOrStopConnectionIfNeeded(connectionDetailDto);
+        startOrStopConnectionIfNeeded(connectionDTO);
     }
 
-    private void refreshAndUpdateConnectionActualState(final ConnectionDetailDTO connectionDetailDto, final ConnectionState connectionState) {
-        connectionProcessService.editActualState(connectionDetailDto.getId(), connectionState);
+    private void refreshAndUpdateConnectionActualState(final ConnectionDTO connectionDTO, final ConnectionState connectionState) {
+        connectionService.updateActualState(connectionDTO.getId(), connectionState);
         // Refresh connection actual state in memory.
-        connectionDetailDto.setActualState(connectionState);
+        connectionDTO.setActualState(connectionState);
     }
 }

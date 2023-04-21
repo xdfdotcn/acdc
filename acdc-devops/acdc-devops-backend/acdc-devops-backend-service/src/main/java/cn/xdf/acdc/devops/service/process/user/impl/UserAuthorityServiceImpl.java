@@ -6,6 +6,7 @@ import cn.xdf.acdc.devops.core.domain.entity.enumeration.AuthorityRoleType;
 import cn.xdf.acdc.devops.core.domain.query.UserAuthorityQuery;
 import cn.xdf.acdc.devops.repository.UserAuthorityRepository;
 import cn.xdf.acdc.devops.service.error.exceptions.ClientErrorException;
+import cn.xdf.acdc.devops.service.process.user.UserAuthorityService;
 import cn.xdf.acdc.devops.service.utility.i18n.I18nKey.User;
 import cn.xdf.acdc.devops.service.utility.i18n.I18nService;
 import org.springframework.beans.factory.annotation.Autowired;

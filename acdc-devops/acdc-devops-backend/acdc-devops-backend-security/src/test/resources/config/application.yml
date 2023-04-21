@@ -67,7 +67,7 @@ spring:
       pool:
         size: 1
   thymeleaf:
-    mode: HTML
+    enabled: false
 
 server:
   port: 10344
@@ -100,13 +100,11 @@ jhipster:
         base64-secret: YjYzNGVmYzg3YmUwNTA5YzZkN2U0MmMwNTFkNjRlNzllZTI4ZjQ0YWM5YmI4ZDAwZDE0YmIyZDgyM2I2MzdkN2M0ZmUzZDZjZjIzYTNkMzk0NjBhNWVlZjBhY2U2MzZlZDJlZjBkM2I0MDVhZTY3MTYxNTk2NDhlNDMzYmQxNjg=
         # Token is valid 24 hours
         token-validity-in-seconds: 86400
-# ===================================================================
-# Application specific properties
-# Add your own application properties here, see the ApplicationProperties class
-# to have type-safe configuration, like in the JHipsterProperties above
-#
-# More documentation is available at:
-# https://www.jhipster.tech/common-application-properties/
-# ===================================================================
 
-# application:
+acdc:
+  api:
+    security:
+      uri-whitelist:
+        - /api/v1/users/token
+        - /api/v1/system/**
+        - /actuator/**

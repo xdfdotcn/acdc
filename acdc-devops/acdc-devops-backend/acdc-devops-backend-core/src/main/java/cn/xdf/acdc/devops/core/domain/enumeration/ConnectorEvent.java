@@ -16,7 +16,7 @@ public enum ConnectorEvent {
     TASK_FAILURE(EventType.RUNTIME),
     RETRY(EventType.RUNTIME);
 
-    private EventType type;
+    private final EventType type;
 
     ConnectorEvent(final EventType type) {
         this.type = type;

@@ -1,15 +1,16 @@
 package cn.xdf.acdc.devops.core.domain.dto;
 
 import cn.xdf.acdc.devops.core.domain.entity.ConnectorEventDO;
-import cn.xdf.acdc.devops.core.util.DateUtil;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
+
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class ConnectorEventDTO {
 
@@ -19,9 +20,9 @@ public class ConnectorEventDTO {
 
     private String message;
 
-    private String creationTime;
+    private Date creationTime;
 
-    private String updateTime;
+    private Date updateTime;
 
     private Integer source;
 
@@ -33,8 +34,8 @@ public class ConnectorEventDTO {
         this.id = connectorEvent.getId();
         this.reason = connectorEvent.getReason();
         this.message = connectorEvent.getMessage();
-        this.creationTime = DateUtil.formatToString(connectorEvent.getCreationTime());
-        this.updateTime = DateUtil.formatToString(connectorEvent.getUpdateTime());
+        this.creationTime = connectorEvent.getCreationTime();
+        this.updateTime = connectorEvent.getUpdateTime();
         this.source = connectorEvent.getSource().ordinal();
         this.level = connectorEvent.getLevel().ordinal();
         this.connectorId = connectorEvent.getConnector().getId();

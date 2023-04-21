@@ -10,7 +10,7 @@ spec:
   groups:
     - name: acdc-connector
       rules:
-        - alert: Acdc connector task failed
+        - alert: 'Acdc connector task failed'
           annotations:
             message: 'connector: {{ $labels.connector }} 存在异常状态 task 超过 20 分钟'
           expr: kafka_connect_worker_connector_failed_task_count{namespace="acdc"} > 0
@@ -19,12 +19,3 @@ spec:
             app: cdc
             group: cdc
             severity: critical
-        - alert: Acdc consumer lag rate is bigger than 60%
-            annotations:
-              message: 'consumer: {{ $labels.clientId }} 对于 topic: {{ $labels.topic }} partition: {{ $labels.partition }} 的消费延迟率大于 60%，当前消费延迟率: {{ printf "%.0f" $value }}%'
-            expr: (label_replace(label_replace(kafka_consumer_fetch_manager_records_lag{alias="acdc/"}, "topic_name", "$1", "topic", "(.*)"), "partition_id", "$1", "partition", "(.*)") / on(topic_name, partition_id) group_left() ((kminion_kafka_topic_partition_high_water_mark{kafka_cr=~"kafka-2dmxzo5w|kafka-qmv4mfdq"} and on(topic_name) label_replace(kafka_consumer_fetch_manager_records_lag{alias="acdc/"}, "topic_name", "$1", "topic", "(.*)")) - (kminion_kafka_topic_partition_low_water_mark{kafka_cr=~"kafka-2dmxzo5w|kafka-qmv4mfdq"} and on(topic_name) label_replace(kafka_consumer_fetch_manager_records_lag{alias="acdc/"}, "topic_name", "$1", "topic", "(.*)")))) * 100 >= 60
-            for: 5m
-            labels:
-              app: cdc
-              group: cdc
-              severity: critical

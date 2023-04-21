@@ -1,7 +1,7 @@
 package cn.xdf.acdc.connect.kafka.sink;
 
+import cn.xdf.acdc.connect.core.sink.kafka.RecordConverter;
 import cn.xdf.acdc.connect.kafka.sink.utils.KafkaSinkTestUtil;
-import cn.xdf.acdc.connect.plugins.converter.xdf.XdfRecordConverter;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -151,5 +151,9 @@ public class KafkaWriterTest {
 
     private KafkaSinkConfig getKafkaSinkConfig() {
         return new KafkaSinkConfig(KafkaSinkTestUtil.fakeKafkaSinkTaskConfig());
+    }
+
+    interface XdfRecordConverter extends Converter, RecordConverter {
+
     }
 }

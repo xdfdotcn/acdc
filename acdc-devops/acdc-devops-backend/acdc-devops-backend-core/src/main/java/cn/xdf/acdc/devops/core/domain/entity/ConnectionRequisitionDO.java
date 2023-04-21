@@ -1,12 +1,12 @@
 package cn.xdf.acdc.devops.core.domain.entity;
 
 import cn.xdf.acdc.devops.core.domain.entity.enumeration.ApprovalState;
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.Accessors;
-import lombok.experimental.SuperBuilder;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -16,15 +16,17 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "connection_requisition")
-@Data
-@AllArgsConstructor
+@Getter
+@Setter
 @NoArgsConstructor
-@SuperBuilder
 @Accessors(chain = true)
 public class ConnectionRequisitionDO extends BaseDO implements Serializable {
 
@@ -54,7 +56,27 @@ public class ConnectionRequisitionDO extends BaseDO implements Serializable {
     @Column(name = "third_party_id")
     private String thirdPartyId;
 
+    @OneToMany(mappedBy = "connectionRequisition", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private Set<ConnectionRequisitionConnectionMappingDO> connectionRequisitionConnectionMappings = new HashSet<>();
+
     public ConnectionRequisitionDO(final Long id) {
         this.id = id;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof ConnectionRequisitionDO)) {
+            return false;
+        }
+        return id != null && id.equals(((ConnectionRequisitionDO) o).id);
+    }
+
+    @Override
+    public int hashCode() {
+        // see https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
+        return getClass().hashCode();
     }
 }

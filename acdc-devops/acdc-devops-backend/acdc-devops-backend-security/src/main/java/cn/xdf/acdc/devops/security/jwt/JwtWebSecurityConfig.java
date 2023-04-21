@@ -1,10 +1,11 @@
 package cn.xdf.acdc.devops.security.jwt;
 
-import cn.xdf.acdc.devops.core.constant.RestUrlConstant;
 import cn.xdf.acdc.devops.security.jwt.handler.JwtAuthenticationEntryPoint;
 import cn.xdf.acdc.devops.security.jwt.handler.JwtAuthenticationFailureHandler;
 import cn.xdf.acdc.devops.security.jwt.handler.JwtAuthenticationSuccessHandler;
 import cn.xdf.acdc.devops.security.jwt.handler.JwtLogoutSuccessHandler;
+import lombok.Setter;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -19,13 +20,19 @@ import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.web.filter.GenericFilterBean;
 
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * JWT 集成 spring security. Security 拦截器加载顺序参考:{@link org.springframework.security.config.annotation.web.HttpSecurityBuilder}
  */
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
+@ConfigurationProperties(prefix = "acdc.api.security")
 public class JwtWebSecurityConfig extends WebSecurityConfigurerAdapter {
+
+    @Setter
+    private List<String> uriWhitelist = new ArrayList<>();
 
     @Override
     protected void configure(final HttpSecurity http) throws Exception {
@@ -41,11 +48,9 @@ public class JwtWebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeRequests()
-                .antMatchers(RestUrlConstant.SYSTEM_URL).permitAll()
-                .antMatchers(RestUrlConstant.USER_ACCESS_TOKEN).permitAll()
+                .antMatchers(uriWhitelist.toArray(new String[0])).permitAll()
                 .anyRequest()
-                .permitAll();
-//                .authenticated();
+                .authenticated();
     }
 
     /**

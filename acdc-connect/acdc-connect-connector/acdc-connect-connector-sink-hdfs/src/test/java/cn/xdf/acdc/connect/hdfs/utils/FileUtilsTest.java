@@ -80,12 +80,4 @@ public class FileUtilsTest {
         actualPath = FileUtils.repairPath(path);
         assertEquals(expectPath, actualPath);
     }
-
-    @Test
-    public void extractOffset() {
-        String fileName = "sink_city+0+0000000000+0000000001.orc";
-        long offset = FileUtils.extractOffset(fileName);
-        long expectOffset = 1;
-        assertEquals(expectOffset, offset);
-    }
 }

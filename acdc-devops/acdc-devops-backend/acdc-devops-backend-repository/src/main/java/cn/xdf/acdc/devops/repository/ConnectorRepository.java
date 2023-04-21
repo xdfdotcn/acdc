@@ -1,40 +1,91 @@
 package cn.xdf.acdc.devops.repository;
-// CHECKSTYLE:OFF
 
 import cn.xdf.acdc.devops.core.domain.entity.ConnectorDO;
-import java.util.Map;
+import cn.xdf.acdc.devops.core.domain.query.ConnectorQuery;
+import cn.xdf.acdc.devops.core.domain.query.PagedQuery;
+import cn.xdf.acdc.devops.core.util.QueryUtil;
+import com.google.common.base.Preconditions;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import javax.persistence.criteria.Predicate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Spring Data SQL repository for the Connector entity.
  */
 @SuppressWarnings("unused")
 @Repository
-public interface ConnectorRepository extends JpaRepository<ConnectorDO, Long>, JpaSpecificationExecutor {
+public interface ConnectorRepository extends JpaRepository<ConnectorDO, Long>, JpaSpecificationExecutor<ConnectorDO> {
 
     /**
-     * 根据 source connector 查询对应的sink connector 列表.
-     * @param id  source connector ID
-     * @param pageable  pageable
-     * @return Page
+     * Find connector by data system resource id.
+     *
+     * @param dataSystemResourceId data system resouce id
+     * @return optional of connector dto
      */
-    @Query(value = "SELECT id,NAME,kafka_topic,cluster_name,database_name,table_name FROM (\n"
-        + "SELECT c1.id,c1.NAME,c2.kafka_topic,c2.cluster_name,c2.database_name,c2.table_name FROM connector c1,(\n"
-        + "SELECT sink_t.connector_id AS connector_id,kt.NAME AS kafka_topic,tb.NAME AS table_name,db.NAME AS database_name,cluster.NAME AS cluster_name FROM connector source_c,source_rdb_table source_t,kafka_topic kt,sink_rdb_table sink_t,rdb_table tb,rdb_database db,rdb cluster WHERE source_c.id=source_t.connector_id AND source_t.kafka_topic_id=kt.id AND source_t.kafka_topic_id=sink_t.kafka_topic_id AND sink_t.rdb_table_id=tb.id AND tb.rdb_database_id=db.id AND db.rdb_id=cluster.id AND source_c.id=:id) c2 WHERE c1.id=c2.connector_id UNION ALL \n"
-        + "SELECT c1.id,c1.NAME,c2.kafka_topic,c2.cluster_name,c2.database_name,c2.table_name FROM connector c1,(\n"
-        + "SELECT sink_t.connector_id AS connector_id,kt.NAME AS kafka_topic,tb.NAME AS table_name,db.NAME AS database_name,cluster.NAME AS cluster_name FROM connector source_c,source_rdb_table source_t,kafka_topic kt,sink_hive_table sink_t,hive_table tb,hive_database db,hive cluster WHERE source_c.id=source_t.connector_id AND source_t.kafka_topic_id=kt.id AND source_t.kafka_topic_id=sink_t.kafka_topic_id AND sink_t.hive_table_id=tb.id AND tb.hive_database_id=db.id AND db.hive_id=cluster.id AND source_c.id=:id) c2 WHERE c1.id=c2.connector_id) sink_link",
+    Optional<ConnectorDO> findByDataSystemResourceId(Long dataSystemResourceId);
 
-        countQuery = "SELECT count(*) FROM (\n"
-            + "SELECT c1.id FROM connector c1,(\n"
-            + "SELECT sink_t.connector_id AS connector_id FROM connector source_c,source_rdb_table source_t,kafka_topic kt,sink_rdb_table sink_t,rdb_table tb,rdb_database db,rdb cluster WHERE source_c.id=source_t.connector_id AND source_t.kafka_topic_id=kt.id AND source_t.kafka_topic_id=sink_t.kafka_topic_id AND sink_t.rdb_table_id=tb.id AND tb.rdb_database_id=db.id AND db.rdb_id=cluster.id AND source_c.id=:id) c2 WHERE c1.id=c2.connector_id UNION ALL \n"
-            + "SELECT c1.id FROM connector c1,(\n"
-            + "SELECT sink_t.connector_id AS connector_id FROM connector source_c,source_rdb_table source_t,kafka_topic kt,sink_hive_table sink_t,hive_table tb,hive_database db,hive cluster WHERE source_c.id=source_t.connector_id AND source_t.kafka_topic_id=kt.id AND source_t.kafka_topic_id=sink_t.kafka_topic_id AND sink_t.hive_table_id=tb.id AND tb.hive_database_id=db.id AND db.hive_id=cluster.id AND source_c.id=:id) c2 WHERE c1.id=c2.connector_id) sink_link",
-        nativeQuery = true)
-    Page<Map<String, Object>> findBySourceConnectorId(Pageable pageable, @Param("id") Long id);
+    /**
+     * Dynamic condition.
+     *
+     * @param query query
+     * @return condition
+     */
+    default Specification specificationOf(final ConnectorQuery query) {
+        Preconditions.checkNotNull(query);
+
+        return (root, criteriaQuery, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            if (StringUtils.isNotBlank(query.getName())) {
+                predicates.add(cb.like(root.get("name"), QueryUtil.like("%", query.getName(), "%")));
+            }
+
+            if (Objects.nonNull(query.getConnectCluster()) && Objects.nonNull(query.getConnectCluster().getId())) {
+                predicates.add(cb.equal(root.get("connectCluster"), query.getConnectCluster()));
+            }
+
+            if (Objects.nonNull(query.getActualState())) {
+                predicates.add(cb.equal(root.get("actualState"), query.getActualState()));
+            }
+
+            if (Objects.nonNull(query.getDesiredState())) {
+                predicates.add(cb.equal(root.get("desiredState"), query.getDesiredState()));
+            }
+
+            if (Objects.nonNull(query.getBeginUpdateTime())) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("updateTime"), query.getBeginUpdateTime()));
+            }
+
+            return cb.and(predicates.toArray(new Predicate[predicates.size()]));
+        };
+    }
+
+    /**
+     * Query all entity with specific condition.
+     *
+     * @param query query object
+     * @return query result
+     */
+    default List<ConnectorDO> query(ConnectorQuery query) {
+        return findAll(specificationOf(query));
+    }
+
+    /**
+     * Paged query with specific condition.
+     *
+     * @param query query object
+     * @return query result
+     */
+    default Page<ConnectorDO> pagedQuery(final ConnectorQuery query) {
+        return findAll(specificationOf(query), PagedQuery.pageOf(query));
+    }
 }

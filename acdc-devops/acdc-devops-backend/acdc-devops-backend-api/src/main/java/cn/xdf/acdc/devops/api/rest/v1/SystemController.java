@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("api/v1/system")
-
 public class SystemController {
 
     private static final String HEALTH_CHECK_RESULT = "ok";

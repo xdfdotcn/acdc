@@ -30,6 +30,7 @@ public class PageDTO<T> {
 
     /**
      * 空数据.
+     *
      * @param <E> E
      * @return PageDTO
      */
@@ -39,8 +40,9 @@ public class PageDTO<T> {
 
     /**
      * 根据数据集合和总条数转换成分页对象.
-     * @param <E> E
-     * @param data data
+     *
+     * @param <E>   E
+     * @param data  data
      * @param total total
      * @return PageDTO
      */

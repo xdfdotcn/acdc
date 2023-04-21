@@ -30,12 +30,18 @@ const Login: React.FC = () => {
 
   const handleSubmit = async (values: API.LoginParams) => {
 		// 登录
+		let host=window.location.protocol + "//" + window.location.host
 		const loginResult=await login({...values});
 		message.success("登录成功");
 		await fetchUserInfo(loginResult);
 		const {query} = history.location;
 		const {loginSuccessUrl} = query as {loginSuccessUrl: string};
-		history.push(loginSuccessUrl || RoutesConstant.ROOT_PATH);
+
+		let resourceUrl="/"
+		if (loginSuccessUrl){
+			resourceUrl=loginSuccessUrl.replace(host, '')
+		}
+		history.push(resourceUrl || RoutesConstant.ROOT_PATH);
 		return;
   };
 

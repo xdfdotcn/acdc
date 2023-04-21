@@ -33,6 +33,7 @@ export async function getInitialState(): Promise<{
 				loginUrl: RoutesConstant.LOGIN_PATH
 			}
 			const guider = await getLoginGuider(loginParams);
+			console.log(guider)
 			return guider.user!;
 		} catch (error) {
 			//history.push(loginPath);
@@ -117,7 +118,6 @@ https://umijs.org/zh-CN/plugins/plugin-request#responseinterceptors
 https://www.ujcms.com/knowledge/469.html
 
 */
-
 async function responseInterceptors(response: Response) {
 	try {
 		const resJson = await response.clone().json();
@@ -136,12 +136,16 @@ const authHeaderInterceptor = (url: string, options: RequestConfig) => {
 	let savedToken = sessionStorage.getItem(UserConstant.USER_TOKEN_KEY)
 	let authToken = savedToken === null ? "" : savedToken
 	let loginUrl = window.location.protocol + "//" + window.location.host + RoutesConstant.LOGIN_PATH
-	let loginSuccessUrl = history.location.pathname
+	let loginSuccessUrl = window.location.protocol + "//" + window.location.host + history.location.pathname
+	let logoutSuccessUrl = window.location.protocol + "//" + window.location.host
+
 	const authHeader = {
 		Authorization: 'Bearer ' + authToken,
 		loginUrl: loginUrl,
-		loginSuccessUrl: loginSuccessUrl
+		loginSuccessUrl: loginSuccessUrl,
+		logoutSuccessUrl: logoutSuccessUrl
 	};
+
 	return {
 		url: `${url}`,
 		options: {...options, interceptors: true, headers: authHeader},
