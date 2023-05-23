@@ -8,31 +8,31 @@ import java.util.Map;
 
 @Data
 public class ConnectorStatusResponse {
-
+    
     private static final String FAILED_STATUS = "failed";
-
+    
     private static final String RUNNING_STATUS = "running";
-
+    
     private static final String CONNECTOR_STATUS_KEY_STATE = "state";
-
+    
     private static final String CONNECTOR_STATUS_KEY_TASK_ID = "id";
-
+    
     private static final String CONNECTOR_STATUS_KEY_TASK_TRACE = "trace";
-
+    
     private String name;
-
+    
     private Map<String, String> connector;
-
+    
     private List<Map<String, String>> tasks;
-
+    
     private String type;
-
+    
     private List<String> failedTasks = new ArrayList<>();
-
+    
     private List<String> runningTasks = new ArrayList<>();
-
+    
     private List<String> exceptions = new ArrayList<>();
-
+    
     /**
      * Set failedTasks and runningTasks according to response tasks.
      *
@@ -53,7 +53,7 @@ public class ConnectorStatusResponse {
             });
         }
     }
-
+    
     /**
      * Connector failed return true, else false.
      *
@@ -64,7 +64,7 @@ public class ConnectorStatusResponse {
         boolean isAllTasksFailed = runningTasks.isEmpty() && !failedTasks.isEmpty();
         return isConnectorFailed || isAllTasksFailed;
     }
-
+    
     /**
      * Get failed tasks ids.
      *
@@ -73,5 +73,5 @@ public class ConnectorStatusResponse {
     public List<String> getFailedTaskIds() {
         return failedTasks;
     }
-
+    
 }

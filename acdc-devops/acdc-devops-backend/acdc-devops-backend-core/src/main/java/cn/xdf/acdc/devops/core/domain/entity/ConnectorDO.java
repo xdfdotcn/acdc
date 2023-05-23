@@ -1,6 +1,6 @@
 package cn.xdf.acdc.devops.core.domain.entity;
 
-import cn.xdf.acdc.devops.core.domain.enumeration.ConnectorState;
+import cn.xdf.acdc.devops.core.domain.entity.enumeration.ConnectorState;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -9,7 +9,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.NotFound;
 import org.hibernate.annotations.NotFoundAction;
@@ -39,66 +38,65 @@ import java.util.Set;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@SuperBuilder
 @Accessors(chain = true)
 public class ConnectorDO extends BaseDO implements Serializable {
-
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    
     @ApiModelProperty(value = "connector名称", required = true)
     @Column(name = "name", length = 128, nullable = false, unique = true)
     private String name;
-
+    
     @OneToMany(mappedBy = "connector", cascade = CascadeType.ALL)
-    @JsonIgnoreProperties(value = {"connector"}, allowSetters = true)
+    @JsonIgnoreProperties(value = "connector", allowSetters = true)
     @NotFound(action = NotFoundAction.IGNORE)
     private Set<ConnectorConfigurationDO> connectorConfigurations = new HashSet<>();
-
+    
     @ApiModelProperty("connector实现类")
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnoreProperties(value = {"defaultConnectorConfigurations", "connectorType", "dimServiceType"}, allowSetters = true)
     private ConnectorClassDO connectorClass;
-
+    
     @ApiModelProperty("connect集群")
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnoreProperties(value = {"connectorClass", "connectors"}, allowSetters = true)
     private ConnectClusterDO connectCluster;
-
+    
     @ApiModelProperty("kafka集群")
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnoreProperties(value = {"kafkaTopics", "connectors"}, allowSetters = true)
     private KafkaClusterDO kafkaCluster;
-
+    
     @ApiModelProperty("本 connector 对应的 data system resource")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private DataSystemResourceDO dataSystemResource;
-
+    
     @ApiModelProperty("desired state")
     @Enumerated(EnumType.ORDINAL)
     @Column(name = "desired_state")
     private ConnectorState desiredState;
-
+    
     @ApiModelProperty("actual state")
     @Column(name = "actual_state")
     @Enumerated(EnumType.ORDINAL)
     private ConnectorState actualState;
-
+    
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "sourceConnector")
     private Set<ConnectionDO> connectionsWithThisAsSourceConnector = new HashSet<>();
-
+    
     @OneToOne(fetch = FetchType.LAZY, mappedBy = "sinkConnector")
     private ConnectionDO connectionWithThisAsSinkConnector;
-
+    
     public ConnectorDO(final Long id) {
         this.id = id;
     }
-
+    
     // functions for jpa union features
     // CHECKSTYLE:OFF
-
-    public void setConnectorConfigurations(Set<ConnectorConfigurationDO> connectorConfigurations) {
+    
+    public ConnectorDO setConnectorConfigurations(Set<ConnectorConfigurationDO> connectorConfigurations) {
         if (this.connectorConfigurations != null) {
             this.connectorConfigurations.forEach(i -> i.setConnector(null));
         }
@@ -106,11 +104,12 @@ public class ConnectorDO extends BaseDO implements Serializable {
             connectorConfigurations.forEach(i -> i.setConnector(this));
         }
         this.connectorConfigurations = connectorConfigurations;
+        return this;
     }
-
+    
     // functions for jpa union features
     // CHECKSTYLE:ON
-
+    
     @Override
     public boolean equals(final Object o) {
         if (this == o) {
@@ -121,13 +120,13 @@ public class ConnectorDO extends BaseDO implements Serializable {
         }
         return id != null && id.equals(((ConnectorDO) o).id);
     }
-
+    
     @Override
     public int hashCode() {
         // see https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
         return getClass().hashCode();
     }
-
+    
     // prettier-ignore
     @Override
     public String toString() {

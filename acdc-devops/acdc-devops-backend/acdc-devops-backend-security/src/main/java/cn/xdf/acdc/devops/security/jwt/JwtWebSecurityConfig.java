@@ -30,10 +30,10 @@ import java.util.List;
 @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
 @ConfigurationProperties(prefix = "acdc.api.security")
 public class JwtWebSecurityConfig extends WebSecurityConfigurerAdapter {
-
+    
     @Setter
     private List<String> uriWhitelist = new ArrayList<>();
-
+    
     @Override
     protected void configure(final HttpSecurity http) throws Exception {
         http
@@ -52,7 +52,7 @@ public class JwtWebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .anyRequest()
                 .authenticated();
     }
-
+    
     /**
      * 权限认证提供者配置.
      *
@@ -62,7 +62,7 @@ public class JwtWebSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(final AuthenticationManagerBuilder auth) {
         auth.authenticationProvider(authenticationProvider());
     }
-
+    
     /**
      * 登录成功处理器.
      *
@@ -72,7 +72,7 @@ public class JwtWebSecurityConfig extends WebSecurityConfigurerAdapter {
     public JwtAuthenticationSuccessHandler jwtLoginSuccessHandler() {
         return new JwtAuthenticationSuccessHandler();
     }
-
+    
     /**
      * 登录失败处理器.
      *
@@ -82,7 +82,7 @@ public class JwtWebSecurityConfig extends WebSecurityConfigurerAdapter {
     public JwtAuthenticationFailureHandler jwtLoginFailureHandler() {
         return new JwtAuthenticationFailureHandler();
     }
-
+    
     /**
      * 未授权异常处理处理器.
      *
@@ -92,8 +92,7 @@ public class JwtWebSecurityConfig extends WebSecurityConfigurerAdapter {
     public JwtAuthenticationEntryPoint jwtLoginEntryPoint() {
         return new JwtAuthenticationEntryPoint();
     }
-
-
+    
     /**
      * JWT token 提供者.
      *
@@ -102,7 +101,7 @@ public class JwtWebSecurityConfig extends WebSecurityConfigurerAdapter {
     public JwtTokenProvider jwtTokenProvider() {
         return new JwtTokenProvider();
     }
-
+    
     /**
      * JWT token 过滤器.
      *
@@ -111,7 +110,7 @@ public class JwtWebSecurityConfig extends WebSecurityConfigurerAdapter {
     public JwtFilter jwtFilter() {
         return new JwtFilter(jwtTokenProvider());
     }
-
+    
     /**
      * 提取用户名密码过滤器.
      *
@@ -121,14 +120,14 @@ public class JwtWebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public JwtUsernamePasswordAuthenticationFilter usernamePasswordAuthenticationFilter() throws Exception {
         JwtUsernamePasswordAuthenticationFilter filter = new JwtUsernamePasswordAuthenticationFilter();
-
+        
         filter.setAuthenticationManager(authenticationManagerBean());
         filter.setAuthenticationSuccessHandler(jwtLoginSuccessHandler());
         filter.setAuthenticationFailureHandler(jwtLoginFailureHandler());
-
+        
         return filter;
     }
-
+    
     /**
      * 权限认证管理者.
      *
@@ -139,7 +138,7 @@ public class JwtWebSecurityConfig extends WebSecurityConfigurerAdapter {
     public AuthenticationManager authenticationManagerBean() throws Exception {
         return super.authenticationManagerBean();
     }
-
+    
     /**
      * 自定义权限认证提供者.
      *
@@ -150,7 +149,7 @@ public class JwtWebSecurityConfig extends WebSecurityConfigurerAdapter {
         JwtAuthenticationProvider provider = new JwtAuthenticationProvider();
         return provider;
     }
-
+    
     /**
      * 登出过滤器 .
      *
@@ -160,7 +159,7 @@ public class JwtWebSecurityConfig extends WebSecurityConfigurerAdapter {
     public GenericFilterBean getJwtLogoutFilter() {
         return new JwtLogoutFilter(getJwtLogoutSuccessHandler(), new SecurityContextLogoutHandler());
     }
-
+    
     /**
      * 登出成功处理器.
      *

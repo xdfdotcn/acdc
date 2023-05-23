@@ -11,11 +11,11 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class AsyncInvokeServiceImpl implements AsyncInvokeService {
-
+    
     @Async
     @Override
     public void asyncInvoke(final AsyncExec function) {
         function.execute();
     }
-
+    
 }

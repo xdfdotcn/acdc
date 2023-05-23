@@ -12,10 +12,10 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class ConnectorEventProcessServiceImpl implements ConnectorEventProcessService {
-
+    
     @Autowired
     private ConnectorEventService connectorEventService;
-
+    
     @Override
     public Page<ConnectorEventDTO> queryEvent(final ConnectorEventQuery query) {
         Pageable pageable = PagedQuery.pageOf(query.getCurrent(), query.getPageSize(), ConnectorEventQuery.SORT_FIELD);

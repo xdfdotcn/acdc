@@ -1,7 +1,6 @@
 package cn.xdf.acdc.devops.service.config;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -14,14 +13,13 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class ACDCEmailProperties {
-
+    
     private String fromEmailAddress;
-
+    
     private String baseUrl;
-
+    
     private String ccEmailAddress;
-
+    
     private List<String> dbaEmailAddress;
 }

@@ -14,12 +14,12 @@ import cn.xdf.acdc.devops.service.process.connection.approval.event.ApprovalEven
 import java.util.Map;
 
 public class DefaultApprovalStateMachineDefinitionFactory implements ApprovalStateMachineDefinitionFactory {
-
+    
     /**
      * 审批流程状态机流程声明, ApproveState: 审批状态. EventType: 审批事件 ActionMapping: 根据审批状态和审批事件获取对应的执行 Action
      */
     private static final Map<ActionMapping.ActionMappingKey, ActionMapping> DEFINITION = ActionMapping.builder()
-
+            
             // 初始化
             .add(
                     ApprovalState.APPROVING,
@@ -27,7 +27,7 @@ public class DefaultApprovalStateMachineDefinitionFactory implements ApprovalSta
                     ApprovalEvent.PASS,
                     SendApprovalAction.class
             )
-
+            
             // 初始化,跳过所有审批环节
             .add(
                     ApprovalState.APPROVING,
@@ -35,7 +35,7 @@ public class DefaultApprovalStateMachineDefinitionFactory implements ApprovalSta
                     ApprovalEvent.PASS_AND_SKIP_REMAIN,
                     SkipAllApprovalAction.class
             )
-
+            
             // 源端负责人审批拒绝
             .add(
                     ApprovalState.SOURCE_OWNER_APPROVING,
@@ -43,7 +43,7 @@ public class DefaultApprovalStateMachineDefinitionFactory implements ApprovalSta
                     ApprovalEvent.REFUSED,
                     SourceOwnerRefusedAction.class
             )
-
+            
             // 源端负责人审批通过
             .add(
                     ApprovalState.SOURCE_OWNER_APPROVING,
@@ -51,7 +51,7 @@ public class DefaultApprovalStateMachineDefinitionFactory implements ApprovalSta
                     ApprovalEvent.PASS,
                     SourceOwnerApprovedAction.class
             )
-
+            
             // 源端负责人审批拒绝,复审通过
             .add(
                     ApprovalState.SOURCE_OWNER_REFUSED,
@@ -59,7 +59,7 @@ public class DefaultApprovalStateMachineDefinitionFactory implements ApprovalSta
                     ApprovalEvent.PASS,
                     SourceOwnerApprovedAction.class
             )
-
+            
             // 源端负责人审批通过,跳过DBA审批
             .add(
                     ApprovalState.SOURCE_OWNER_APPROVING,
@@ -67,7 +67,7 @@ public class DefaultApprovalStateMachineDefinitionFactory implements ApprovalSta
                     ApprovalEvent.PASS_AND_SKIP_REMAIN,
                     SourceOwnerApprovedAndSkipDbaApprovalAction.class
             )
-
+            
             // 源端负责人审批拒绝,复审通过,跳过DBA审批
             .add(
                     ApprovalState.SOURCE_OWNER_REFUSED,
@@ -75,7 +75,7 @@ public class DefaultApprovalStateMachineDefinitionFactory implements ApprovalSta
                     ApprovalEvent.PASS_AND_SKIP_REMAIN,
                     SourceOwnerApprovedAndSkipDbaApprovalAction.class
             )
-
+            
             // DBA 审批拒绝
             .add(
                     ApprovalState.DBA_APPROVING,
@@ -83,7 +83,7 @@ public class DefaultApprovalStateMachineDefinitionFactory implements ApprovalSta
                     ApprovalEvent.REFUSED,
                     DbaRefusedAction.class
             )
-
+            
             // DBA 审批通过
             .add(
                     ApprovalState.DBA_APPROVING,
@@ -91,7 +91,7 @@ public class DefaultApprovalStateMachineDefinitionFactory implements ApprovalSta
                     ApprovalEvent.PASS,
                     DbaApprovedAction.class
             )
-
+            
             // DBA 审批拒绝,复审通过
             .add(
                     ApprovalState.DBA_REFUSED,
@@ -100,7 +100,7 @@ public class DefaultApprovalStateMachineDefinitionFactory implements ApprovalSta
                     DbaApprovedAction.class
             )
             .build();
-
+    
     @Override
     public ApprovalStateMachineDefinition createApprovalStateMachineDefinition() {
         return new ApprovalStateMachineDefinition(DEFINITION);

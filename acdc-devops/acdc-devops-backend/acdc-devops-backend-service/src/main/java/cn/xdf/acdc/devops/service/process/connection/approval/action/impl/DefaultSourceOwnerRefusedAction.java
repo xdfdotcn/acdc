@@ -18,13 +18,13 @@ import java.util.List;
 
 @Component
 public class DefaultSourceOwnerRefusedAction implements SourceOwnerRefusedAction {
-
+    
     @Autowired
     private ConnectionRequisitionService connectionRequisitionService;
-
+    
     @Autowired
     private ApproveEmailSender emailSender;
-
+    
     @Override
     public void action(
             final ApprovalState from,
@@ -39,12 +39,12 @@ public class DefaultSourceOwnerRefusedAction implements SourceOwnerRefusedAction
         String approveResult = context.getDescription();
         connectionRequisitionService.updateApproveStateBySourceOwner(id, to, approveResult, domainAccount);
         connectionRequisitionService.invalidRequisition(id);
-
+        
         // send email.
         DomainUser proposer = machine.getProposer(id);
-
+        
         List<DomainUser> cc = new ArrayList<>();
-
+        
         emailSender.sendApproveEmail(
                 id,
                 Lists.newArrayList(proposer),

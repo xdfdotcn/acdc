@@ -1,6 +1,7 @@
 package cn.xdf.acdc.devops.core.util;
 
 import com.google.common.base.Preconditions;
+
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -8,7 +9,7 @@ import java.util.Objects;
  * DB 查询工具类.
  */
 public class QueryUtil {
-
+    
     /**
      * like 条件拼接.
      *
@@ -17,12 +18,12 @@ public class QueryUtil {
      */
     public static String like(final String... values) {
         Preconditions.checkArgument(Objects.nonNull(values) && values.length > 0);
-
+        
         StringBuilder builder = new StringBuilder();
         Arrays.stream(values).forEach(s -> builder.append(s));
         return builder.toString();
     }
-
+    
     /**
      * 判断ID是否为空.
      *

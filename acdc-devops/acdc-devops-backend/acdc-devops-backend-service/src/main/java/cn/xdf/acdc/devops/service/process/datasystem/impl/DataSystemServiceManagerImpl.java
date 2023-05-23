@@ -17,21 +17,23 @@ import java.util.Map;
 @Slf4j
 @Component
 public class DataSystemServiceManagerImpl implements DataSystemServiceManager {
-
+    
     private final Map<DataSystemType, DataSystemMetadataService> dataSystemTypeToMetadataServices = new HashMap<>();
-
+    
     private final Map<DataSystemType, DataSystemSourceConnectorService> dataSystemTypeToSourceConnectorServices = new HashMap<>();
-
+    
     private final Map<DataSystemType, DataSystemSinkConnectorService> dataSystemTypeToSinkConnectorServices = new HashMap<>();
-
+    
     /**
      * Init data system services.
      *
-     * <p>If there are multiple implements for one data system type, the smallest index one will be used.
+     * <p>
+     * If there are multiple implements for one data system type, the smallest index one will be used.
+     * </p>
      *
-     * @param dataSystemMetadataServices        data system meta service
+     * @param dataSystemMetadataServices data system meta service
      * @param dataSystemSourceConnectorServices data system source connector service
-     * @param dataSystemSinkConnectorServices   data system sink connector service
+     * @param dataSystemSinkConnectorServices data system sink connector service
      */
     @Autowired
     public void initDataSystemServices(
@@ -41,16 +43,16 @@ public class DataSystemServiceManagerImpl implements DataSystemServiceManager {
         dataSystemMetadataServices.forEach(each -> {
             dataSystemTypeToMetadataServices.putIfAbsent(each.getDataSystemType(), each);
         });
-
+        
         dataSystemSourceConnectorServices.forEach(each -> {
             dataSystemTypeToSourceConnectorServices.putIfAbsent(each.getDataSystemType(), each);
         });
-
+        
         dataSystemSinkConnectorServices.forEach(each -> {
             dataSystemTypeToSinkConnectorServices.putIfAbsent(each.getDataSystemType(), each);
         });
     }
-
+    
     @Override
     public DataSystemMetadataService getDataSystemMetadataService(final DataSystemType dataSystemType) {
         if (dataSystemTypeToMetadataServices.containsKey(dataSystemType)) {
@@ -58,7 +60,7 @@ public class DataSystemServiceManagerImpl implements DataSystemServiceManager {
         }
         throw new ServerErrorException(String.format("can not find a data system metadata service of data system type %s", dataSystemType));
     }
-
+    
     @Override
     public DataSystemSourceConnectorService getDataSystemSourceConnectorService(final DataSystemType dataSystemType) {
         if (dataSystemTypeToSourceConnectorServices.containsKey(dataSystemType)) {
@@ -66,7 +68,7 @@ public class DataSystemServiceManagerImpl implements DataSystemServiceManager {
         }
         throw new ServerErrorException(String.format("can not find a data system source connector service of data system type %s", dataSystemType));
     }
-
+    
     @Override
     public DataSystemSinkConnectorService getDataSystemSinkConnectorService(final DataSystemType dataSystemType) {
         if (dataSystemTypeToSinkConnectorServices.containsKey(dataSystemType)) {

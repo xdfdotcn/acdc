@@ -34,22 +34,22 @@ import java.util.Set;
 
 @Slf4j
 public class DbStructure {
-
+    
     private final DatabaseDialect dbDialect;
-
+    
     private final TableDefinitions tableDefns;
-
+    
     public DbStructure(final DatabaseDialect dbDialect) {
         this.dbDialect = dbDialect;
         this.tableDefns = new TableDefinitions(dbDialect);
     }
-
+    
     /**
      * Create or amend table.
      *
-     * @param config         the connector configuration
-     * @param connection     the database connection handle
-     * @param tableId        the table ID
+     * @param config the connector configuration
+     * @param connection the database connection handle
+     * @param tableId the table ID
      * @param fieldsMetadata the fields metadata
      * @return whether a DDL operation was performed
      * @throws SQLException if a DDL operation was deemed necessary but failed
@@ -79,14 +79,13 @@ public class DbStructure {
         }
         return amendIfNecessary(config, connection, tableId, fieldsMetadata, config.getMaxRetries());
     }
-
+    
     /**
      * Get the definition for the table with the given ID. This returns a cached definition if there is one; otherwise,
      * it reads the definition from the database
      *
-     * @param connection the connection that may be used to fetch the table definition if not already known; may not be
-     *                   null
-     * @param tableId    the ID of the table; may not be null
+     * @param connection the connection that may be used to fetch the table definition if not already known; may not be null
+     * @param tableId the ID of the table; may not be null
      * @return the table definition; or null if the table does not exist
      * @throws SQLException if there is an error getting the definition from the database
      */
@@ -100,10 +99,14 @@ public class DbStructure {
         }
         return tableDefns.refresh(connection, tableId);
     }
-
+    
     /**
      * Build create table statement and execute.
      *
+     * @param config config
+     * @param connection connection
+     * @param tableId tableId
+     * @param fieldsMetadata fieldsMetadata
      * @throws SQLException if CREATE failed
      */
     void create(
@@ -121,12 +124,18 @@ public class DbStructure {
         log.info("Creating table with sql: {}", sql);
         dbDialect.applyDdlStatements(connection, Collections.singletonList(sql));
     }
-
+    
     /**
      * Alter table structure if necessary.
      *
+     * @param config config
+     * @param connection connection
+     * @param tableId tableId
+     * @param fieldsMetadata fieldsMetadata
+     * @param maxRetries maxRetries
      * @return whether an ALTER was successfully performed
      * @throws SQLException if ALTER was deemed necessary but failed
+     * @throws TableAlterOrCreateException if ALTER was deemed necessary but failed
      */
     boolean amendIfNecessary(
             final JdbcSinkConfig config,
@@ -139,9 +148,9 @@ public class DbStructure {
         //   The table might have extra columns defined (hopefully with default values), which is not
         //   a case we check for here.
         //   We also don't check if the data types for columns that do line-up are compatible.
-
+        
         final TableDefinition tableDefn = tableDefns.get(connection, tableId);
-
+        
         // FIXME: SQLite JDBC driver seems to not always return the PK column names?
         //    if (!tableMetadata.getPrimaryKeyColumnNames().equals(fieldsMetadata.keyFieldNames)) {
         //      throw new ConnectException(String.format(
@@ -149,16 +158,16 @@ public class DbStructure {
         //          tableName, tableMetadata.getPrimaryKeyColumnNames(), fieldsMetadata.keyFieldNames
         //      ));
         //    }
-
+        
         final Set<SinkRecordField> missingFields = missingFields(
                 fieldsMetadata.getAllFields().values(),
                 tableDefn.columnNames()
         );
-
+        
         if (missingFields.isEmpty()) {
             return false;
         }
-
+        
         // At this point there are missing fields
         TableType type = tableDefn.type();
         switch (type) {
@@ -177,7 +186,7 @@ public class DbStructure {
                         )
                 );
         }
-
+        
         for (SinkRecordField missingField : missingFields) {
             if (!missingField.isOptional() && missingField.defaultValue() == null) {
                 throw new TableAlterOrCreateException(String.format(
@@ -189,7 +198,7 @@ public class DbStructure {
                 ));
             }
         }
-
+        
         if (!config.isAutoEvolve()) {
             throw new TableAlterOrCreateException(String.format(
                     "%s %s is missing fields (%s) and auto-evolution is disabled",
@@ -198,7 +207,7 @@ public class DbStructure {
                     missingFields
             ));
         }
-
+        
         final List<String> amendTableQueries = dbDialect.buildAlterTable(tableId, missingFields);
         log.info(
                 "Amending {} to add missing fields:{} maxRetries:{} with SQL: {}",
@@ -232,11 +241,11 @@ public class DbStructure {
                     maxRetries - 1
             );
         }
-
+        
         tableDefns.refresh(connection, tableId);
         return true;
     }
-
+    
     Set<SinkRecordField> missingFields(
             final Collection<SinkRecordField> fields,
             final Set<String> dbColumnNames
@@ -248,31 +257,31 @@ public class DbStructure {
                 missingFields.add(field);
             }
         }
-
+        
         if (missingFields.isEmpty()) {
             return missingFields;
         }
-
+        
         // check if the missing fields can be located by ignoring case
         Set<String> columnNamesLowerCase = new HashSet<>();
         for (String columnName : dbColumnNames) {
             columnNamesLowerCase.add(columnName.toLowerCase());
         }
-
+        
         if (columnNamesLowerCase.size() != dbColumnNames.size()) {
             log.warn(
                     "Table has column names that differ only by case. Original columns={}",
                     dbColumnNames
             );
         }
-
+        
         final Set<SinkRecordField> missingFieldsIgnoreCase = new HashSet<>();
         for (SinkRecordField missing : missingFields) {
             if (!columnNamesLowerCase.contains(missing.getName().toLowerCase())) {
                 missingFieldsIgnoreCase.add(missing);
             }
         }
-
+        
         if (missingFieldsIgnoreCase.size() > 0) {
             log.info(
                     "Unable to find fields {} among column names {}",
@@ -280,7 +289,7 @@ public class DbStructure {
                     dbColumnNames
             );
         }
-
+        
         return missingFieldsIgnoreCase;
     }
 }

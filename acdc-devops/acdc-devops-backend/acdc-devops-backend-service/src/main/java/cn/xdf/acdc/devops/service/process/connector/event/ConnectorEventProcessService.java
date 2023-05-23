@@ -5,7 +5,7 @@ import cn.xdf.acdc.devops.core.domain.query.ConnectorEventQuery;
 import org.springframework.data.domain.Page;
 
 public interface ConnectorEventProcessService {
-
+    
     /**
      * 查询事件,分页.
      *

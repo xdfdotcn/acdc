@@ -33,7 +33,7 @@ public class JwtAuthenticationSuccessHandler implements AuthenticationSuccessHan
             final Authentication authentication) throws IOException, ServletException {
         LoginUserDTO userDetails = (LoginUserDTO) SecurityUtil.getCurrentUserDetails();
         String token = jwtTokenProvider.createToken(userDetails, Boolean.FALSE);
-        ResponseWriter.write(response, objectMapper.writeValueAsString(LoginGuider.builder().user(userDetails).token(token).build()), HttpStatus.OK);
+        ResponseWriter.write(response, objectMapper.writeValueAsString(new LoginGuider().setUser(userDetails).setToken(token)), HttpStatus.OK);
 
         log.info("Jwt authentication success, current user is: {}", userDetails);
     }

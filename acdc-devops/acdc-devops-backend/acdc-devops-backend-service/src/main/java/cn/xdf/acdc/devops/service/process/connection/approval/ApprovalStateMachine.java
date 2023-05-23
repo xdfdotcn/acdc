@@ -39,62 +39,62 @@ import java.util.stream.Collectors;
 
 @Component
 public class ApprovalStateMachine implements ApplicationContextAware {
-
+    
     private final Map<ActionMapping.ActionMappingKey, ActionMapping> stateMachineDefinitionConfig;
-
+    
     private final Map<ApprovalState, Set<ApprovalEvent>> stateEventConfig;
-
+    
     @Autowired
     private ConnectionRequisitionService connectionRequisitionService;
-
+    
     @Autowired
     private UserAuthorityRepository userAuthorityRepository;
-
+    
     @Autowired
     private UserRepository userRepository;
-
+    
     @Autowired
     private ConnectionRepository connectionRepository;
-
+    
     @Autowired
     private ApprovalEventGenerator approvalEventGenerator;
-
+    
     private ApplicationContext applicationContext;
-
+    
     public ApprovalStateMachine() {
         stateMachineDefinitionConfig = new DefaultApprovalStateMachineDefinitionFactory()
                 .createApprovalStateMachineDefinition()
                 .getStateMachineDefinition();
-
+        
         stateEventConfig = stateMachineDefinitionConfig.keySet().stream()
                 .collect(Collectors.groupingBy(it -> it.getFrom(),
                         Collectors.mapping(it -> it.getEvent(), Collectors.toSet()))
                 );
     }
-
+    
     /**
      * 状态机执行事件.
      *
-     * @param event           event
+     * @param event event
      * @param approvalContext approvalContext
      */
     @Transactional
     public void fire(final ApprovalEvent event, final ApprovalContext approvalContext) {
         Long id = approvalContext.getId();
         ApprovalState currentState = currentState(id);
-
+        
         ActionMapping actionMapping = Optional.ofNullable(stateMachineDefinitionConfig.get(ActionMapping.ActionMappingKey.of(currentState, event)))
                 .orElseThrow(() -> new ApprovalProcessStateMatchErrorException(
                         String.format("Error while approving, unknown event : %s, current state: %s, id: %s", event, currentState, id)
                 ));
         getActionInstance(actionMapping.getActionClass()).action(actionMapping.getFrom(), actionMapping.getTo(), event, approvalContext, this);
     }
-
+    
     @Override
     public void setApplicationContext(final ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
     }
-
+    
     /**
      * 获取Action 实例.
      *
@@ -104,8 +104,8 @@ public class ApprovalStateMachine implements ApplicationContextAware {
     public ApprovalAction getActionInstance(final Class<? extends ApprovalAction> actionClass) {
         return applicationContext.getBean(actionClass);
     }
-
-
+    
+    
     /**
      * 获取当前审批状态.
      *
@@ -116,7 +116,7 @@ public class ApprovalStateMachine implements ApplicationContextAware {
     public ApprovalState currentState(final Long id) {
         return connectionRequisitionService.getById(id).getState();
     }
-
+    
     /**
      * 获取申请单详情.
      *
@@ -127,7 +127,7 @@ public class ApprovalStateMachine implements ApplicationContextAware {
     public ConnectionRequisitionDetailDTO getConnectionRequisitionById(final Long id) {
         return connectionRequisitionService.getDetailById(id);
     }
-
+    
     /**
      * 获取数据源审批人.
      *
@@ -140,7 +140,7 @@ public class ApprovalStateMachine implements ApplicationContextAware {
                 .stream().map(it -> new DomainUser(it.getEmail(), it.getName()))
                 .collect(Collectors.toList());
     }
-
+    
     /**
      * 获取DBA审批人.
      *
@@ -149,26 +149,24 @@ public class ApprovalStateMachine implements ApplicationContextAware {
      */
     @Transactional
     public List<DomainUser> getDbaApprovalUser(final Long id) {
-        UserAuthorityQuery userAuthorityQuery = UserAuthorityQuery.builder()
-                .authorityRoleTypes(Sets.newHashSet(AuthorityRoleType.ROLE_DBA))
-                .build();
-
+        UserAuthorityQuery userAuthorityQuery = new UserAuthorityQuery()
+                .setAuthorityRoleTypes(Sets.newHashSet(AuthorityRoleType.ROLE_DBA));
+        
         Set<Long> userIds = userAuthorityRepository.queryAll(userAuthorityQuery)
                 .stream().map(it -> it.getUserId()).collect(Collectors.toSet());
-
+        
         if (CollectionUtils.isEmpty(userIds)) {
             throw new ClientErrorException("The DBA approve users must not be empty");
         }
-
-        UserQuery userQuery = UserQuery.builder()
-                .userIds(userIds)
-                .build();
-
+        
+        UserQuery userQuery = new UserQuery()
+                .setUserIds(userIds);
+        
         return userRepository.query(userQuery).stream()
                 .map(it -> new DomainUser(it.getEmail(), it.getName()))
                 .collect(Collectors.toList());
     }
-
+    
     /**
      * 获取申请人.
      *
@@ -180,8 +178,7 @@ public class ApprovalStateMachine implements ApplicationContextAware {
         UserDTO userDTO = connectionRequisitionService.getProposer(id);
         return new DomainUser(userDTO.getEmail(), userDTO.getName());
     }
-
-
+    
     /**
      * 获取申请的链路列表.
      *
@@ -192,12 +189,11 @@ public class ApprovalStateMachine implements ApplicationContextAware {
     public List<ConnectionDetailDTO> getConnections(final Long id) {
         return connectionRequisitionService.getDetailById(id).getConnections();
     }
-
-
+    
     /**
      * 审批事件校验.
      *
-     * @param id    id
+     * @param id id
      * @param event event
      */
     public void verifyEvent(final Long id, final ApprovalEvent event) {
@@ -210,7 +206,7 @@ public class ApprovalStateMachine implements ApplicationContextAware {
             );
         }
     }
-
+    
     /**
      * 获取事件生成器.
      *

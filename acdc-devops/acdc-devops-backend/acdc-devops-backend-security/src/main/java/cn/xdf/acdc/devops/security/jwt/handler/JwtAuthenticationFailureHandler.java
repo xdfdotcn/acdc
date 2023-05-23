@@ -37,7 +37,7 @@ public class JwtAuthenticationFailureHandler implements AuthenticationFailureHan
     ) throws IOException {
         if (exception instanceof IllegalParameterAuthenticationException) {
             String loginUrl = SecurityUtil.generateLoginUrl(request);
-            String content = objectMapper.writeValueAsString(LoginGuider.builder().url(loginUrl).build());
+            String content = objectMapper.writeValueAsString(new LoginGuider().setUrl(loginUrl));
             ResponseWriter.write(response, content, HttpStatus.UNAUTHORIZED);
         } else if (exception instanceof InvalidUsernameOrPasswordAuthenticationException) {
             String message = i18NService.msg(I18nKey.Authorization.INVALID_USER);

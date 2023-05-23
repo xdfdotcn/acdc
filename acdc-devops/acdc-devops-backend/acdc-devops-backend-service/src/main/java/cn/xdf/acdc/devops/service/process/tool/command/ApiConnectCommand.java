@@ -38,61 +38,61 @@ import java.util.stream.Collectors;
 
 @Component
 public class ApiConnectCommand implements Command<ApiConnectCommand.CommandEntity> {
-
+    
     private static final String DEFAULT_CONNECT_CLUSTER_VERSION = "v1";
-
+    
     private static final String VALUE_SCHEMA_REGISTRY_URL_KEY = "value.converter.schema.registry.url";
-
+    
     private static final String KEY_SCHEMA_REGISTRY_URL_KEY = "key.converter.schema.registry.url";
-
+    
     //source-mysql
     private static final String DATABASE_HISTORY_PRODUCER_SECURITY_PROTOCOL = "database.history.producer.security.protocol";
-
+    
     private static final String DATABASE_HISTORY_CONSUMER_SECURITY_PROTOCOL = "database.history.consumer.security.protocol";
-
+    
     private static final String DATABASE_HISTORY_PRODUCER_SASL_MECHANISM = "database.history.producer.sasl.mechanism";
-
+    
     private static final String DATABASE_HISTORY_CONSUMER_SASL_MECHANISM = "database.history.consumer.sasl.mechanism";
-
+    
     // source-tidb
     private static final String SOURCE_KAFKA_SECURITY_PROTOCOL = "source.kafka.security.protocol";
-
+    
     private static final String SOURCE_KAFKA_SASL_MECHANISM = "source.kafka.sasl.mechanism";
-
+    
     private static final String PLAINTEXT = "PLAINTEXT";
-
+    
     private static final String SASL_PLAINTEXT = "SASL_PLAINTEXT";
-
+    
     private static final String SCRAM_SHA_512 = "SCRAM-SHA-512";
-
+    
     private static final String SCRAM_SHA_256 = "SCRAM-SHA-256";
-
+    
     private static final String PLAIN = "PLAIN";
-
+    
     private static final String SOURCE_MYSQL_CLASS = "io.debezium.connector.mysql.MySqlConnector";
-
+    
     private static final String SOURCE_TIDB_CLASS = "cn.xdf.acdc.connector.tidb.TidbConnector";
-
+    
     private static final Set<String> KAFKA_SECURITY_PROTOCOL_SET = Sets.newHashSet(
-
+            
             PLAINTEXT,
             SASL_PLAINTEXT
     );
-
+    
     private static final Set<String> KAFKA_SASL_MECHANISM_SET = Sets.newHashSet(
             SCRAM_SHA_512,
             SCRAM_SHA_256,
             PLAIN
     );
-
+    
     private static final Set<String> IGNORE_CONFIG_KEY_SET = Sets.newHashSet(
             "connector.class"
     );
-
+    
     // CHECKSTYLE:OFF
     private static final Map<String, String> SOURCE_MYSQL_DEFAULT_CONF = new HashMap<String, String>() {
         private static final long serialVersionUID = -8838983215782575828L;
-
+        
         {
             put("database.history.producer.sasl.mechanism", "");
             put("connector.class", "io.debezium.connector.mysql.MySqlConnector");
@@ -114,10 +114,10 @@ public class ApiConnectCommand implements Command<ApiConnectCommand.CommandEntit
             put("snapshot.mode", "schema_only");
         }
     };
-
+    
     private static final Map<String, String> SOURCE_TIDB_DEFAULT_CONF = new HashMap<String, String>() {
         private static final long serialVersionUID = -6049957650004881611L;
-
+        
         {
             put("connector.class", "cn.xdf.acdc.connector.tidb.TidbConnector");
             put("transforms.unwrap.delete.handling.mode", "rewrite");
@@ -138,10 +138,10 @@ public class ApiConnectCommand implements Command<ApiConnectCommand.CommandEntit
             put("key.converter", "io.confluent.connect.avro.AvroConverter");
         }
     };
-
+    
     private static final Map<String, String> SINK_MYSQL_DEFAULT_CONF = new HashMap<String, String>() {
         private static final long serialVersionUID = 5769648312915755359L;
-
+        
         {
             put("connector.class", "cn.xdf.acdc.connect.jdbc.JdbcSinkConnector");
             put("tasks.max", "1");
@@ -150,10 +150,10 @@ public class ApiConnectCommand implements Command<ApiConnectCommand.CommandEntit
             put("key.converter", "io.confluent.connect.avro.AvroConverter");
         }
     };
-
+    
     private static final Map<String, String> SINK_TIDB_DEFAULT_CONF = new HashMap<String, String>() {
         private static final long serialVersionUID = 4545453948867312049L;
-
+        
         {
             put("connector.class", "cn.xdf.acdc.connect.jdbc.JdbcSinkConnector");
             put("tasks.max", "1");
@@ -162,10 +162,10 @@ public class ApiConnectCommand implements Command<ApiConnectCommand.CommandEntit
             put("key.converter", "io.confluent.connect.avro.AvroConverter");
         }
     };
-
+    
     private static final Map<String, String> SINK_HIVE_DEFAULT_CONF = new HashMap<String, String>() {
         private static final long serialVersionUID = 2548897393104220959L;
-
+        
         {
             put("connector.class", "cn.xdf.acdc.connect.hdfs.HdfsSinkConnector");
             put("flush.size", "1");
@@ -194,10 +194,10 @@ public class ApiConnectCommand implements Command<ApiConnectCommand.CommandEntit
             put("transforms.ValueMapperSource.type", "cn.xdf.acdc.connect.smt.valuemapper.StringValueMapper");
         }
     };
-
+    
     private static final Map<String, String> SINK_KAFKA_DEFAULT_CONF = new HashMap<String, String>() {
         private static final long serialVersionUID = 5793182411505027416L;
-
+        
         {
             put("connector.class", "cn.xdf.acdc.connect.kafka.KafkaSinkConnector");
             put("tasks.max", "1");
@@ -207,21 +207,21 @@ public class ApiConnectCommand implements Command<ApiConnectCommand.CommandEntit
         }
     };
     // CHECKSTYLE:ON
-
+    
     private final Map<CommandEntity.Operation, Function<CommandEntity, Map<String, Object>>> commandExecutors = new HashMap<>();
-
+    
     @Autowired
     private I18nService i18n;
-
+    
     @Autowired
     private ConnectClusterRepository connectClusterRepository;
-
+    
     @Autowired
     private ConnectorClassRepository connectorClassRepository;
-
+    
     @Autowired
     private DefaultConnectorConfigurationRepository defaultConnectorConfigurationRepository;
-
+    
     public ApiConnectCommand() {
         commandExecutors.put(Operation.CREATE, this::doCreate);
         commandExecutors.put(Operation.DELETE, this::doDelete);
@@ -229,24 +229,24 @@ public class ApiConnectCommand implements Command<ApiConnectCommand.CommandEntit
         commandExecutors.put(Operation.GET, this::doGet);
         commandExecutors.put(Operation.LIST, this::doList);
     }
-
+    
     @Override
     public Map<String, Object> execute(final CommandEntity entity) {
         return commandExecutors.getOrDefault(entity.opt, this::doNothing).apply(entity);
     }
-
+    
     private Map<String, Object> doGet(final CommandEntity entity) {
-
+        
         if (Strings.isNullOrEmpty(entity.clusterServer)) {
             throw new ClientErrorException(i18n.msg(Client.INVALID_PARAMETER, entity.toString()));
         }
-
+        
         ConnectClusterDO cluster = connectClusterRepository.findOneByConnectRestApiUrl(entity.clusterServer)
                 .orElseThrow(() -> new EntityNotFoundException(i18n.msg(Connect.CLUSTER_NOT_FOUND, entity.clusterServer)));
-
+        
         List<DefaultConnectorConfigurationDO> defaultConnectorConfList = cluster.getConnectorClass().getDefaultConnectorConfigurations()
                 .stream().collect(Collectors.toList());
-
+        
         ConnectorClassDO connectorClass = cluster.getConnectorClass();
         Map<String, Object> clusterBody = new LinkedHashMap<>();
         clusterBody.put("id", cluster.getId());
@@ -254,32 +254,32 @@ public class ApiConnectCommand implements Command<ApiConnectCommand.CommandEntit
         clusterBody.put("dataSystemType", connectorClass.getDataSystemType());
         clusterBody.put("server", cluster.getConnectRestApiUrl());
         clusterBody.put("defaultConfig", convertToConnectorConfigurationMap(defaultConnectorConfList));
-
+        
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("cluster", clusterBody);
         return result;
     }
-
+    
     private Map<String, Object> doList(final CommandEntity entity) {
-
+        
         List<ConnectClusterDO> connectClusters = connectClusterRepository.findAll();
-
+        
         List<Map<String, Object>> clusters = connectClusters.stream().map(it -> {
             ConnectorClassDO connectorClass = it.getConnectorClass();
-
+            
             List<DefaultConnectorConfigurationDO> defaultConnectorConfList = it.getConnectorClass().getDefaultConnectorConfigurations()
                     .stream().collect(Collectors.toList());
-
+            
             Map<String, Object> cluster = new LinkedHashMap<>();
             cluster.put("id", it.getId());
             cluster.put("server", it.getConnectRestApiUrl());
             cluster.put("connectorType", connectorClass.getConnectorType());
             cluster.put("dataSystemType", connectorClass.getDataSystemType());
             cluster.put("defaultConfig", convertToConnectorConfigurationMap(defaultConnectorConfList));
-
+            
             return cluster;
         }).collect(Collectors.toList());
-
+        
         Map<String, Object> mockCluster = new HashMap<>();
         mockCluster.put("id", "1");
         mockCluster.put("server", "0");
@@ -287,16 +287,16 @@ public class ApiConnectCommand implements Command<ApiConnectCommand.CommandEntit
         result.put("clusters", clusters);
         return result;
     }
-
+    
     private Map<String, Object> doCreate(final CommandEntity entity) {
-
+        
         if (Objects.isNull(entity.clusterType)
                 || Strings.isNullOrEmpty(entity.clusterServer)
                 || Strings.isNullOrEmpty(entity.schemaRegistryUrl)
         ) {
             throw new ClientErrorException(i18n.msg(Client.INVALID_PARAMETER, entity.toString()));
         }
-
+        
         // There can only be one: "SOURCE_MYSQL", "SOURCE_TIDB", "SINK_MYSQL", "SINK_TIDB", "SINK_HIVE", "SINK_KAFKA".
         ClusterType clusterType = entity.clusterType;
         connectorClassRepository.findOneByNameAndDataSystemType(clusterType.connectorClass, clusterType.getDataSystemType())
@@ -305,44 +305,42 @@ public class ApiConnectCommand implements Command<ApiConnectCommand.CommandEntit
                         throw new EntityExistsException(i18n.msg(Connect.CLUSTER_ALREADY_EXISTED, cluster.getConnectRestApiUrl()));
                     });
                 });
-
+        
         // Cluster addresses must be unique.
         connectClusterRepository.findOneByConnectRestApiUrl(entity.clusterServer).ifPresent(cluster -> {
             throw new EntityExistsException(i18n.msg(Connect.CLUSTER_ALREADY_EXISTED, cluster.getConnectRestApiUrl()));
         });
-
+        
         // class
-        ConnectorClassDO connectorClass = ConnectorClassDO.builder()
-                .connectorType(clusterType.connectorType)
-                .dataSystemType(clusterType.dataSystemType)
-                .description(clusterType.name())
-                .simpleName(clusterType.name())
-                .name(clusterType.connectorClass)
-                .build();
-
+        ConnectorClassDO connectorClass = new ConnectorClassDO()
+                .setConnectorType(clusterType.connectorType)
+                .setDataSystemType(clusterType.dataSystemType)
+                .setDescription(clusterType.name())
+                .setSimpleName(clusterType.name())
+                .setName(clusterType.connectorClass);
+        
         ConnectorClassDO savedConnectorClass = connectorClassRepository.save(connectorClass);
-
+        
         // config
         Set<DefaultConnectorConfigurationDO> defaultConnectorConfSet = convertToConnectorConfigurationSet(entity, savedConnectorClass.getId());
         List<DefaultConnectorConfigurationDO> savedDefaultConnectorConfList = defaultConnectorConfigurationRepository.saveAll(defaultConnectorConfSet);
-
-        ConnectClusterDO connectCluster = ConnectClusterDO.builder()
-                .connectRestApiUrl(entity.clusterServer.trim())
-                .description(clusterType.name())
-                .version(DEFAULT_CONNECT_CLUSTER_VERSION)
-                .connectorClass(savedConnectorClass)
-                .build();
-
+        
+        ConnectClusterDO connectCluster = new ConnectClusterDO()
+                .setConnectRestApiUrl(entity.clusterServer.trim())
+                .setDescription(clusterType.name())
+                .setVersion(DEFAULT_CONNECT_CLUSTER_VERSION)
+                .setConnectorClass(savedConnectorClass);
+        
         // cluster
         ConnectClusterDO savedCluster = connectClusterRepository.save(connectCluster);
-
+        
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("id", savedCluster.getId());
         result.put("server", savedCluster.getConnectRestApiUrl());
         result.put("defaultConfig", convertToConnectorConfigurationMap(savedDefaultConnectorConfList));
         return result;
     }
-
+    
     private Map<String, Object> doUpdateDefaultConfig(final CommandEntity entity) {
         // check
         if (Strings.isNullOrEmpty(entity.clusterServer)
@@ -350,88 +348,88 @@ public class ApiConnectCommand implements Command<ApiConnectCommand.CommandEntit
                 || Strings.isNullOrEmpty(entity.value)) {
             throw new ClientErrorException(i18n.msg(Client.INVALID_PARAMETER, entity.toString()));
         }
-
+        
         if (IGNORE_CONFIG_KEY_SET.contains(entity.key)) {
             throw new ClientErrorException(i18n.msg(I18nKey.Connect.CLUSTER_DEFAULT_CONFIG_ERROR_MODIFICATION, entity.key));
         }
-
+        
         ConnectClusterDO connectCluster = connectClusterRepository.findOneByConnectRestApiUrl(entity.clusterServer)
                 .orElseThrow(() -> new EntityNotFoundException(i18n.msg(Connect.CLUSTER_NOT_FOUND, entity.clusterServer)));
-
+        
         ConnectorClassDO connectorClass = connectCluster.getConnectorClass();
-
+        
         DefaultConnectorConfigurationDO defaultConf = defaultConnectorConfigurationRepository.findByConnectorClassIdAndName(connectorClass.getId(), entity.key)
                 .orElseThrow(() -> new EntityNotFoundException(i18n.msg(Connect.CLUSTER_DEFAULT_CONFIG_NOT_FOUND, entity.key)));
-
+        
         String oldValue = defaultConf.getValue();
         defaultConf.setValue(entity.value.trim());
         DefaultConnectorConfigurationDO savedDefaultConf = defaultConnectorConfigurationRepository.save(defaultConf);
-
+        
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("key", entity.key);
         result.put("oldValue", oldValue);
         result.put("newValue", savedDefaultConf.getValue());
         return result;
     }
-
+    
     private Map<String, Object> doDelete(final CommandEntity entity) {
         // check
-
+        
         if (Strings.isNullOrEmpty(entity.clusterServer)) {
             throw new ClientErrorException(i18n.msg(Client.INVALID_PARAMETER, entity.toString()));
         }
-
+        
         ConnectClusterDO connectCluster = connectClusterRepository.findOneByConnectRestApiUrl(entity.clusterServer)
                 .orElseThrow(() -> new EntityNotFoundException(i18n.msg(Connect.CLUSTER_NOT_FOUND, entity.clusterServer)));
-
+        
         Set<ConnectorDO> connectors = connectCluster.getConnectors();
-
+        
         if (!CollectionUtils.isEmpty(connectors)) {
             throw new ClientErrorException(i18n.msg(Connect.CLUSTER_DELETE_CLUSTER_WITH_CONNECTORS));
         }
-
+        
         ConnectorClassDO connectorClass = connectCluster.getConnectorClass();
         Set<DefaultConnectorConfigurationDO> defaultConfSet = connectorClass.getDefaultConnectorConfigurations();
         defaultConnectorConfigurationRepository.deleteInBatch(defaultConfSet);
         connectClusterRepository.deleteById(connectCluster.getId());
         connectorClassRepository.deleteById(connectorClass.getId());
-
+        
         Map<String, Object> result = new LinkedHashMap<>();
         return result;
     }
-
+    
     private Map<String, Object> doNothing(final CommandEntity entity) {
         return UIError.getBriefStyleMsg(HttpStatus.BAD_REQUEST, i18n.msg(I18nKey.Command.OPERATION_NOT_SPECIFIED, String.valueOf(entity.opt)));
     }
-
+    
     private void setSourceMysqlKafkaSASL(final CommandEntity entity, final Map<String, String> config) {
         checkSaslConfig(entity);
         String securityProtocol = entity.securityProtocol;
         String saslMechanism = entity.saslMechanism;
         config.put(DATABASE_HISTORY_PRODUCER_SECURITY_PROTOCOL, securityProtocol);
         config.put(DATABASE_HISTORY_CONSUMER_SECURITY_PROTOCOL, securityProtocol);
-
+        
         if (SASL_PLAINTEXT.equals(securityProtocol)) {
             config.put(DATABASE_HISTORY_PRODUCER_SASL_MECHANISM, saslMechanism);
             config.put(DATABASE_HISTORY_CONSUMER_SASL_MECHANISM, saslMechanism);
         }
     }
-
+    
     private void setSourceTidbKafkaSASL(final CommandEntity entity, final Map<String, String> config) {
         checkSaslConfig(entity);
         String securityProtocol = entity.securityProtocol;
         String saslMechanism = entity.saslMechanism;
-
+        
         config.put(SOURCE_KAFKA_SECURITY_PROTOCOL, securityProtocol);
         if (SASL_PLAINTEXT.equals(securityProtocol)) {
             config.put(SOURCE_KAFKA_SASL_MECHANISM, saslMechanism);
         }
     }
-
+    
     private void checkSaslConfig(final CommandEntity entity) {
         String securityProtocol = entity.securityProtocol;
         String saslMechanism = entity.saslMechanism;
-
+        
         if (!KAFKA_SECURITY_PROTOCOL_SET.contains(securityProtocol)) {
             if (Strings.isNullOrEmpty(entity.clusterServer)) {
                 throw new ClientErrorException(i18n.msg(Client.INVALID_PARAMETER, entity.toString()));
@@ -441,136 +439,135 @@ public class ApiConnectCommand implements Command<ApiConnectCommand.CommandEntit
             throw new ClientErrorException(i18n.msg(Client.INVALID_PARAMETER, entity.toString()));
         }
     }
-
+    
     private Set<DefaultConnectorConfigurationDO> convertToConnectorConfigurationSet(
             final CommandEntity entity,
             final Long connectorClassId) {
         ClusterType clusterType = entity.clusterType;
-
+        
         String schemaRegistryUrl = entity.schemaRegistryUrl.trim();
         Map<String, String> newConfigMap = new HashMap<>(clusterType.getDefaultConf());
         newConfigMap.put(VALUE_SCHEMA_REGISTRY_URL_KEY, schemaRegistryUrl);
         newConfigMap.put(KEY_SCHEMA_REGISTRY_URL_KEY, schemaRegistryUrl);
-
+        
         if (isMysqlSource(clusterType.connectorClass)) {
             setSourceMysqlKafkaSASL(entity, newConfigMap);
         }
-
+        
         if (isTidbSource(clusterType.connectorClass)) {
             setSourceTidbKafkaSASL(entity, newConfigMap);
         }
-
+        
         return newConfigMap.entrySet().stream()
-                .map(it -> DefaultConnectorConfigurationDO.builder()
-                        .name(it.getKey())
-                        .value(it.getValue())
-                        .connectorClass(ConnectorClassDO.builder().id(connectorClassId).build())
-                        .build()
+                .map(it -> new DefaultConnectorConfigurationDO()
+                        .setName(it.getKey())
+                        .setValue(it.getValue())
+                        .setConnectorClass(new ConnectorClassDO().setId(connectorClassId))
                 ).collect(Collectors.toSet());
     }
-
+    
     private Map<String, String> convertToConnectorConfigurationMap(final List<DefaultConnectorConfigurationDO> configList) {
         return configList.stream()
                 .collect(Collectors.toMap(conf -> conf.getName(), conf -> conf.getValue()));
     }
-
+    
     private boolean isMysqlSource(final String connectorClass) {
         return SOURCE_MYSQL_CLASS.equals(connectorClass);
     }
-
+    
     private boolean isTidbSource(final String connectorClass) {
         return SOURCE_TIDB_CLASS.equals(connectorClass);
     }
-
+    
     // CHECKSTYLE:OFF
     public static class CommandEntity {
-
+        
         // --create, --delete , --update-default-config
         private Operation opt;
-
+        
         // The cluster type
         private ClusterType clusterType;
-
+        
         // The default configuration item is key
         private String key;
-
+        
         // The default configuration item is value
         private String value;
-
+        
         // The connect cluster server, eg: localhost:8083
         private String clusterServer;
-
+        
         // The schema registry url eg: localhost:8081
         private String schemaRegistryUrl;
-
+        
         private String securityProtocol;
-
+        
         private String saslMechanism;
-
+        
         public Operation getOpt() {
             return opt;
         }
-
+        
         public void setOpt(Operation opt) {
             this.opt = opt;
         }
-
+        
         public ClusterType getClusterType() {
             return clusterType;
         }
-
+        
         public void setClusterType(ClusterType clusterType) {
             this.clusterType = clusterType;
         }
-
+        
         public String getKey() {
             return key;
         }
-
+        
         public void setKey(String key) {
             this.key = key;
         }
-
+        
         public String getValue() {
             return value;
         }
-
+        
         public void setValue(String value) {
             this.value = value;
         }
-
+        
         public String getClusterServer() {
             return clusterServer;
         }
-
+        
         public void setClusterServer(String clusterServer) {
             this.clusterServer = clusterServer;
         }
-
+        
         public String getSchemaRegistryUrl() {
             return schemaRegistryUrl;
         }
-
+        
         public void setSchemaRegistryUrl(String schemaRegistryUrl) {
             this.schemaRegistryUrl = schemaRegistryUrl;
         }
-
+        
         public String getSecurityProtocol() {
             return securityProtocol;
         }
-
+        
         public void setSecurityProtocol(String securityProtocol) {
             this.securityProtocol = securityProtocol;
         }
-
+        
         public String getSaslMechanism() {
             return saslMechanism;
         }
-
+        
         public void setSaslMechanism(String saslMechanism) {
             this.saslMechanism = saslMechanism;
         }
-
+        
         @Override
         public String toString() {
             final StringBuilder sb = new StringBuilder();
@@ -584,34 +581,34 @@ public class ApiConnectCommand implements Command<ApiConnectCommand.CommandEntit
             sb.append("value:").append(value).append(" ");
             return sb.toString();
         }
-
+        
         public enum Operation {
             CREATE, DELETE, UPDATE_DEFAULT_CONFIG, GET, LIST
         }
-
+        
         @Getter
         public enum ClusterType {
             SOURCE_MYSQL("io.debezium.connector.mysql.MySqlConnector", SOURCE_MYSQL_DEFAULT_CONF, DataSystemType.MYSQL, ConnectorType.SOURCE),
-
+            
             SOURCE_TIDB("cn.xdf.acdc.connector.tidb.TidbConnector", SOURCE_TIDB_DEFAULT_CONF, DataSystemType.TIDB, ConnectorType.SOURCE),
-
+            
             SINK_MYSQL("cn.xdf.acdc.connect.jdbc.JdbcSinkConnector", SINK_MYSQL_DEFAULT_CONF, DataSystemType.MYSQL, ConnectorType.SINK),
-
+            
             SINK_TIDB("cn.xdf.acdc.connect.jdbc.JdbcSinkConnector", SINK_TIDB_DEFAULT_CONF, DataSystemType.TIDB, ConnectorType.SINK),
-
+            
             SINK_HIVE("cn.xdf.acdc.connect.hdfs.HdfsSinkConnector", SINK_HIVE_DEFAULT_CONF, DataSystemType.HIVE, ConnectorType.SINK),
-
+            
             SINK_KAFKA("cn.xdf.acdc.connect.kafka.KafkaSinkConnector", SINK_KAFKA_DEFAULT_CONF, DataSystemType.KAFKA, ConnectorType.SINK);
-
+            
             private Map<String, String> defaultConf;
-
+            
             private String connectorClass;
-
+            
             private DataSystemType dataSystemType;
-
+            
             private ConnectorType connectorType;
-
-
+            
+            
             ClusterType(
                     final String connectorClass,
                     final Map<String, String> defaultConf,

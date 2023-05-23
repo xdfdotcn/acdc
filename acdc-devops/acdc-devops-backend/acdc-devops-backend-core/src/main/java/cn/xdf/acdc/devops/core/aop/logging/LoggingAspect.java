@@ -20,37 +20,37 @@ import java.util.Arrays;
  */
 @Aspect
 public class LoggingAspect {
-
+    
     private final Environment env;
-
+    
     public LoggingAspect(final Environment env) {
         this.env = env;
     }
-
+    
     /**
      * Pointcut that matches all repositories, services and Web REST endpoints.
      */
     @Pointcut(
-        "within(@org.springframework.stereotype.Repository *)"
-            + " || within(@org.springframework.stereotype.Service *)"
-            + " || within(@org.springframework.web.bind.annotation.RestController *)"
+            "within(@org.springframework.stereotype.Repository *)"
+                    + " || within(@org.springframework.stereotype.Service *)"
+                    + " || within(@org.springframework.web.bind.annotation.RestController *)"
     )
     public void springBeanPointcut() {
         // Method is empty as this is just a Pointcut, the implementations are in the advices.
     }
-
+    
     /**
      * Pointcut that matches all Spring beans in the application's main packages.
      */
     @Pointcut(
-        "within(cn.xdf.acdc.devops.repository..*)"
-            + " || within(cn.xdf.acdc.devops.service..*)"
-            + " || within(cn.xdf.acdc.devops.api.rest..*)"
+            "within(cn.xdf.acdc.devops.repository..*)"
+                    + " || within(cn.xdf.acdc.devops.service..*)"
+                    + " || within(cn.xdf.acdc.devops.api.rest..*)"
     )
     public void applicationPackagePointcut() {
         // Method is empty as this is just a Pointcut, the implementations are in the advices.
     }
-
+    
     /**
      * Retrieves the {@link Logger} associated to the given {@link JoinPoint}.
      *
@@ -60,7 +60,7 @@ public class LoggingAspect {
     private Logger logger(final JoinPoint joinPoint) {
         return LoggerFactory.getLogger(joinPoint.getSignature().getDeclaringTypeName());
     }
-
+    
     /**
      * Advice that logs methods throwing exceptions.
      *
@@ -71,23 +71,23 @@ public class LoggingAspect {
     public void logAfterThrowing(final JoinPoint joinPoint, final Throwable e) {
         if (env.acceptsProfiles(Profiles.of(ACDCEnvironment.ENV_DEV))) {
             logger(joinPoint)
-                .error(
-                    "Exception in {}() with cause = \'{}\' and exception = \'{}\'",
-                    joinPoint.getSignature().getName(),
-                    e.getCause() != null ? e.getCause() : "NULL",
-                    e.getMessage(),
-                    e
-                );
+                    .error(
+                            "Exception in {}() with cause = \'{}\' and exception = \'{}\'",
+                            joinPoint.getSignature().getName(),
+                            e.getCause() != null ? e.getCause() : "NULL",
+                            e.getMessage(),
+                            e
+                    );
         } else {
             logger(joinPoint)
-                .error(
-                    "Exception in {}() with cause = {}",
-                    joinPoint.getSignature().getName(),
-                    e.getCause() != null ? e.getCause() : "NULL"
-                );
+                    .error(
+                            "Exception in {}() with cause = {}",
+                            joinPoint.getSignature().getName(),
+                            e.getCause() != null ? e.getCause() : "NULL"
+                    );
         }
     }
-
+    
     /**
      * Advice that logs when a method is entered and exited.
      *

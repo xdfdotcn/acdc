@@ -12,19 +12,19 @@ import org.springframework.test.context.junit4.SpringRunner;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class ProjectRepositoryTest {
-
+    
     @Autowired
     private ProjectRepository projectRepository;
-
+    
     @Before
     public void setUp() throws Exception {
     }
-
+    
     @Test
     public void testFindBySourceShouldPass() {
         projectRepository.findBySource(MetadataSourceType.FROM_PANDORA);
     }
-
+    
     @Test
     public void testQueryShouldPass() {
         ProjectQuery projectQuery = new ProjectQuery();

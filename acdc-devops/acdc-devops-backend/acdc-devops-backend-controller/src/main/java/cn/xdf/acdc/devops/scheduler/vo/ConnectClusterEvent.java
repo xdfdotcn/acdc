@@ -6,9 +6,9 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class ConnectClusterEvent {
-
+    
     private Long clusterId;
-
+    
     private Object event;
-
+    
 }

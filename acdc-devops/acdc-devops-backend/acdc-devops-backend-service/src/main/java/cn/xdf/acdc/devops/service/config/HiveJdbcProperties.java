@@ -11,11 +11,11 @@ import org.springframework.stereotype.Component;
 @Component
 @ConfigurationProperties(prefix = "acdc.hive.jdbc")
 public class HiveJdbcProperties {
-
+    
     private String url;
-
+    
     private String user;
-
+    
     private String password;
-
+    
 }

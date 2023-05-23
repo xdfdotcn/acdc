@@ -2,10 +2,9 @@ package cn.xdf.acdc.devops.service.process.common;
 
 /**
  * 异步调用Service.
- *
  */
 public interface AsyncInvokeService {
-
+    
     /**
      * 异步调用.
      *
@@ -13,7 +12,7 @@ public interface AsyncInvokeService {
      * @date 2022/9/8 5:37 下午
      */
     void asyncInvoke(AsyncExec function);
-
+    
     @FunctionalInterface
     interface AsyncExec {
         /**
@@ -23,5 +22,5 @@ public interface AsyncInvokeService {
          */
         void execute();
     }
-
+    
 }

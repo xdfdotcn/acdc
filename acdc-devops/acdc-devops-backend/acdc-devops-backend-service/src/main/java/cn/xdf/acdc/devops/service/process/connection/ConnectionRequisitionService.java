@@ -13,17 +13,17 @@ import java.util.List;
  * Connection requisition service .
  */
 public interface ConnectionRequisitionService {
-
+    
     /**
      * Requisition connection.
      *
-     * @param requisition   requisition
+     * @param requisition requisition
      * @param domainAccount domainAccount
      * @return created connection requisition detail DTO list
      */
     List<ConnectionRequisitionDetailDTO> createRequisitionWithAutoSplit(ConnectionRequisitionDetailDTO requisition, String domainAccount);
-
-
+    
+    
     /**
      * 获取 connector 列表. ConnectionRequisitionController*
      *
@@ -31,23 +31,23 @@ public interface ConnectionRequisitionService {
      * @return Page
      */
     List<ConnectionRequisitionDTO> query(ConnectionRequisitionQuery query);
-
+    
     /**
      * approve requisition.
      *
      * @param connectionRequisitionId connectionRequisitionId
      */
     void approveRequisitionConnections(Long connectionRequisitionId);
-
+    
     /**
      * approve.
      *
      * @param connectionRequisitionId connectionRequisitionId
-     * @param approveDTO              approveDTO
-     * @param domainAccount           domainAccount
+     * @param approveDTO approveDTO
+     * @param domainAccount domainAccount
      */
     void approve(Long connectionRequisitionId, ApproveDTO approveDTO, String domainAccount);
-
+    
     /**
      * Get requisition by third party ID .
      *
@@ -55,7 +55,7 @@ public interface ConnectionRequisitionService {
      * @return ConnectionRequisitionDTO
      */
     ConnectionRequisitionDTO getByThirdPartyId(String thirdPartyId);
-
+    
     /**
      * Get Requisition detail.
      *
@@ -63,7 +63,7 @@ public interface ConnectionRequisitionService {
      * @return requisition detail
      */
     ConnectionRequisitionDetailDTO getDetailById(Long id);
-
+    
     /**
      * Get requisition.
      *
@@ -71,8 +71,8 @@ public interface ConnectionRequisitionService {
      * @return Requisition
      */
     ConnectionRequisitionDTO getById(Long id);
-
-
+    
+    
     /**
      * Query source owner email.
      *
@@ -80,7 +80,7 @@ public interface ConnectionRequisitionService {
      * @return email list
      */
     List<UserDTO> getSourceOwners(Long id);
-
+    
     /**
      * Query proposer emails.
      *
@@ -88,73 +88,73 @@ public interface ConnectionRequisitionService {
      * @return proposer email list
      */
     UserDTO getProposer(Long id);
-
+    
     /**
      * Check source owner permissions.
      *
      * @param domainAccount domainAccount
-     * @param id            id
+     * @param id id
      */
     void checkSourceOwnerPermissions(Long id, String domainAccount);
-
+    
     /**
      * Check dba permissions.
      *
      * @param domainAccount domainAccount
      */
     void checkDbaPermissions(String domainAccount);
-
+    
     /**
      * Create requisition.
      *
      * @param requisitionDetail requisitionDetail
-     * @param domainAccount     domainAccount
+     * @param domainAccount domainAccount
      * @return created connection requisition detail DTO
      */
     ConnectionRequisitionDetailDTO create(ConnectionRequisitionDetailDTO requisitionDetail, String domainAccount);
-
+    
     /**
      * Update approve state.
      *
      * @param connectionRequisitionId connectionRequisitionId
-     * @param state                   state
+     * @param state state
      */
     void updateApproveState(Long connectionRequisitionId, ApprovalState state);
-
+    
     /**
      * Update approval state by DBA.
      *
      * @param connectionRequisitionId connectionRequisitionId
-     * @param state                   state
-     * @param approveResult           approveResult
-     * @param dbaDomainAccount        dbaDomainAccount
+     * @param state state
+     * @param approveResult approveResult
+     * @param dbaDomainAccount dbaDomainAccount
      */
     void updateApproveStateByDBA(Long connectionRequisitionId, ApprovalState state, String approveResult, String dbaDomainAccount);
-
+    
     /**
      * Update approval state by source owner.
      *
-     * @param connectionRequisitionId  connectionRequisitionId
-     * @param state                    state
-     * @param approveResult            approveResult
+     * @param connectionRequisitionId connectionRequisitionId
+     * @param state state
+     * @param approveResult approveResult
      * @param sourceOwnerDomainAccount sourceOwnerDomainAccount
      */
-
+    
     void updateApproveStateBySourceOwner(Long connectionRequisitionId, ApprovalState state, String approveResult, String sourceOwnerDomainAccount);
-
+    
     /**
      * Bind third party id, eg: OA.
      *
-     * @param id           id
+     * @param id id
      * @param thirdPartyId thirdPartyId
      */
     void bindThirdPartyId(Long id, String thirdPartyId);
-
+    
     /**
      * Invalid requisition.
      *
      * @param id id
      */
-
+    
     void invalidRequisition(Long id);
 }

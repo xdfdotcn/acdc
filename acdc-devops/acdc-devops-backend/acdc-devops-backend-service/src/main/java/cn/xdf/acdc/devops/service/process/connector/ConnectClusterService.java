@@ -1,6 +1,7 @@
 package cn.xdf.acdc.devops.service.process.connector;
 
 import cn.xdf.acdc.devops.core.domain.entity.ConnectClusterDO;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -9,7 +10,7 @@ import java.util.Optional;
  * TODO 与process service 进行合并
  */
 public interface ConnectClusterService {
-
+    
     /**
      * 单条保存.
      *
@@ -17,14 +18,14 @@ public interface ConnectClusterService {
      * @return ConnectCluster
      */
     ConnectClusterDO save(ConnectClusterDO connectCluster);
-
+    
     /**
      * 查询所有.
      *
      * @return List
      */
     List<ConnectClusterDO> findAll();
-
+    
     /**
      * 根据ID查询.
      *
@@ -32,7 +33,7 @@ public interface ConnectClusterService {
      * @return ConnectCluster
      */
     Optional<ConnectClusterDO> findById(Long id);
-
+    
     /**
      * 根据 connector class 查找.
      *
@@ -40,7 +41,7 @@ public interface ConnectClusterService {
      * @return ConnectCluster
      */
     Optional<ConnectClusterDO> findByConnectorClassId(Long connectorClassId);
-
+    
     /**
      * 根据集群的 rest api url 地址查询.
      *

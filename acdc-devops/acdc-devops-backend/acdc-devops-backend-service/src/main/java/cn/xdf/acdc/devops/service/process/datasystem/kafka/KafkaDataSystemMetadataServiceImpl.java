@@ -23,34 +23,34 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class KafkaDataSystemMetadataServiceImpl implements DataSystemMetadataService {
-
+    
     @Autowired
     private DataSystemResourceService dataSystemResourceService;
-
+    
     @Autowired
     private KafkaHelperService kafkaHelperService;
-
+    
     @Override
     public DataSystemResourceDefinition getDataSystemResourceDefinition() {
-        throw new UnsupportedOperationException();
+        return KafkaDataSystemResourceDefinitionHolder.get();
     }
-
+    
     @Override
     @Transactional
     public DataCollectionDefinition getDataCollectionDefinition(final Long dataCollectionId) {
         // TODO: as sink, we should return a empty field definition.
         // but as source, we should return a field definition with two field named: message key, message value
-
+        
         DataSystemResourceDTO dataSystemResource = dataSystemResourceService.getById(dataCollectionId);
         return new DataCollectionDefinition(dataSystemResource.getName(), Collections.emptyList());
     }
-
+    
     @Override
     public void checkDataSystem(final Long rootDataSystemResourceId) {
         DataSystemResourceDetailDTO clusterResource = dataSystemResourceService.getDetailById(rootDataSystemResourceId);
         checkDataSystem(clusterResource);
     }
-
+    
     @Override
     public void checkDataSystem(final DataSystemResourceDetailDTO dataSystemResourceDetail) {
         if (DataSystemResourceType.KAFKA_CLUSTER.equals(dataSystemResourceDetail.getResourceType())) {
@@ -58,7 +58,7 @@ public class KafkaDataSystemMetadataServiceImpl implements DataSystemMetadataSer
             kafkaHelperService.checkAdminClientConfig(adminClientConfiguration);
         }
     }
-
+    
     @Override
     public void refreshDynamicDataSystemResource(final Long rootDataSystemResourceId) {
         DataSystemResourceDetailDTO clusterResource = dataSystemResourceService.getDetailById(rootDataSystemResourceId);
@@ -69,13 +69,16 @@ public class KafkaDataSystemMetadataServiceImpl implements DataSystemMetadataSer
                     resource.setName(each);
                     resource.setDataSystemType(DataSystemType.KAFKA);
                     resource.setResourceType(DataSystemResourceType.KAFKA_TOPIC);
-                    resource.setParentResourceId(rootDataSystemResourceId);
+                    resource.setParentResource(
+                            new DataSystemResourceDetailDTO(rootDataSystemResourceId)
+                    );
+                    resource.getProjects().addAll(clusterResource.getProjects());
                     return resource;
                 })
                 .collect(Collectors.toList());
         dataSystemResourceService.mergeAllChildrenByName(actualTopics, DataSystemResourceType.KAFKA_TOPIC, rootDataSystemResourceId);
     }
-
+    
     @Override
     public DataSystemType getDataSystemType() {
         return DataSystemType.KAFKA;

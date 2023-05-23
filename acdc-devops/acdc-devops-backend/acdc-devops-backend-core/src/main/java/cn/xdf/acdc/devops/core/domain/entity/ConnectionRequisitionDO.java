@@ -29,40 +29,40 @@ import java.util.Set;
 @NoArgsConstructor
 @Accessors(chain = true)
 public class ConnectionRequisitionDO extends BaseDO implements Serializable {
-
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    
     @Column(name = "source_approve_result")
     private String sourceApproveResult;
-
+    
     @ManyToOne(fetch = FetchType.LAZY)
     private UserDO sourceApproverUser;
-
+    
     @Column(name = "dba_approve_result")
     private String dbaApproveResult;
-
+    
     @ManyToOne(fetch = FetchType.LAZY)
     private UserDO dbaApproverUser;
-
+    
     @Column(name = "state", nullable = false)
     @Enumerated(EnumType.ORDINAL)
     private ApprovalState state;
-
+    
     @Column(name = "description")
     private String description;
-
+    
     @Column(name = "third_party_id")
     private String thirdPartyId;
-
+    
     @OneToMany(mappedBy = "connectionRequisition", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Set<ConnectionRequisitionConnectionMappingDO> connectionRequisitionConnectionMappings = new HashSet<>();
-
+    
     public ConnectionRequisitionDO(final Long id) {
         this.id = id;
     }
-
+    
     @Override
     public boolean equals(final Object o) {
         if (this == o) {
@@ -73,7 +73,7 @@ public class ConnectionRequisitionDO extends BaseDO implements Serializable {
         }
         return id != null && id.equals(((ConnectionRequisitionDO) o).id);
     }
-
+    
     @Override
     public int hashCode() {
         // see https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/

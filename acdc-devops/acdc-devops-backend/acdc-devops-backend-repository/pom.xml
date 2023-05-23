@@ -2,20 +2,20 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-
+    
     <modelVersion>4.0.0</modelVersion>
-
+    
     <parent>
         <artifactId>acdc-devops-backend</artifactId>
         <groupId>cn.xdf.acdc</groupId>
         <version>1.0.0-Alpha-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-
+    
     <artifactId>acdc-devops-backend-repository</artifactId>
     <name>${project.artifactId}</name>
     <packaging>jar</packaging>
-
+    
     <dependencies>
         <dependency>
             <groupId>cn.xdf.acdc</groupId>
@@ -78,7 +78,7 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
+    
     <build>
         <plugins>
             <plugin>

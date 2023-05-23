@@ -5,40 +5,40 @@ import cn.xdf.acdc.devops.service.constant.connector.CommonConstant;
 import com.google.common.base.Strings;
 
 public class UrlUtil {
-
+    
     private static final String JDBC_URL_FORMAT = "jdbc:%s://%s:%d";
-
+    
     /**
      * Generate jdbc schema url.
      *
      * @param dataSystemType data system type
-     * @param host           host
-     * @param port           port
-     * @param database       database
-     * @param properties     jdbc properties
+     * @param host host
+     * @param port port
+     * @param database database
+     * @param properties jdbc properties
      * @return url in jdbc schema
      */
     public static String generateJDBCUrl(final String dataSystemType, final String host, final int port, final String database, final String properties) {
         StringBuilder url = new StringBuilder(String.format(JDBC_URL_FORMAT, dataSystemType, host, port));
-
+        
         if (!Strings.isNullOrEmpty(database)) {
             url.append(CommonConstant.PATH_SEPARATOR).append(database);
         }
-
+        
         if (!Strings.isNullOrEmpty(properties)) {
             url.append(CommonConstant.QUESTION_MARK).append(properties);
         }
-
+        
         return url.toString();
     }
-
+    
     /**
      * Generate jdbc schema url.
      *
      * @param dataSystemType data system type
-     * @param host           host
-     * @param port           port
-     * @param database       database
+     * @param host host
+     * @param port port
+     * @param database database
      * @return url in jdbc schema
      */
     public static String generateJDBCUrl(final String dataSystemType, final String host, final int port, final String database) {

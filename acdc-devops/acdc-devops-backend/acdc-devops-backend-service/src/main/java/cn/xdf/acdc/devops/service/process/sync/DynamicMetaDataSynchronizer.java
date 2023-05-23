@@ -17,31 +17,25 @@ import java.util.stream.Collectors;
 @Order(Ordered.LOWEST_PRECEDENCE)
 @Slf4j
 public class DynamicMetaDataSynchronizer implements SynchronizerInOrder {
-
+    
     private final DataSystemResourceService dataSystemResourceService;
-
+    
     private final Map<DataSystemType, DataSystemMetadataService> dataSystemTypeServiceMap;
-
+    
     public DynamicMetaDataSynchronizer(final List<DataSystemMetadataService> dataSystemMetadataServices, final DataSystemResourceService dataSystemResourceService) {
         dataSystemTypeServiceMap = dataSystemMetadataServices.stream().collect(
                 Collectors.toMap(DataSystemMetadataService::getDataSystemType, service -> service));
         this.dataSystemResourceService = dataSystemResourceService;
     }
-
+    
     @Override
     public void sync() {
-        StringBuilder exceptions = new StringBuilder();
         dataSystemResourceService.getAllRoots().forEach(cluster -> {
             try {
                 dataSystemTypeServiceMap.get(cluster.getDataSystemType()).refreshDynamicDataSystemResource(cluster.getId());
             } catch (ServerErrorException exception) {
                 log.warn("Refresh dynamic data system resource error: {}", exception.getMessage());
-                exceptions.append("ClusterId: ").append(cluster.getId()).append(", ")
-                        .append(exception.getMessage()).append(System.lineSeparator());
             }
         });
-        if (exceptions.length() > 0) {
-            throw new ServerErrorException("Refresh dynamic data system resource error: " + System.lineSeparator() + exceptions);
-        }
     }
 }

@@ -1,8 +1,20 @@
 module.exports = {
-  extends: [require.resolve('@umijs/fabric/dist/eslint')],
-  globals: {
-    ANT_DESIGN_PRO_ONLY_DO_NOT_USE_IN_YOUR_PRODUCTION: true,
-    page: true,
-    REACT_APP_ENV: true,
-  },
-};
+    "env": {
+        "browser": true,
+        "es2021": true
+    },
+    "extends": "plugin:react/recommended",
+    "overrides": [
+    ],
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "ecmaVersion": "latest",
+        "sourceType": "module"
+    },
+    "plugins": [
+        "react",
+        "@typescript-eslint"
+    ],
+    "rules": {
+    }
+}

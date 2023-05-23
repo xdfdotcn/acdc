@@ -5,24 +5,23 @@ import cn.xdf.acdc.devops.core.domain.entity.ConnectorEventDO;
 import cn.xdf.acdc.devops.core.domain.query.ConnectorEventQuery;
 import cn.xdf.acdc.devops.core.util.DateUtil;
 import com.google.common.base.Preconditions;
-
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import javax.persistence.criteria.Predicate;
-
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+
+import javax.persistence.criteria.Predicate;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Connector event.
  */
 // TODO 与process service 进行合并
 public interface ConnectorEventService {
-
+    
     /**
      * Save connector event.
      *
@@ -30,7 +29,7 @@ public interface ConnectorEventService {
      * @return ConnectorEvent
      */
     ConnectorEventDO save(ConnectorEventDO connectorEvent);
-
+    
     /**
      * Find by connector id.
      *
@@ -38,24 +37,23 @@ public interface ConnectorEventService {
      * @return connector event list.
      */
     List<ConnectorEventDO> findByConnectorId(Long connectorId);
-
+    
     /**
      * Get all connector events.
      *
      * @return all connector events
      */
     List<ConnectorEventDO> findAll();
-
+    
     /**
      * Paging query event.
      *
-     * @param query    query
+     * @param query query
      * @param pageable pageable
      * @return Page
      */
     Page<ConnectorEventDO> query(ConnectorEventQuery query, Pageable pageable);
-
-
+    
     /**
      * Dynamic conditions.
      *
@@ -64,26 +62,26 @@ public interface ConnectorEventService {
      */
     static Specification specificationOf(final ConnectorEventQuery eventQuery) {
         Preconditions.checkNotNull(eventQuery);
-
+        
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-
+            
             if (Objects.nonNull(eventQuery.getConnectorId())) {
-                predicates.add(cb.equal(root.get("connector"), ConnectorDO.builder().id(eventQuery.getConnectorId()).build()));
+                predicates.add(cb.equal(root.get("connector"), new ConnectorDO().setId(eventQuery.getConnectorId())));
             }
-
+            
             if (Objects.nonNull(eventQuery.getSource())) {
                 predicates.add(cb.equal(root.get("source"), eventQuery.getSource()));
             }
-
+            
             if (Objects.nonNull(eventQuery.getLevel())) {
                 predicates.add(cb.equal(root.get("level"), eventQuery.getLevel()));
             }
-
+            
             if (StringUtils.isNotBlank(eventQuery.getReason())) {
                 predicates.add(cb.equal(root.get("reason"), eventQuery.getReason()));
             }
-
+            
             if (StringUtils.isNotBlank(eventQuery.getBeginTime())
                     && StringUtils.isNotBlank(eventQuery.getEndTime())
             ) {
@@ -91,7 +89,7 @@ public interface ConnectorEventService {
                 Instant end = DateUtil.parseToInstant(eventQuery.getEndTime());
                 predicates.add(cb.between(root.get("creationTime"), begin, end));
             }
-
+            
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }

@@ -20,20 +20,20 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @Accessors(chain = true)
 public class UserDetailDTO {
-
+    
     private Long id;
-
+    
     private String email;
-
+    
     private String domainAccount;
-
+    
     private String name;
-
+    
     @JsonIgnore
     private String password;
-
+    
     private Set<AuthorityRoleType> authoritySet;
-
+    
     public UserDetailDTO(final UserDO userDO) {
         this.id = userDO.getId();
         this.email = userDO.getEmail();
@@ -42,25 +42,25 @@ public class UserDetailDTO {
         this.password = userDO.getPassword();
         this.authoritySet = userDO.getAuthorities().stream().map(it -> AuthorityRoleType.valueOf(it.getName())).collect(Collectors.toSet());
     }
-
+    
     /**
      * To UserDO.
      *
      * @return UserDO
      */
     public UserDO toDO() {
-        return UserDO.builder()
-                .id(this.id)
-                .name(this.name)
-                .email(this.email)
-                .password(password)
-                .createdBy(SystemConstant.ACDC)
-                .updatedBy(SystemConstant.ACDC)
-                .authorities(toAuthorityDOSet())
-                .domainAccount(UserUtil.convertEmailToDomainAccount(this.email))
-                .build();
+        UserDO userDO = new UserDO();
+        userDO.setId(this.id);
+        userDO.setName(this.name);
+        userDO.setEmail(this.email);
+        userDO.setPassword(password);
+        userDO.setCreatedBy(SystemConstant.ACDC);
+        userDO.setUpdatedBy(SystemConstant.ACDC);
+        userDO.setAuthorities(toAuthorityDOSet());
+        userDO.setDomainAccount(UserUtil.convertEmailToDomainAccount(this.email));
+        return userDO;
     }
-
+    
     private Set<AuthorityDO> toAuthorityDOSet() {
         Set<AuthorityRoleType> newAuthorityRoleTypes = CollectionUtils.isEmpty(authoritySet)
                 ? new HashSet<>() : authoritySet;

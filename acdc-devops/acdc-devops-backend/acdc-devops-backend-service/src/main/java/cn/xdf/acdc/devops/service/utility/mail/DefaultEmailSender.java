@@ -10,22 +10,22 @@ import java.util.List;
 
 @Service
 public class DefaultEmailSender implements EmailSender {
-
+    
     @Autowired
     private ACDCEmailProperties emailConfig;
-
+    
     @Autowired
     private MailUtilityService mailService;
-
+    
     @Autowired
     private ACDCEmailProperties acdcEmailProperties;
-
+    
     @Override
     public void sendInnerWarningEmail(final EmailTemplate template, final Object content) {
         DomainUser acdcGroup = new DomainUser(acdcEmailProperties.getCcEmailAddress());
         this.sendEmail(Lists.newArrayList(acdcGroup), new ArrayList<>(), template, content);
     }
-
+    
     @Override
     public void sendEmail(
             final List<DomainUser> to,

@@ -1,11 +1,11 @@
 package cn.xdf.acdc.devops.aop;
 
-import cn.xdf.acdc.devops.dto.Connector;
 import cn.xdf.acdc.devops.core.domain.entity.ConnectorEventDO;
+import cn.xdf.acdc.devops.core.domain.entity.enumeration.ConnectorState;
 import cn.xdf.acdc.devops.core.domain.entity.enumeration.EventLevel;
 import cn.xdf.acdc.devops.core.domain.entity.enumeration.EventReason;
 import cn.xdf.acdc.devops.core.domain.entity.enumeration.EventSource;
-import cn.xdf.acdc.devops.core.domain.enumeration.ConnectorState;
+import cn.xdf.acdc.devops.dto.Connector;
 import cn.xdf.acdc.devops.service.aop.Event;
 import cn.xdf.acdc.devops.service.entity.ConnectorEventService;
 import cn.xdf.acdc.devops.statemachine.actions.UpdateStateToDbAction;
@@ -25,15 +25,15 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
-@ContextConfiguration(classes = {StateMachineEventT.AopConfig.class})
+@ContextConfiguration(classes = StateMachineEventT.AopConfig.class)
 public class StateMachineEventT {
-
+    
     @Autowired
     private EventAspectAopTest eventAspectAopTest;
-
+    
     @MockBean
     private ConnectorEventService connectorEventService;
-
+    
     @Test
     public void testEventAnnotationWithProperties() {
         Connector connector = new Connector();
@@ -50,22 +50,22 @@ public class StateMachineEventT {
         Assertions.assertThat(event.getSource()).isEqualTo(EventSource.ACDC_SCHEDULER);
         Assertions.assertThat(event.getMessage()).isEqualTo("start failed, error info: \nexception xxx");
     }
-
+    
     @Component
     static class EventAspectAopTest {
-
+        
         @Event(connectorId = "#connector.id", reason = EventReason.CONNECTOR_ACTUAL_STATUS_CHANGED, source = EventSource.ACDC_SCHEDULER,
                 level = UpdateStateToDbAction.EVENT_LEVEL_EXPRESSION, message = UpdateStateToDbAction.EVENT_MESSAGE_EXPRESSION)
         void testStateMachineEventAdapterAndEventAnnotationWithProperties(final ConnectorState from, final ConnectorState to,
-                final cn.xdf.acdc.devops.core.domain.enumeration.ConnectorEvent event, final Connector connector) {
+                                                                          final cn.xdf.acdc.devops.core.domain.enumeration.ConnectorEvent event, final Connector connector) {
         }
     }
-
+    
     @Configuration
     @ComponentScan(basePackages = {"cn.xdf.acdc.devops.aop", "cn.xdf.acdc.devops.service.aop"},
             excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = SchedulerExceptionAlertAspect.class))
     @EnableAspectJAutoProxy
     static class AopConfig {
-
+    
     }
 }

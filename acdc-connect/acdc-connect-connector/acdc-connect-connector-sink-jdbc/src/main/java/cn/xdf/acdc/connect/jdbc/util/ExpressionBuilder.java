@@ -23,9 +23,11 @@ import cn.xdf.acdc.connect.jdbc.dialect.DropOptions;
  * the quote characters and identifier delimiter, or it can be obtained directly from a {@link DatabaseDialect} via the
  * {@link DatabaseDialect#expressionBuilder()} method.
  *
- * <p>The following is a simple example of how an instance of this class might be used to build a
+ * <p>
+ * The following is a simple example of how an instance of this class might be used to build a
  * SQL expression, where {@code table} might be a {@link TableId} object and {@code options} is a {@link DropOptions}
  * instance:
+ * </p>
  *
  * <pre>
  *   builder.append("DROP TABLE ");
@@ -42,27 +44,29 @@ import cn.xdf.acdc.connect.jdbc.dialect.DropOptions;
  * Note how the {@link TableId} elements are properly quoted using the {@link IdentifierRules} that are passed to the
  * builder's constructor.
  *
- * <p>This class is often used within a {@link DatabaseDialect} implementation to construct the
+ * <p>
+ * This class is often used within a {@link DatabaseDialect} implementation to construct the
  * various select, insert, update, upsert, and delete statements without having to explicitly deal with fully-qualified
  * identifiers, quoting rules, sizes of lists, etc.
+ * </p>
  */
 public class ExpressionBuilder {
-
+    
     protected static final QuoteMethod DEFAULT_QUOTE_METHOD = QuoteMethod.ALWAYS;
-
+    
     private final IdentifierRules rules;
-
+    
     private final StringBuilder sb = new StringBuilder();
-
+    
     private QuoteMethod quoteSqlIdentifiers = DEFAULT_QUOTE_METHOD;
-
+    
     /**
      * Create a new expression builder with the default {@link IdentifierRules}.
      */
     public ExpressionBuilder() {
         this(null);
     }
-
+    
     /**
      * Create a new expression builder that uses the specified {@link IdentifierRules}.
      *
@@ -71,7 +75,7 @@ public class ExpressionBuilder {
     public ExpressionBuilder(final IdentifierRules rules) {
         this.rules = rules != null ? rules : IdentifierRules.DEFAULT;
     }
-
+    
     /**
      * Get a {@link Transform} that will surround the inputs with quotes.
      *
@@ -80,7 +84,7 @@ public class ExpressionBuilder {
     public static Transform<String> quote() {
         return (builder, input) -> builder.appendColumnName(input);
     }
-
+    
     /**
      * Get a {@link Transform} that will quote just the column names.
      *
@@ -89,7 +93,7 @@ public class ExpressionBuilder {
     public static Transform<ColumnId> columnNames() {
         return (builder, input) -> builder.appendColumnName(input.name());
     }
-
+    
     /**
      * Get a {@link Transform} that will quote just the column names and append the given string.
      *
@@ -102,7 +106,7 @@ public class ExpressionBuilder {
             builder.append(appended);
         };
     }
-
+    
     /**
      * Get a {@link Transform} that will append a placeholder rather than each of the column names.
      *
@@ -112,7 +116,7 @@ public class ExpressionBuilder {
     public static Transform<ColumnId> placeholderInsteadOfColumnNames(final String str) {
         return (builder, input) -> builder.append(str);
     }
-
+    
     /**
      * Get a {@link Transform} that will append the prefix and then the quoted column name.
      *
@@ -125,7 +129,7 @@ public class ExpressionBuilder {
             builder.appendColumnName(input.name());
         };
     }
-
+    
     /**
      * Create a new ExpressionBuilder using the default {@link IdentifierRules}.
      *
@@ -134,19 +138,18 @@ public class ExpressionBuilder {
     public static ExpressionBuilder create() {
         return new ExpressionBuilder();
     }
-
+    
     /**
      * Set when this expression builder should quote identifiers, such as table and column names.
      *
-     * @param method the quoting method; may be null if the default method ({@link QuoteMethod#ALWAYS always}) should be
-     *               used
+     * @param method the quoting method; may be null if the default method ({@link QuoteMethod#ALWAYS always}) should be used
      * @return this expression builder; never null
      */
     public ExpressionBuilder setQuoteIdentifiers(final QuoteMethod method) {
         this.quoteSqlIdentifiers = method != null ? method : DEFAULT_QUOTE_METHOD;
         return this;
     }
-
+    
     /**
      * Return a new ExpressionBuilder that escapes quotes with the specified prefix. This builder remains unaffected.
      *
@@ -159,7 +162,7 @@ public class ExpressionBuilder {
         }
         return new ExpressionBuilder(this.rules.escapeQuotesWith(prefix));
     }
-
+    
     /**
      * Append to this builder's expression the delimiter defined by this builder's {@link IdentifierRules}.
      *
@@ -169,7 +172,7 @@ public class ExpressionBuilder {
         sb.append(rules.identifierDelimiter());
         return this;
     }
-
+    
     /**
      * Always append to this builder's expression the leading quote character(s) defined by this builder's {@link
      * IdentifierRules}.
@@ -179,7 +182,7 @@ public class ExpressionBuilder {
     public ExpressionBuilder appendLeadingQuote() {
         return appendLeadingQuote(QuoteMethod.ALWAYS);
     }
-
+    
     protected ExpressionBuilder appendLeadingQuote(final QuoteMethod method) {
         switch (method) {
             case ALWAYS:
@@ -191,7 +194,7 @@ public class ExpressionBuilder {
         }
         return this;
     }
-
+    
     /**
      * Always append to this builder's expression the trailing quote character(s) defined by this builder's {@link
      * IdentifierRules}.
@@ -201,7 +204,7 @@ public class ExpressionBuilder {
     public ExpressionBuilder appendTrailingQuote() {
         return appendTrailingQuote(QuoteMethod.ALWAYS);
     }
-
+    
     protected ExpressionBuilder appendTrailingQuote(final QuoteMethod method) {
         switch (method) {
             case ALWAYS:
@@ -213,7 +216,7 @@ public class ExpressionBuilder {
         }
         return this;
     }
-
+    
     /**
      * Append to this builder's expression the string quote character ({@code '}).
      *
@@ -223,7 +226,7 @@ public class ExpressionBuilder {
         sb.append("'");
         return this;
     }
-
+    
     /**
      * Append to this builder's expression a string surrounded by single quote characters ({@code '}). Use {@link
      * #appendIdentifier(String, QuoteMethod)} for identifiers, {@link #appendColumnName(String, QuoteMethod)} for
@@ -238,11 +241,11 @@ public class ExpressionBuilder {
         appendStringQuote();
         return this;
     }
-
+    
     /**
      * Append to this builder's expression the identifier.
      *
-     * @param name   the name to be appended
+     * @param name the name to be appended
      * @param quoted true if the name should be quoted, or false otherwise
      * @return this builder to enable methods to be chained; never null
      * @deprecated use {@link #appendIdentifier(String, QuoteMethod)} instead
@@ -254,11 +257,11 @@ public class ExpressionBuilder {
     ) {
         return appendIdentifier(name, quoted ? QuoteMethod.ALWAYS : QuoteMethod.NEVER);
     }
-
+    
     /**
      * Append to this builder's expression the identifier.
      *
-     * @param name   the name to be appended
+     * @param name the name to be appended
      * @param quoted true if the name should be quoted, or false otherwise
      * @return this builder to enable methods to be chained; never null
      */
@@ -271,7 +274,7 @@ public class ExpressionBuilder {
         appendTrailingQuote(quoted);
         return this;
     }
-
+    
     /**
      * Append to this builder's expression the specified Column identifier, possibly surrounded by the leading and
      * trailing quotes based upon {@link #setQuoteIdentifiers(QuoteMethod)}.
@@ -282,12 +285,12 @@ public class ExpressionBuilder {
     public ExpressionBuilder appendTableName(final String name) {
         return appendTableName(name, quoteSqlIdentifiers);
     }
-
+    
     /**
      * Append to this builder's expression the specified Column identifier, possibly surrounded by the leading and
      * trailing quotes based upon {@link #setQuoteIdentifiers(QuoteMethod)}.
      *
-     * @param name  the name to be appended
+     * @param name the name to be appended
      * @param quote the quote method to be used
      * @return this builder to enable methods to be chained; never null
      */
@@ -297,7 +300,7 @@ public class ExpressionBuilder {
         appendTrailingQuote(quote);
         return this;
     }
-
+    
     /**
      * Append to this builder's expression the specified Column identifier, possibly surrounded by the leading and
      * trailing quotes based upon {@link #setQuoteIdentifiers(QuoteMethod)}.
@@ -308,12 +311,12 @@ public class ExpressionBuilder {
     public ExpressionBuilder appendColumnName(final String name) {
         return appendColumnName(name, quoteSqlIdentifiers);
     }
-
+    
     /**
      * Append to this builder's expression the specified Column identifier, possibly surrounded by the leading and
      * trailing quotes based upon {@link #setQuoteIdentifiers(QuoteMethod)}.
      *
-     * @param name  the name to be appended
+     * @param name the name to be appended
      * @param quote whether to quote the column name; may not be null
      * @return this builder to enable methods to be chained; never null
      */
@@ -323,7 +326,7 @@ public class ExpressionBuilder {
         appendTrailingQuote(quote);
         return this;
     }
-
+    
     /**
      * Append to this builder's expression the specified identifier, surrounded by the leading and trailing quotes.
      *
@@ -336,7 +339,7 @@ public class ExpressionBuilder {
         appendTrailingQuote();
         return this;
     }
-
+    
     /**
      * Append to this builder's expression the binary value as a hex string, prefixed and suffixed by a single quote
      * character.
@@ -347,7 +350,7 @@ public class ExpressionBuilder {
     public ExpressionBuilder appendBinaryLiteral(final byte[] value) {
         return append("x'").append(BytesUtil.toHex(value)).append("'");
     }
-
+    
     /**
      * Append to this builder's expression a new line.
      *
@@ -357,13 +360,13 @@ public class ExpressionBuilder {
         sb.append(System.lineSeparator());
         return this;
     }
-
+    
     /**
      * Append to this builder's expression the specified object. If the object is {@link Expressable}, then this builder
      * delegates to the object's {@link Expressable#appendTo(ExpressionBuilder, boolean)} method. Otherwise, the string
      * representation of the object is appended to the expression.
      *
-     * @param obj       the object to be appended
+     * @param obj the object to be appended
      * @param useQuotes true if the object should be surrounded by quotes, or false otherwise
      * @return this builder to enable methods to be chained; never null
      * @deprecated use {@link #append(Object, QuoteMethod)} instead
@@ -375,13 +378,13 @@ public class ExpressionBuilder {
     ) {
         return append(obj, useQuotes ? QuoteMethod.ALWAYS : QuoteMethod.NEVER);
     }
-
+    
     /**
      * Append to this builder's expression the specified object. If the object is {@link Expressable}, then this builder
      * delegates to the object's {@link Expressable#appendTo(ExpressionBuilder, boolean)} method. Otherwise, the string
      * representation of the object is appended to the expression.
      *
-     * @param obj       the object to be appended
+     * @param obj the object to be appended
      * @param useQuotes true if the object should be surrounded by quotes, or false otherwise
      * @return this builder to enable methods to be chained; never null
      */
@@ -396,7 +399,7 @@ public class ExpressionBuilder {
         }
         return this;
     }
-
+    
     /**
      * Append to this builder's expression the specified object surrounded by quotes. If the object is {@link
      * Expressable}, then this builder delegates to the object's {@link Expressable#appendTo(ExpressionBuilder,
@@ -408,16 +411,15 @@ public class ExpressionBuilder {
     public ExpressionBuilder append(final Object obj) {
         return append(obj, quoteSqlIdentifiers);
     }
-
+    
     /**
      * Append to this builder's expression the specified object surrounded by quotes. If the object is {@link
      * Expressable}, then this builder delegates to the object's {@link Expressable#appendTo(ExpressionBuilder,
      * boolean)} method. Otherwise, the string representation of the object is appended to the expression.
      *
-     * @param obj       the object to be appended
-     * @param transform the transform that should be used on the supplied object to obtain the representation that is
-     *                  appended to the expression; may be null
-     * @param <T>       the type of object to transform before appending.
+     * @param obj the object to be appended
+     * @param transform the transform that should be used on the supplied object to obtain the representation that is appended to the expression; may be null
+     * @param <T> the type of object to transform before appending.
      * @return this builder to enable methods to be chained; never null
      */
     public <T> ExpressionBuilder append(
@@ -431,7 +433,7 @@ public class ExpressionBuilder {
         }
         return this;
     }
-
+    
     /**
      * appendList.
      *
@@ -440,13 +442,13 @@ public class ExpressionBuilder {
     public ListBuilder<Object> appendList() {
         return new BasicListBuilder<>();
     }
-
+    
     /**
      * appendMultiple.
      *
-     * @param delimiter  delimiter
+     * @param delimiter delimiter
      * @param expression expression
-     * @param times      times
+     * @param times times
      * @return ExpressionBuilder
      */
     public ExpressionBuilder appendMultiple(
@@ -462,7 +464,7 @@ public class ExpressionBuilder {
         }
         return this;
     }
-
+    
     /**
      * toString.
      *
@@ -471,7 +473,7 @@ public class ExpressionBuilder {
     public String toString() {
         return sb.toString();
     }
-
+    
     /**
      * A functional interface for anything that can be appended to an expression builder. This makes use of
      * double-dispatch to allow implementations to customize the behavior, yet have callers not care about the
@@ -479,22 +481,22 @@ public class ExpressionBuilder {
      */
     @FunctionalInterface
     public interface Expressable {
-
+        
         /**
          * Append this object to the specified builder.
          *
-         * @param builder   the builder to use; may not be null
+         * @param builder the builder to use; may not be null
          * @param useQuotes whether quotes should be used for this object
          */
         void appendTo(
                 ExpressionBuilder builder,
                 boolean useQuotes
         );
-
+        
         /**
          * Append this object to the specified builder.
          *
-         * @param builder   the builder to use; may not be null
+         * @param builder the builder to use; may not be null
          * @param useQuotes whether quotes should be used for this object
          */
         default void appendTo(
@@ -512,7 +514,7 @@ public class ExpressionBuilder {
             }
         }
     }
-
+    
     /**
      * A functional interface for a transformation that an expression builder might use when appending one or more other
      * objects.
@@ -521,19 +523,19 @@ public class ExpressionBuilder {
      */
     @FunctionalInterface
     public interface Transform<T> {
-
+        
         /**
          * apply method.
          *
          * @param builder builder
-         * @param input   input
+         * @param input input
          */
         void apply(
                 ExpressionBuilder builder,
                 T input
         );
     }
-
+    
     /**
      * A fluent API interface returned by the {@link ExpressionBuilder#appendList()} method that allows a caller to
      * easily define a custom delimiter to be used between items in the list, an optional transformation that should be
@@ -543,7 +545,7 @@ public class ExpressionBuilder {
      * @param <T> the type of object to be appended to the expression builder
      */
     public interface ListBuilder<T> {
-
+        
         /**
          * Define the delimiter to appear between items in the list. If not specified, a comma is used as the default
          * delimiter.
@@ -552,16 +554,16 @@ public class ExpressionBuilder {
          * @return this builder to enable methods to be chained; never null
          */
         ListBuilder<T> delimitedBy(String delimiter);
-
+        
         /**
          * Define a {@link Transform} that should be applied to every item in the list as it is appended.
          *
          * @param transform the transform; may not be null
-         * @param <R>       the type of item to be transformed
+         * @param <R> the type of item to be transformed
          * @return this builder to enable methods to be chained; never null
          */
         <R> ListBuilder<R> transformedBy(Transform<R> transform);
-
+        
         /**
          * Append to this list all of the items in the specified {@link Iterable}.
          *
@@ -569,7 +571,7 @@ public class ExpressionBuilder {
          * @return this builder to enable methods to be chained; never null
          */
         ExpressionBuilder of(Iterable<? extends T> objects);
-
+        
         /**
          * Append to this list all of the items in the specified {@link Iterable} objects.
          *
@@ -581,7 +583,7 @@ public class ExpressionBuilder {
             of(objects1);
             return of(objects2);
         }
-
+        
         /**
          * Append to this list all of the items in the specified {@link Iterable} objects.
          *
@@ -600,34 +602,34 @@ public class ExpressionBuilder {
             return of(objects3);
         }
     }
-
+    
     protected class BasicListBuilder<T> implements ListBuilder<T> {
-
+        
         private final String delimiter;
-
+        
         private final Transform<T> transform;
-
+        
         private boolean first = true;
-
+        
         BasicListBuilder() {
             this(", ", null);
         }
-
+        
         BasicListBuilder(final String delimiter, final Transform<T> transform) {
             this.delimiter = delimiter;
             this.transform = transform != null ? transform : ExpressionBuilder::append;
         }
-
+        
         @Override
         public ListBuilder<T> delimitedBy(final String delimiter) {
             return new BasicListBuilder<T>(delimiter, transform);
         }
-
+        
         @Override
         public <R> ListBuilder<R> transformedBy(final Transform<R> transform) {
             return new BasicListBuilder<>(delimiter, transform);
         }
-
+        
         @Override
         public ExpressionBuilder of(final Iterable<? extends T> objects) {
             for (T obj : objects) {

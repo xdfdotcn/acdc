@@ -33,35 +33,37 @@ import java.util.concurrent.TimeUnit;
 //@Configuration
 //@EnableCaching
 public class CacheProperties {
-
+    
     private GitProperties gitProperties;
-
+    
     private BuildProperties buildProperties;
-
+    
     private final javax.cache.configuration.Configuration<Object, Object> jcacheConfiguration;
-
+    
     public CacheProperties(final JHipsterProperties jHipsterProperties) {
         JHipsterProperties.Cache.Caffeine caffeine = jHipsterProperties.getCache().getCaffeine();
-
+        
         CaffeineConfiguration<Object, Object> caffeineConfiguration = new CaffeineConfiguration<>();
         caffeineConfiguration.setMaximumSize(OptionalLong.of(caffeine.getMaxEntries()));
         caffeineConfiguration.setExpireAfterWrite(OptionalLong.of(TimeUnit.SECONDS.toNanos(caffeine.getTimeToLiveSeconds())));
         caffeineConfiguration.setStatisticsEnabled(true);
         jcacheConfiguration = caffeineConfiguration;
     }
-
+    
     /**
      * Cache manager.
-     * @param cacheManager  cacheManager
+     *
+     * @param cacheManager cacheManager
      * @return HibernatePropertiesCustomizer
      */
     @Bean
     public HibernatePropertiesCustomizer hibernatePropertiesCustomizer(final javax.cache.CacheManager cacheManager) {
         return hibernateProperties -> hibernateProperties.put(ConfigSettings.CACHE_MANAGER, cacheManager);
     }
-
+    
     /**
      * Cache key config.
+     *
      * @return JCacheManagerCustomizer
      */
     @Bean
@@ -94,7 +96,7 @@ public class CacheProperties {
             // jhipster-needle-caffeine-add-entry
         };
     }
-
+    
     private void createCache(final javax.cache.CacheManager cm, final String cacheName) {
         javax.cache.Cache<Object, Object> cache = cm.getCache(cacheName);
         if (cache != null) {
@@ -103,27 +105,30 @@ public class CacheProperties {
             cm.createCache(cacheName, jcacheConfiguration);
         }
     }
-
+    
     /**
      * Set gitProperties.
-     * @param gitProperties  gitProperties
+     *
+     * @param gitProperties gitProperties
      */
     @Autowired(required = false)
     public void setGitProperties(final GitProperties gitProperties) {
         this.gitProperties = gitProperties;
     }
-
+    
     /**
      * Set buildProperties.
-     * @param buildProperties  buildProperties
+     *
+     * @param buildProperties buildProperties
      */
     @Autowired(required = false)
     public void setBuildProperties(final BuildProperties buildProperties) {
         this.buildProperties = buildProperties;
     }
-
+    
     /**
      * Bean keyGenerator.
+     *
      * @return KeyGenerator  KeyGenerator
      */
     @Bean

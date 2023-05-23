@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Set;
 
 public interface UserService {
-
+    
     /**
      * Create a new user.
      *
@@ -19,33 +19,33 @@ public interface UserService {
      * @return UserDTO
      */
     UserDetailDTO create(UserDetailDTO userDetail);
-
+    
     /**
      * Update user.
      *
      * @param username username
-     * @param email    email
+     * @param email email
      * @return UserDTO
      */
     UserDTO updateUserNameByEmail(String username, String email);
-
+    
     /**
      * Rest password.
      *
-     * @param email       email
+     * @param email email
      * @param oldPassword oldPassword
      * @param newPassword newPassword
      */
     void resetPassword(String email, String oldPassword, String newPassword);
-
+    
     /**
      * Rest role.
      *
-     * @param email       email
+     * @param email email
      * @param roleTypeSet roleTypeSet
      */
     void resetRole(String email, Set<AuthorityRoleType> roleTypeSet);
-
+    
     /**
      * Query user.
      *
@@ -53,7 +53,7 @@ public interface UserService {
      * @return users
      */
     List<UserDTO> query(UserQuery userQuery);
-
+    
     /**
      * Paging query user.
      *
@@ -61,7 +61,7 @@ public interface UserService {
      * @return Page
      */
     Page<UserDTO> pagedQuery(UserQuery userQuery);
-
+    
     /**
      * 查询项目下人员列表.
      *
@@ -70,7 +70,7 @@ public interface UserService {
      * @date 2022/8/2 5:48 下午
      */
     List<UserDTO> queryUsersByProjectId(Long projectId);
-
+    
     /**
      * Get user detail.
      *
@@ -78,7 +78,7 @@ public interface UserService {
      * @return user detail
      */
     UserDetailDTO getDetailByEmail(String email);
-
+    
     /**
      * Get user by domain account.
      *
@@ -86,7 +86,7 @@ public interface UserService {
      * @return user domainAccount
      */
     UserDTO getByDomainAccount(String domainAccount);
-
+    
     /**
      * Get user.
      *
@@ -94,7 +94,7 @@ public interface UserService {
      * @return user
      */
     UserDTO getByEmail(String email);
-
+    
     /**
      * Get user.
      *
@@ -102,14 +102,14 @@ public interface UserService {
      * @return user
      */
     UserDTO getById(Long id);
-
+    
     /**
      * Delete a user by email.
      *
      * @param email email
      */
     void deleteByEmail(String email);
-
+    
     /**
      * Determine whether you are an administrator.
      *
@@ -117,7 +117,7 @@ public interface UserService {
      * @return boolean
      */
     boolean isAdmin(String domainAccount);
-
+    
     /**
      * Determine whether you are an DBA.
      *
@@ -125,7 +125,7 @@ public interface UserService {
      * @return boolean
      */
     boolean isDBA(String domainAccount);
-
+    
     /**
      * If domain account exist update the entity, else insert a new one.
      *

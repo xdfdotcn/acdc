@@ -6,16 +6,16 @@ import java.util.Map;
 import java.util.Optional;
 
 public class ApprovalStateMachineDefinition {
-
+    
     private Map<ActionMapping.ActionMappingKey, ActionMapping> stateMachineDefinition;
-
+    
     public ApprovalStateMachineDefinition(
             final Map<ActionMapping.ActionMappingKey, ActionMapping> stateMachineDefinition
     ) {
-
+        
         this.stateMachineDefinition = stateMachineDefinition;
     }
-
+    
     /**
      * 获取链路审批状态机的声明.
      *

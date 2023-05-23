@@ -15,13 +15,13 @@ import java.util.Objects;
 import java.util.Set;
 
 public final class StringUtil {
-
+    
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-
+    
     /**
      * Converts set to string.
      *
-     * @param set       set
+     * @param set set
      * @param separator separator
      * @return string
      */
@@ -29,14 +29,14 @@ public final class StringUtil {
         if (CollectionUtils.isEmpty(set)) {
             return SystemConstant.EMPTY_STRING;
         }
-
+        
         return Joiner.on(separator).join(set);
     }
-
+    
     /**
      * Converts string set.
      *
-     * @param str       string
+     * @param str string
      * @param separator separator
      * @return set
      */
@@ -46,7 +46,7 @@ public final class StringUtil {
         }
         return new HashSet<>(Splitter.on(separator).splitToList(str));
     }
-
+    
     /**
      * Convert a json format string to map.
      *
@@ -60,7 +60,7 @@ public final class StringUtil {
             throw new IllegalStateException("error when convert string to map, check if it is in json format", e);
         }
     }
-
+    
     /**
      * If equals ignore case, return true, else return false.
      *

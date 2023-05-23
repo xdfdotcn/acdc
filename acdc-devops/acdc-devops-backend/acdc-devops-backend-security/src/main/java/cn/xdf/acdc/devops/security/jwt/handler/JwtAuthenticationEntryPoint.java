@@ -27,7 +27,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
             final AuthenticationException authException
     ) throws IOException {
         String loginUrl = SecurityUtil.generateLoginUrl(request);
-        String content = objectMapper.writeValueAsString(LoginGuider.builder().url(loginUrl).build());
+        String content = objectMapper.writeValueAsString(new LoginGuider().setUrl(loginUrl));
         ResponseWriter.write(response, content, HttpStatus.UNAUTHORIZED);
 
         log.info("Current user unauthorized, leading the user to login, login url is: {}", loginUrl);

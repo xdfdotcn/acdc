@@ -1,0 +1,90 @@
+import React, { useState } from 'react';
+import { Divider, Input, Space } from 'antd';
+import Table, { ColumnsType } from 'antd/es/table';
+const { Search } = Input;
+
+
+interface DataType {
+  key: React.Key;
+  name: string;
+  age: number;
+  address: string;
+}
+
+const columns: ColumnsType<DataType> = [
+  {
+    dataIndex: 'name',
+    render: (text: string) => <a>{text}</a>,
+  }
+];
+
+const data: DataType[] = [
+  {
+    key: '1',
+    name: 'John Brown',
+    age: 32,
+    address: 'New York No. 1 Lake Park',
+  },
+  {
+    key: '2',
+    name: 'Jim Green',
+    age: 42,
+    address: 'London No. 1 Lake Park',
+  },
+  {
+    key: '3',
+    name: 'Joe Black',
+    age: 32,
+    address: 'Sydney No. 1 Lake Park',
+  },
+  {
+    key: '4',
+    name: 'Disabled User',
+    age: 99,
+    address: 'Sydney No. 1 Lake Park',
+  },
+];
+
+// rowSelection object indicates the need for row selection
+const rowSelection = {
+  onChange: (selectedRowKeys: React.Key[], selectedRows: DataType[]) => {
+    console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
+  },
+  getCheckboxProps: (record: DataType) => ({
+    disabled: record.name === 'Disabled User', // Column configuration not to be checked
+    name: record.name,
+  }),
+};
+
+
+const DataCollectionSearcher: React.FC = () => {
+  const onSearch = (value: string) => console.log(value);
+  const [inputVal, setInputVal] = useState<string>('/ 教务 / API_CLUSATER / db1 /');
+
+  return (
+  <div>
+    <Search
+      size="large"
+      placeholder="input search text"
+      onSearch={onSearch}
+      value={inputVal}
+      enterButton
+      onChange={() => {
+        setInputVal('/ 教务 / API_CLUSATER / ');
+      }}
+    />
+    <Divider plain></Divider>
+     <Table
+        rowSelection={{
+          type: 'checkbox',
+          ...rowSelection,
+        }}
+        pagination={false}
+        columns={columns}
+        dataSource={data}
+      />
+    </div>
+  );
+};
+
+export default DataCollectionSearcher;

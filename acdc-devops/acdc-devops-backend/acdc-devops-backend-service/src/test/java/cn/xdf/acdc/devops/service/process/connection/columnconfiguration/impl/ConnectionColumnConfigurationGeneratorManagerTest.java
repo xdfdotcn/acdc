@@ -8,9 +8,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 public class ConnectionColumnConfigurationGeneratorManagerTest {
-
+    
     private ConnectionColumnConfigurationGeneratorManager connectionColumnConfigurationGeneratorManager;
-
+    
     @Before
     public void setup() {
         connectionColumnConfigurationGeneratorManager = new ConnectionColumnConfigurationGeneratorManager(
@@ -20,7 +20,7 @@ public class ConnectionColumnConfigurationGeneratorManagerTest {
                         new Jdbc2KafkaConnectionColumnConfigurationGenerator())
         );
     }
-
+    
     @Test
     public void testInitGenerators() {
         // TODO

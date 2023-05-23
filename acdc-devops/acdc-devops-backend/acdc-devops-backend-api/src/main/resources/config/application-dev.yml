@@ -107,7 +107,7 @@ acdc:
         e2-client-id:
         e2-client-secret:
         e2-login-domain:
-      skip-login: true
+      skip-login: false
   mail:
     from-email-address:
     cc-email-address:

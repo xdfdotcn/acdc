@@ -3,9 +3,8 @@ package cn.xdf.acdc.devops.dto;
 import cn.xdf.acdc.devops.core.domain.dto.ConnectorConfigurationDTO;
 import cn.xdf.acdc.devops.core.domain.dto.ConnectorDetailDTO;
 import cn.xdf.acdc.devops.core.domain.entity.ConnectorDO;
-import cn.xdf.acdc.devops.core.domain.enumeration.ConnectorState;
+import cn.xdf.acdc.devops.core.domain.entity.enumeration.ConnectorState;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -21,23 +20,22 @@ import java.util.stream.Collectors;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class Connector {
-
+    
     private Long id;
-
+    
     private String connectClusterUrl;
-
+    
     private String name;
-
+    
     private Map<String, String> connectorConfig;
-
+    
     private ConnectorState actualState;
-
+    
     private ConnectorState desiredState;
-
+    
     private String remark = "";
-
+    
     public Connector(
             final Long id,
             final String connectClusterUrl,
@@ -52,7 +50,7 @@ public class Connector {
         this.actualState = actualState;
         this.desiredState = desiredState;
     }
-
+    
     public Connector(final ConnectorDO connector, final Map<String, String> configMap) {
         this.id = connector.getId();
         this.name = connector.getName();
@@ -61,7 +59,7 @@ public class Connector {
         this.connectClusterUrl = connector.getConnectCluster().getConnectRestApiUrl();
         this.connectorConfig = configMap;
     }
-
+    
     /**
      * Generate a ConnectorInfoDTO from ConnectorDetailDTO.
      *
@@ -80,7 +78,7 @@ public class Connector {
         result.setActualState(connectorDetail.getActualState());
         return result;
     }
-
+    
     /**
      * For unit test.
      *
@@ -90,20 +88,18 @@ public class Connector {
         List<ConnectorConfigurationDTO> connectorConfigurations = new ArrayList<>();
         if (Objects.nonNull(connectorConfig)) {
             connectorConfigurations = connectorConfig.entrySet().stream()
-                    .map(entry -> ConnectorConfigurationDTO.builder()
-                            .name(entry.getKey())
-                            .value(entry.getValue())
-                            .build())
+                    .map(entry -> new ConnectorConfigurationDTO()
+                            .setName(entry.getKey())
+                            .setValue(entry.getValue()))
                     .collect(Collectors.toList());
         }
-        return ConnectorDetailDTO.builder()
-                .id(this.id)
-                .name(this.name)
-                .connectClusterRestApiUrl(this.connectClusterUrl)
-                .connectorConfigurations(connectorConfigurations)
-                .actualState(this.actualState)
-                .desiredState(this.desiredState)
-                .build();
-
+        return new ConnectorDetailDTO()
+                .setId(this.id)
+                .setName(this.name)
+                .setConnectClusterRestApiUrl(this.connectClusterUrl)
+                .setConnectorConfigurations(connectorConfigurations)
+                .setActualState(this.actualState)
+                .setDesiredState(this.desiredState);
+        
     }
 }

@@ -3,6 +3,8 @@ package cn.xdf.acdc.devops.core.domain.dto;
 import cn.xdf.acdc.devops.core.domain.entity.UserDO;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,33 +18,35 @@ import java.util.stream.Collectors;
  * A CDC 登录用户信息.
  */
 @Getter
+@Setter
+@Accessors(chain = true)
 public class LoginUserDTO implements UserDetails {
-
+    
     private final Long userid;
-
+    
     private final String email;
-
+    
     private final String domainAccount;
-
+    
     private final String username;
-
+    
     @JsonIgnore
     private final String password;
-
+    
     private final List<GrantedAuthority> authorities;
-
+    
     public LoginUserDTO(final UserDO user) {
         this.userid = user.getId();
         this.email = user.getEmail();
         this.domainAccount = user.getDomainAccount();
         this.username = user.getName();
         this.password = user.getPassword();
-
+        
         this.authorities = user.getAuthorities().stream()
                 .map(it -> new SimpleGrantedAuthority(it.getName()))
                 .collect(Collectors.toList());
     }
-
+    
     public LoginUserDTO(
             final Long userid,
             final String email,
@@ -60,42 +64,42 @@ public class LoginUserDTO implements UserDetails {
                 .map(it -> new SimpleGrantedAuthority(it))
                 .collect(Collectors.toList());
     }
-
+    
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return this.authorities;
     }
-
+    
     @Override
     public String getPassword() {
         return this.password;
     }
-
+    
     @Override
     public String getUsername() {
         return this.username;
     }
-
+    
     @Override
     public boolean isAccountNonExpired() {
         return false;
     }
-
+    
     @Override
     public boolean isAccountNonLocked() {
         return false;
     }
-
+    
     @Override
     public boolean isCredentialsNonExpired() {
         return false;
     }
-
+    
     @Override
     public boolean isEnabled() {
         return true;
     }
-
+    
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("LoginUserDTO{");

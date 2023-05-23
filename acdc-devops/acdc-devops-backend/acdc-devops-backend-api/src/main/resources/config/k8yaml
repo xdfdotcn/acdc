@@ -1,0 +1,28 @@
+-- 检查offset
+./kafka-console-consumer.sh --bootstrap-server kafka-vqiuyhoj-headless.kafka-uat.svc.xke.test.xdf.cn:29092 --consumer.config acdc-uat-security.properties --from-beginning --topic source-mysql-offsets --property print.key=true|grep -a "source-mysql-acdc_iTeach_cluster-iteach"
+
+-- 清空对应connector数据，即把对应key的数据value置为空值
+./kafka-console-producer.sh --bootstrap-server kafka-vqiuyhoj-headless.kafka-uat.svc.xke.test.xdf.cn:29092 --producer.config acdc-uat-security.properties --topic source-mysql-offsets --property "parse.key=true" --property "key.separator=|"
+
+["source-mysql-acdc_iTeach_cluster-iteach",{"server":"source-mysql-acdc_iTeach_cluster-iteach"}]|
+
+./kafka-console-consumer.sh --bootstrap-server kafka-vqiuyhoj-headless.kafka-uat.svc.xke.test.xdf.cn:29092 --consumer.config acdc-uat-security.properties --from-beginning --topic source-mysql-offsets --property print.key=true|grep -a "source-mysql-acdc_iTeach_cluster-iteach"
+
+./kafka-topics.sh --bootstrap-server kafka-vqiuyhoj-headless.kafka-uat.svc.xke.test.xdf.cn:29092 --command-config acdc-uat-security.properties --describe --topic source-mysql-acdc_iTeach_cluster-iteach
+
+./kafka-topics.sh --bootstrap-server kafka-vqiuyhoj-headless.kafka-uat.svc.xke.test.xdf.cn:29092 --command-config acdc-uat-security.properties --delete --topic source-mysql-acdc_iTeach_cluster-iteach
+
+./kafka-console-consumer.sh --bootstrap-server kafka-vqiuyhoj-headless.kafka-uat.svc.xke.test.xdf.cn:29092 --consumer.config acdc-uat-security.properties --from-beginning --topic source-mysql-acdc_iTeach_cluster-iteach --property print.key=true
+
+./kafka-topics.sh --bootstrap-server kafka-vqiuyhoj-headless.kafka-uat.svc.xke.test.xdf.cn:29092 --command-config acdc-uat-security.properties --create --topic source-mysql-acdc_iTeach_cluster-iteach --partitions 1 --replication-factor 3 --config compression.type=lz4 --config cleanup.policy=compact --config cleanup.policy=compact
+
+
+
+
+./kafka-topics.sh --bootstrap-server kafka-vqiuyhoj-headless.kafka-uat.svc.xke.test.xdf.cn:29092 --command-config acdc-uat-security.properties --describe --topic schema_history-source-mysql-acdc_iTeach_cluster-iteach
+
+./kafka-topics.sh --bootstrap-server kafka-vqiuyhoj-headless.kafka-uat.svc.xke.test.xdf.cn:29092 --command-config acdc-uat-security.properties --delete --topic  schema_history-source-mysql-acdc_iTeach_cluster-iteach
+
+./kafka-console-consumer.sh --bootstrap-server kafka-vqiuyhoj-headless.kafka-uat.svc.xke.test.xdf.cn:29092 --consumer.config acdc-uat-security.properties --from-beginning --topic schema_history-source-mysql-acdc_iTeach_cluster-iteach --property print.key=true
+
+./kafka-topics.sh --bootstrap-server kafka-vqiuyhoj-headless.kafka-uat.svc.xke.test.xdf.cn:29092 --command-config acdc-uat-security.properties --create --topic schema_history-source-mysql-acdc_iTeach_cluster-iteach --partitions 1 --replication-factor 3 --config cleanup.policy=delete --config retention.ms=9223372036854775807 --config retention.bytes=-1

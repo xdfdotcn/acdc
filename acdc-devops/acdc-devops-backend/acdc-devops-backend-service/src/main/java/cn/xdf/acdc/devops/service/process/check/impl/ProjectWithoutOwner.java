@@ -17,23 +17,24 @@ import java.util.stream.Collectors;
 @Service
 @Order(0)
 public class ProjectWithoutOwner implements CheckerInOrder {
-
+    
     private static final String PROJECT_WITHOUT_OWNER_TITLE = "项目缺少负责人信息(project_id,project_name)";
-
+    
     private final ProjectService projectService;
-
+    
     public ProjectWithoutOwner(final ProjectService projectService) {
         this.projectService = projectService;
     }
-
+    
     @Override
     public Map<String, List<String>> checkMetadataAndReturnErrorMessage() {
-        List<ProjectDTO> projects = projectService.query(new ProjectQuery());
+        final ProjectQuery projectQuery = new ProjectQuery().setDeleted(Boolean.FALSE);
+        List<ProjectDTO> projects = projectService.query(projectQuery);
         List<String> projectsWithoutOwner = projects.stream()
-                .filter(ProjectDTO -> ProjectDTO.getOwnerId() == null)
+                .filter(projectDTO -> projectDTO.getOwnerId() == null)
                 .map(this::getSignature)
                 .collect(Collectors.toList());
-
+        
         if (Collections.isEmpty(projectsWithoutOwner)) {
             return new HashMap<>();
         }
@@ -41,7 +42,7 @@ public class ProjectWithoutOwner implements CheckerInOrder {
         result.put(PROJECT_WITHOUT_OWNER_TITLE, projectsWithoutOwner);
         return result;
     }
-
+    
     private String getSignature(final ProjectDTO projectDTO) {
         return projectDTO.getId() + "," + projectDTO.getName();
     }

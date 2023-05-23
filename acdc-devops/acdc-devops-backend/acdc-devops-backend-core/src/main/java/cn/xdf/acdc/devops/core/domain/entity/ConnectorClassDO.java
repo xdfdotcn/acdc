@@ -9,7 +9,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
-import lombok.experimental.SuperBuilder;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -30,45 +29,44 @@ import java.util.Set;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@SuperBuilder
 @Accessors(chain = true)
 public class ConnectorClassDO extends BaseDO implements Serializable {
-
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    
     @ApiModelProperty(value = "全限类名", required = true)
     @Column(name = "name", length = 1024, nullable = false)
     private String name;
-
+    
     @ApiModelProperty(value = "非全限类名", required = true)
     @Column(name = "simple_name", length = 128, nullable = false)
     private String simpleName;
-
+    
     @ApiModelProperty("描述")
     @Column(name = "description", length = 1024)
     private String description;
-
+    
     @OneToMany(mappedBy = "connectorClass")
-    @JsonIgnoreProperties(value = {"connectorClass"}, allowSetters = true)
+    @JsonIgnoreProperties(value = "connectorClass", allowSetters = true)
     private Set<DefaultConnectorConfigurationDO> defaultConnectorConfigurations = new HashSet<>();
-
+    
     @OneToMany(mappedBy = "connectorClass")
     private Set<ConnectClusterDO> connectClusters = new HashSet<>();
-
+    
     @ApiModelProperty("connector 类型")
     @Enumerated(EnumType.ORDINAL)
     private ConnectorType connectorType;
-
+    
     @ApiModelProperty("数据系统类型")
     @Enumerated(EnumType.ORDINAL)
     private DataSystemType dataSystemType;
-
+    
     public ConnectorClassDO(final Long id) {
         this.id = id;
     }
-
+    
     @Override
     public boolean equals(final Object o) {
         if (this == o) {
@@ -79,13 +77,13 @@ public class ConnectorClassDO extends BaseDO implements Serializable {
         }
         return id != null && id.equals(((ConnectorClassDO) o).id);
     }
-
+    
     @Override
     public int hashCode() {
         // see https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
         return getClass().hashCode();
     }
-
+    
     // prettier-ignore
     @Override
     public String toString() {

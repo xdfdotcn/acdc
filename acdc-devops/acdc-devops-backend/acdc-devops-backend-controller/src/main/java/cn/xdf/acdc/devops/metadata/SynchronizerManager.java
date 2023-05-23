@@ -1,11 +1,10 @@
 package cn.xdf.acdc.devops.metadata;
 
-import cn.xdf.acdc.devops.service.process.sync.SynchronizerInOrder;
 import cn.xdf.acdc.devops.service.error.exceptions.ServerErrorException;
+import cn.xdf.acdc.devops.service.process.sync.SynchronizerInOrder;
 import io.micrometer.core.annotation.Timed;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -13,15 +12,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 // CHECKSTYLE:OFF
-
-@Profile({"prod", "uat"})
 @Component
 @Slf4j
 public class SynchronizerManager {
-
-    @Autowired
+    
+    @Autowired(required = false)
     private List<SynchronizerInOrder> synchronizerInOrderList;
-
+    
     /**
      * Refresh metadata for ACDC.
      */
@@ -41,7 +38,7 @@ public class SynchronizerManager {
                 exceptions.add(exception);
             }
         });
-
+        
         if (!exceptions.isEmpty()) {
             throw new ServerErrorException(exceptions.toString());
         }

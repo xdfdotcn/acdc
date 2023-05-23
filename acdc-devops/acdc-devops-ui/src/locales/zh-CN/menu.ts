@@ -57,9 +57,11 @@ export default {
   'menu.database': '选择表',
   'menu.fieldmapping': '字段映射',
   'menu.connection-apply': '链路申请',
+  'menu.connction-requisition': '链路申请新版 Beta',
   'menu.connector-mgt': '任务管理',
   'menu.connection-mgt': '链路管理',
   'menu.connector-monitoring': 'Connectors 监控',
   'menu.project-mgt': '项目管理',
-  'menu.doc.quick-start': '快速开始'
+  'menu.doc.quick-start': '快速开始',
+
 };

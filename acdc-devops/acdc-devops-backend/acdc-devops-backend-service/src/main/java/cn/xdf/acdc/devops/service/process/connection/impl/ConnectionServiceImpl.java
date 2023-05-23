@@ -12,11 +12,11 @@ import cn.xdf.acdc.devops.core.domain.dto.KafkaClusterDTO;
 import cn.xdf.acdc.devops.core.domain.dto.ProjectDTO;
 import cn.xdf.acdc.devops.core.domain.dto.UserDTO;
 import cn.xdf.acdc.devops.core.domain.entity.ConnectionDO;
+import cn.xdf.acdc.devops.core.domain.entity.enumeration.ConnectionState;
+import cn.xdf.acdc.devops.core.domain.entity.enumeration.ConnectorState;
 import cn.xdf.acdc.devops.core.domain.entity.enumeration.DataSystemResourceType;
 import cn.xdf.acdc.devops.core.domain.entity.enumeration.DataSystemType;
 import cn.xdf.acdc.devops.core.domain.entity.enumeration.RequisitionState;
-import cn.xdf.acdc.devops.core.domain.enumeration.ConnectionState;
-import cn.xdf.acdc.devops.core.domain.enumeration.ConnectorState;
 import cn.xdf.acdc.devops.core.domain.query.ConnectionQuery;
 import cn.xdf.acdc.devops.repository.ConnectionColumnConfigurationRepository;
 import cn.xdf.acdc.devops.repository.ConnectionRepository;
@@ -197,8 +197,6 @@ public class ConnectionServiceImpl implements ConnectionService {
         Map<String, ConnectionDTO> alreadyExistConnectionMapping = getAlreadyExistConnectionMapping(sinkDataCollectionIds);
 
         for (ConnectionDetailDTO detail : connections) {
-            String connectionUniqueKey = generateConnectionUniqueKey(detail.getSourceDataCollectionId(), detail.getSinkDataCollectionId());
-
             // check project existence
             if (!sourceProjectMapping.containsKey(detail.getSourceProjectId())) {
                 throw new EntityNotFoundException(i18n.msg(Connection.SOURCE_PROJECT_NOT_FOUND, detail.getSourceProjectId()));
@@ -227,6 +225,8 @@ public class ConnectionServiceImpl implements ConnectionService {
                 throw new EntityNotFoundException(i18n.msg(Connection.SINK_INSTANCE_NOT_FOUND, detail.getSinkInstanceId()));
             }
 
+            String connectionUniqueKey = generateConnectionUniqueKey(detail.getSourceDataCollectionId(), detail.getSinkDataCollectionId());
+
             // check connection detail DTO list duplicate records
             if (connectionUniqueKeySet.contains(connectionUniqueKey)) {
                 String sinkDataCollectionName = sinkDataCollectionMapping.get(detail.getSinkDataCollectionId()).getName();
@@ -244,10 +244,9 @@ public class ConnectionServiceImpl implements ConnectionService {
     }
 
     private Map<String, ConnectionDTO> getAlreadyExistConnectionMapping(final Set<Long> sinkDataCollectionIds) {
-        ConnectionQuery connectionQuery = ConnectionQuery.builder()
-                .sinkDataCollectionIds(sinkDataCollectionIds)
-                .deleted(false)
-                .build();
+        ConnectionQuery connectionQuery = new ConnectionQuery()
+                .setSinkDataCollectionIds(sinkDataCollectionIds)
+                .setDeleted(false);
 
         List<ConnectionDTO> connectionDTOs = query(connectionQuery);
 
@@ -294,7 +293,7 @@ public class ConnectionServiceImpl implements ConnectionService {
         }
 
         for (ConnectionDetailDTO detail : connections) {
-//            TODO 使用校验框架,校验post请求的 json body
+            //            TODO 使用校验框架,校验post请求的 json body
             if (Objects.isNull(detail.getSourceProjectId())
                     || Objects.isNull(detail.getSourceDataSystemType())
                     || Objects.isNull(detail.getSourceDataCollectionId())
@@ -306,9 +305,8 @@ public class ConnectionServiceImpl implements ConnectionService {
                 throw new ClientErrorException(i18n.msg(Client.INVALID_PARAMETER));
             }
 
-            if (detail.getSinkDataSystemType() == DataSystemType.MYSQL
-                    || detail.getSinkDataSystemType() == DataSystemType.TIDB
-            ) {
+            // TODO 只需要对TIDB 类型的进行校验，MYSQL 类型默认使用 Master 实例
+            if (detail.getSinkDataSystemType() == DataSystemType.TIDB) {
                 if (Objects.isNull(detail.getSinkInstanceId())) {
                     throw new ClientErrorException(i18n.msg(Client.INVALID_PARAMETER));
                 }
@@ -589,16 +587,15 @@ public class ConnectionServiceImpl implements ConnectionService {
 
         connectorConfiguration.forEach((k, v) -> connectorConfigurations.add(new ConnectorConfigurationDTO(k, v)));
 
-        return ConnectorDetailDTO.builder()
-                .name(connectorName)
-                .desiredState(ConnectorState.RUNNING)
-                .actualState(ConnectorState.PENDING)
-                .connectClusterId(connectClusterDTO.getId())
-                .kafkaClusterId(kafkaClusterDTO.getId())
-                .connectorClassId(connectorClassDetailDTO.getId())
-                .connectorConfigurations(connectorConfigurations)
-                .dataSystemResourceId(connectorDataSystemResourceId)
-                .build();
+        return new ConnectorDetailDTO()
+                .setName(connectorName)
+                .setDesiredState(ConnectorState.RUNNING)
+                .setActualState(ConnectorState.PENDING)
+                .setConnectClusterId(connectClusterDTO.getId())
+                .setKafkaClusterId(kafkaClusterDTO.getId())
+                .setConnectorClassId(connectorClassDetailDTO.getId())
+                .setConnectorConfigurations(connectorConfigurations)
+                .setDataSystemResourceId(connectorDataSystemResourceId);
     }
 
     private ConnectClusterDTO chooseConnectClusterByConnectorClass(final ConnectorClassDetailDTO connectorClassDetailDTO) {
@@ -643,10 +640,9 @@ public class ConnectionServiceImpl implements ConnectionService {
     }
 
     protected List<ConnectionDO> getSourceConnectorDataSystemResourceAlreadyAppliedConnections(final Long sourceConnectorId) {
-        ConnectionQuery query = ConnectionQuery.builder()
-                .sourceConnectorId(sourceConnectorId)
-                .deleted(Boolean.FALSE)
-                .build();
+        ConnectionQuery query = new ConnectionQuery()
+                .setSourceConnectorId(sourceConnectorId)
+                .setDeleted(Boolean.FALSE);
 
         return connectionRepository.query(query);
     }

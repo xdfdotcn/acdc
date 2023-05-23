@@ -5,14 +5,14 @@ import cn.xdf.acdc.devops.service.process.datasystem.definition.DataCollectionDe
 import cn.xdf.acdc.devops.service.process.datasystem.definition.DataSystemResourceDefinition;
 
 public interface DataSystemMetadataService extends DataSystemService {
-
+    
     /**
      * Get data system resource definition.
      *
      * @return data system resource definition
      */
     DataSystemResourceDefinition getDataSystemResourceDefinition();
-
+    
     /**
      * Get data collection definition.
      *
@@ -20,7 +20,7 @@ public interface DataSystemMetadataService extends DataSystemService {
      * @return data collection definition
      */
     DataCollectionDefinition getDataCollectionDefinition(Long dataCollectionId);
-
+    
     /**
      * Check permission and configuration of a data system cluster.
      * <p>
@@ -30,7 +30,7 @@ public interface DataSystemMetadataService extends DataSystemService {
      * @param rootDataSystemResourceId root data system resource id
      */
     void checkDataSystem(Long rootDataSystemResourceId);
-
+    
     /**
      * Check permission and configuration of a data system resource.
      * <p>
@@ -43,7 +43,7 @@ public interface DataSystemMetadataService extends DataSystemService {
      * @param dataSystemResourceDetail resource to check
      */
     void checkDataSystem(DataSystemResourceDetailDTO dataSystemResourceDetail);
-
+    
     /**
      * Refresh dynamic data system resource for a data system cluster. eg: mysql database and tables.
      *

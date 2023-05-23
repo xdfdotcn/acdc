@@ -50,37 +50,37 @@ import java.util.stream.Collectors;
 
 @Service
 public class ConnectionRequisitionServiceImpl implements ConnectionRequisitionService {
-
+    
     @Autowired
     private ConnectionService connectionService;
-
+    
     @Autowired
     private ConnectionRequisitionService connectionRequisitionService;
-
+    
     @Autowired
     private ConnectionRequisitionRepository connectionRequisitionRepository;
-
+    
     @Autowired
     private ConnectionRepository connectionRepository;
-
+    
     @Autowired
     private ProjectRepository projectRepository;
-
+    
     @Autowired
     private UserService userService;
-
+    
     @Autowired
     private ApprovalStateMachine approvalStateMachine;
-
+    
     @Autowired
     private I18nService i18n;
-
+    
     @PersistenceContext
     private EntityManager entityManager;
-
+    
     @Value("${acdc.approval.base-url:''}")
     private String baseUrl;
-
+    
     @Override
     public List<ConnectionRequisitionDetailDTO> createRequisitionWithAutoSplit(final ConnectionRequisitionDetailDTO requisition, final String domainAccount) {
         if (Objects.isNull(requisition)
@@ -90,7 +90,7 @@ public class ConnectionRequisitionServiceImpl implements ConnectionRequisitionSe
             throw new ClientErrorException(i18n.msg(Client.INVALID_PARAMETER));
         }
         List<ConnectionRequisitionDetailDTO> requisitions = splitRequisition(requisition);
-
+        
         // TODO 1. 每个 requisition 的处理都在不同的事务中, 临时解决bug:批量提交的时候,因为某个 requisition 处理失败,导致事务的全部回滚
         // TODO 2. 目前 requisition 是按照项目维度进行拆分的, 如果批量中存在失败的 requisition, 则重新发起请求重试,
         // TODO 3. 方法级别的事务,会覆盖类级别的事务,方法需要声明为public才会被spring代理
@@ -99,18 +99,18 @@ public class ConnectionRequisitionServiceImpl implements ConnectionRequisitionSe
         requisitions.forEach(it -> savedRequisitions.add(connectionRequisitionService.create(it, domainAccount)));
         return savedRequisitions;
     }
-
+    
     private List<ConnectionRequisitionDetailDTO> splitRequisition(final ConnectionRequisitionDetailDTO requisitionDTO) {
         List<ConnectionDetailDTO> connectionDetailDTOs = requisitionDTO.getConnections();
-
+        
         Map<Long, List<ConnectionDetailDTO>> groupedConnection = connectionDetailDTOs.stream()
                 .collect(Collectors.groupingBy(ConnectionDetailDTO::getSourceProjectId));
-
+        
         return groupedConnection.entrySet().stream()
                 .map(it -> new ConnectionRequisitionDetailDTO(requisitionDTO.getDescription(), it.getValue()))
                 .collect(Collectors.toList());
     }
-
+    
     @Override
     @Transactional
     public List<ConnectionRequisitionDTO> query(final ConnectionRequisitionQuery query) {
@@ -118,30 +118,29 @@ public class ConnectionRequisitionServiceImpl implements ConnectionRequisitionSe
                 .stream().map(ConnectionRequisitionDTO::new)
                 .collect(Collectors.toList());
     }
-
+    
     @Override
     @Transactional
     public void approveRequisitionConnections(final Long id) {
         List<Long> connectionIds = getDetailById(id).getConnections().stream().map(it -> it.getId()).collect(Collectors.toList());
-
-        ConnectionQuery connectionQuery = ConnectionQuery.builder()
-                .requisitionState(RequisitionState.APPROVING)
-                .connectionIds(connectionIds)
-                .build();
-
+        
+        ConnectionQuery connectionQuery = new ConnectionQuery()
+                .setRequisitionState(RequisitionState.APPROVING)
+                .setConnectionIds(connectionIds);
+        
         connectionService.updateConnectionRequisitionStateByQuery(connectionQuery, RequisitionState.APPROVED);
     }
-
+    
     @Override
     @Transactional
     public void approve(final Long connectionRequisitionId, final ApproveDTO approveDTO, final String domainAccount) {
         ApprovalOperation operation = approveDTO.getApproved() ? ApprovalOperation.PASS : ApprovalOperation.REFUSED;
         String approveResult = approveDTO.getApproveResult();
         ApprovalEvent event = approvalStateMachine.getApprovalEventGenerator().generateApprovalEvent(connectionRequisitionId, operation);
-        ApprovalContext context = ApprovalContext.builder().id(connectionRequisitionId).operatorId(domainAccount).description(approveResult).build();
+        ApprovalContext context = new ApprovalContext().setId(connectionRequisitionId).setOperatorId(domainAccount).setDescription(approveResult);
         approvalStateMachine.fire(event, context);
     }
-
+    
     @Override
     @Transactional
     public ConnectionRequisitionDTO getByThirdPartyId(final String thirdPartyId) {
@@ -149,7 +148,7 @@ public class ConnectionRequisitionServiceImpl implements ConnectionRequisitionSe
                 .map(ConnectionRequisitionDTO::new)
                 .orElseThrow(() -> new ApprovalProcessStateMatchErrorException(String.format("Not found entity, thirdPartyId: %s", thirdPartyId)));
     }
-
+    
     @Override
     @Transactional
     public ConnectionRequisitionDetailDTO getDetailById(final Long id) {
@@ -158,12 +157,12 @@ public class ConnectionRequisitionServiceImpl implements ConnectionRequisitionSe
         ConnectionRequisitionDetailDTO requisitionDetail = new ConnectionRequisitionDetailDTO(
                 requisitionDO
         );
-
+        
         appendRequisitionLinkUrl(requisitionDetail);
-
+        
         return requisitionDetail;
     }
-
+    
     @Override
     @Transactional
     public ConnectionRequisitionDTO getById(final Long id) {
@@ -171,39 +170,39 @@ public class ConnectionRequisitionServiceImpl implements ConnectionRequisitionSe
                 .map(ConnectionRequisitionDTO::new)
                 .orElseThrow(() -> new EntityNotFoundException(i18n.msg(Connection.CONNECTION_REQUISITION_NOT_FOUND, id)));
     }
-
+    
     @Override
     @Transactional
     public List<UserDTO> getSourceOwners(final Long id) {
         ConnectionDetailDTO connection = getDetailById(id).getConnections().get(0);
         Long sourceProjectId = connection.getSourceProjectId();
-
+        
         UserDO projectOwnerDO = projectRepository.findById(sourceProjectId)
                 .orElseThrow(() -> new EntityNotFoundException(i18n.msg(Project.NOT_FOUND, sourceProjectId)))
                 .getOwner();
-
+        
         return Lists.newArrayList(new UserDTO(projectOwnerDO));
     }
-
+    
     @Override
     @Transactional
     public UserDTO getProposer(final Long id) {
         ConnectionDO connection = getAnyConnectionByRequisitionId(id);
         return new UserDTO(connection.getUser());
     }
-
+    
     @Override
     @Transactional
     public void checkSourceOwnerPermissions(final Long id, final String domainAccount) {
         UserDTO user = userService.getByDomainAccount(domainAccount);
         String email = user.getEmail();
         boolean isSourceOwner = getAnyConnectionByRequisitionId(id).getSourceProject().getOwner().getEmail().equals(email);
-
+        
         if (!isSourceOwner) {
             throw new NotAuthorizedException(i18n.msg(I18nKey.Authorization.INSUFFICIENT_PERMISSIONS));
         }
     }
-
+    
     @Override
     @Transactional
     public void checkDbaPermissions(final String domainAccount) {
@@ -213,23 +212,23 @@ public class ConnectionRequisitionServiceImpl implements ConnectionRequisitionSe
             throw new NotAuthorizedException(i18n.msg(I18nKey.Authorization.INSUFFICIENT_PERMISSIONS));
         }
     }
-
+    
     private ConnectionDO getAnyConnectionByRequisitionId(final Long id) {
         Long anyConnectionId = getDetailById(id).getConnections().get(0).getId();
-
+        
         return connectionRepository.findById(anyConnectionId)
                 .orElseThrow(() -> new EntityNotFoundException(i18n.msg(Connection.NOT_FOUND, anyConnectionId)));
     }
-
+    
     private void appendRequisitionLinkUrl(final ConnectionRequisitionDetailDTO requisitionDetail) {
         if (Strings.isNullOrEmpty(baseUrl)) {
             return;
         }
-
+        
         String newBaseUrl = baseUrl.replace("{connectionRequisitionId}", String.valueOf(requisitionDetail.getId()));
         requisitionDetail.setBaseUrl(newBaseUrl);
     }
-
+    
     /**
      * 审批单处理,根据项目拆分后的审批单,每一个审批单的处理使用独立的事务.
      *
@@ -239,29 +238,29 @@ public class ConnectionRequisitionServiceImpl implements ConnectionRequisitionSe
     @Override
     public ConnectionRequisitionDetailDTO create(final ConnectionRequisitionDetailDTO requisitionDetail, final String domainAccount) {
         List<ConnectionDetailDTO> toSaveConnections = requisitionDetail.getConnections();
-
+        
         // 1. save connections
         List<ConnectionDetailDTO> savedConnections = connectionService.batchCreate(toSaveConnections, domainAccount);
         requisitionDetail.setConnections(savedConnections);
-
+        
         // 2. save requisition, relation of requisition, connections
         ConnectionRequisitionDetailDTO savedConnectionRequisition = saveRequisition(requisitionDetail);
-
+        
         // 3. send approve email
         Long id = savedConnectionRequisition.getId();
         ApprovalEvent event = approvalStateMachine.getApprovalEventGenerator().generateApprovalEvent(id, ApprovalOperation.PASS);
-        ApprovalContext context = ApprovalContext.builder().id(id).operatorId(domainAccount).build();
+        ApprovalContext context = new ApprovalContext().setId(id).setOperatorId(domainAccount);
         approvalStateMachine.fire(event, context);
         return savedConnectionRequisition;
     }
-
+    
     @Transactional
     protected ConnectionRequisitionDetailDTO saveRequisition(final ConnectionRequisitionDetailDTO requisitionDetail) {
         ConnectionRequisitionDO savedRequisition = connectionRequisitionRepository.save(requisitionDetail.toDO());
         entityManager.refresh(savedRequisition);
         return new ConnectionRequisitionDetailDTO(savedRequisition);
     }
-
+    
     @Transactional
     @Override
     public void updateApproveState(final Long connectionRequisitionId, final ApprovalState state) {
@@ -269,7 +268,7 @@ public class ConnectionRequisitionServiceImpl implements ConnectionRequisitionSe
         connectionRequisition.setState(state);
         connectionRequisitionRepository.save(connectionRequisition);
     }
-
+    
     @Transactional
     @Override
     public void updateApproveStateByDBA(
@@ -278,7 +277,7 @@ public class ConnectionRequisitionServiceImpl implements ConnectionRequisitionSe
             final String approveResult,
             final String dbaDomainAccount
     ) {
-
+        
         UserDTO user = userService.getByDomainAccount(dbaDomainAccount);
         ConnectionRequisitionDO connectionRequisition = connectionRequisitionRepository.findById(connectionRequisitionId).get();
         connectionRequisition.setState(state);
@@ -286,7 +285,7 @@ public class ConnectionRequisitionServiceImpl implements ConnectionRequisitionSe
         connectionRequisition.setDbaApproverUser(user.toDO());
         connectionRequisitionRepository.save(connectionRequisition);
     }
-
+    
     @Transactional
     @Override
     public void updateApproveStateBySourceOwner(
@@ -296,14 +295,14 @@ public class ConnectionRequisitionServiceImpl implements ConnectionRequisitionSe
             final String sourceOwnerDomainAccount
     ) {
         UserDTO user = userService.getByDomainAccount(sourceOwnerDomainAccount);
-
+        
         ConnectionRequisitionDO connectionRequisition = connectionRequisitionRepository.findById(connectionRequisitionId).get();
         connectionRequisition.setState(state);
         connectionRequisition.setSourceApproveResult(approveResult);
         connectionRequisition.setSourceApproverUser(user.toDO());
         connectionRequisitionRepository.save(connectionRequisition);
     }
-
+    
     @Override
     @Transactional
     public void bindThirdPartyId(final Long id, final String thirdPartyId) {
@@ -311,7 +310,7 @@ public class ConnectionRequisitionServiceImpl implements ConnectionRequisitionSe
         connectionRequisition.setThirdPartyId(thirdPartyId);
         connectionRequisitionRepository.save(connectionRequisition);
     }
-
+    
     @Override
     @Transactional
     public void invalidRequisition(final Long id) {

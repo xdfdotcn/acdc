@@ -18,13 +18,13 @@ import java.util.stream.Collectors;
 @Component
 @Slf4j
 public class Checker {
-
+    
     @Autowired(required = false)
     private List<CheckerInOrder> checkerInOrderList;
-
+    
     @Autowired
     private DefaultEmailSender emailSender;
-
+    
     /**
      * Alert to incomplete metadata, default interval: 24h.
      */
@@ -34,18 +34,18 @@ public class Checker {
         log.info("Begin to check acdc metadata");
         this.checkMetadata();
     }
-
+    
     private void checkMetadata() {
         if (checkerInOrderList == null) {
             log.info("Metadata checker is not Implemented.");
             return;
         }
-
+        
         List<Map<String, List<String>>> messages = checkerInOrderList.stream()
                 .map(CheckerInOrder::checkMetadataAndReturnErrorMessage)
                 .filter(map -> map != null && !map.isEmpty())
                 .collect(Collectors.toList());
-
+        
         if (!messages.isEmpty()) {
             log.warn("metadata check messages: {}", messages);
             emailSender.sendInnerWarningEmail(EmailTemplate.METADATA_ALERT, messages);

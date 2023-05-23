@@ -66,11 +66,10 @@ public abstract class AbstractSchemaFileReader implements SchemaReader {
     @Override
     public ProjectedResult projectRecord(final TopicPartition topicPartition, final SinkRecord sinkRecord) {
         boolean shouldChangeSchema = shouldChangeSchema(topicPartition, sinkRecord);
-        return ProjectedResult.builder()
-                .projectedRecord(compatibility.project(sinkRecord, null, curSchema))
-                .currentSchema(curSchema)
-                .needChangeSchema(shouldChangeSchema)
-                .build();
+        return new ProjectedResult()
+                .setProjectedRecord(compatibility.project(sinkRecord, null, curSchema))
+                .setCurrentSchema(curSchema)
+                .setNeedChangeSchema(shouldChangeSchema);
     }
 
     protected boolean shouldChangeSchema(final TopicPartition tp, final SinkRecord sinkRecord) {
@@ -98,9 +97,8 @@ public abstract class AbstractSchemaFileReader implements SchemaReader {
     public TableSchemaAndDataStatus getTableSchemaAndDataStatus(final TopicPartition topicPartition) {
         Optional<FileStatus> fileStatus = fileOperator.findCommittedFileWithMaxVersionInTablePath(topicPartition);
         if (!fileStatus.isPresent()) {
-            return TableSchemaAndDataStatus.builder()
-                    .existData(false)
-                    .build();
+            return new TableSchemaAndDataStatus()
+                    .setExistData(false);
         }
         FileStatus[] fileStatuses = fileOperator.getTableDataPartitions().orElseGet(() -> new FileStatus[]{});
         List<String> dataPartitions = new ArrayList<>();
@@ -110,11 +108,10 @@ public abstract class AbstractSchemaFileReader implements SchemaReader {
             dataPartitions.add(partitionValue);
         }
 
-        return TableSchemaAndDataStatus.builder()
-                .existData(true)
-                .schema(getSchema(fileStatus.get().getPath()))
-                .dataPartitions(dataPartitions)
-                .build();
+        return new TableSchemaAndDataStatus()
+                .setExistData(true)
+                .setSchema(getSchema(fileStatus.get().getPath()))
+                .setDataPartitions(dataPartitions);
     }
 
     private String getPartitionValue(final String path) {

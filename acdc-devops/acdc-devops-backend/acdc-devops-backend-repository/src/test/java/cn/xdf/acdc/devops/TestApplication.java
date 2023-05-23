@@ -5,6 +5,6 @@ import org.springframework.boot.autoconfigure.liquibase.LiquibaseProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
 @SpringBootApplication
-@EnableConfigurationProperties({LiquibaseProperties.class})
+@EnableConfigurationProperties(LiquibaseProperties.class)
 public class TestApplication {
 }

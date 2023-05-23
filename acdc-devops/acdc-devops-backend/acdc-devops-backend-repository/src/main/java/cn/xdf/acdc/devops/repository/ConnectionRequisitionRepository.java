@@ -23,7 +23,7 @@ import java.util.Optional;
 @Repository
 public interface ConnectionRequisitionRepository extends JpaRepository<ConnectionRequisitionDO, Long>,
         JpaSpecificationExecutor<ConnectionRequisitionDO> {
-
+    
     /**
      * Get a connection requisition by third party id.
      *
@@ -31,7 +31,7 @@ public interface ConnectionRequisitionRepository extends JpaRepository<Connectio
      * @return optional of connection requisition
      */
     Optional<ConnectionRequisitionDO> findByThirdPartyId(String thirdPartyId);
-
+    
     /**
      * Convert a query object to specification.
      *
@@ -46,11 +46,11 @@ public interface ConnectionRequisitionRepository extends JpaRepository<Connectio
                 Join<ConnectionRequisitionDO, ConnectionRequisitionConnectionMappingDO> mappingJoin = root.join("connectionRequisitionConnectionMappings", JoinType.INNER);
                 predicates.add(cb.equal(mappingJoin.get("connection").get("id"), query.getConnectionId()));
             }
-
+            
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }
-
+    
     /**
      * Query with specific condition.
      *
@@ -60,7 +60,7 @@ public interface ConnectionRequisitionRepository extends JpaRepository<Connectio
     default List<ConnectionRequisitionDO> query(ConnectionRequisitionQuery query) {
         return findAll(specificationOf(query));
     }
-
+    
     /**
      * Paged query with specific condition.
      *

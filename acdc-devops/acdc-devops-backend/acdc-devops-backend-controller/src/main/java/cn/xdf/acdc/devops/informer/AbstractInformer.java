@@ -21,43 +21,43 @@ import java.util.function.Consumer;
  * @param <E> element
  */
 public abstract class AbstractInformer<E> extends FixedRateRunnableTask implements Informer<E> {
-
+    
     public static final int DEFAULT_INFORMER_INITIALIZATION_TIMEOUT_IN_SECONDS = 300;
-
+    
     private final Object initializationBlocker = new Object();
-
+    
     private Map<Long, E> resources;
-
+    
     private Date lastUpdateTime;
-
+    
     private List<Consumer<E>> addCallbacks;
-
+    
     private List<Consumer<E>> updateCallbacks;
-
+    
     private List<Consumer<E>> deleteCallbacks;
-
+    
     private volatile boolean isInitialized;
-
+    
     public AbstractInformer(final TaskScheduler scheduler) {
         super(scheduler);
-
+        
         lastUpdateTime = new Date(Long.MIN_VALUE);
         resources = new HashMap<>();
         addCallbacks = new ArrayList<>();
         updateCallbacks = new ArrayList<>();
         deleteCallbacks = new ArrayList<>();
     }
-
+    
     @Override
     public void run() {
         List<E> dataList = query();
-
+        
         final AtomicReference<Date> tmpUpdateTime = new AtomicReference<>(lastUpdateTime);
         if (!Collections.isEmpty(dataList)) {
             dataList.forEach(newer ->
                     resources.compute(getKey(newer), (key, older) -> {
                         invokeAppropriateCallbacks(older, newer);
-
+                        
                         Date updateTime = getUpdateTime(newer);
                         if (tmpUpdateTime.get().compareTo(updateTime) < 0) {
                             tmpUpdateTime.set(updateTime);
@@ -66,9 +66,9 @@ public abstract class AbstractInformer<E> extends FixedRateRunnableTask implemen
                     })
             );
         }
-
+        
         lastUpdateTime = tmpUpdateTime.get();
-
+        
         if (!isInitialized) {
             synchronized (initializationBlocker) {
                 isInitialized = true;
@@ -76,7 +76,7 @@ public abstract class AbstractInformer<E> extends FixedRateRunnableTask implemen
             }
         }
     }
-
+    
     @Override
     public void waitForInitialized(final long timeout, final TimeUnit unit) throws InterruptedException, TimeoutException {
         synchronized (initializationBlocker) {
@@ -88,12 +88,12 @@ public abstract class AbstractInformer<E> extends FixedRateRunnableTask implemen
             throw new TimeoutException("Timeout after waiting for " + timeout + unit);
         }
     }
-
+    
     @Override
     public boolean isInitialized() {
         return isInitialized;
     }
-
+    
     private void invokeAppropriateCallbacks(final E older, final E newer) {
         if (older == null) {
             addCallbacks.forEach(consumer -> consumer.accept(newer));
@@ -103,7 +103,7 @@ public abstract class AbstractInformer<E> extends FixedRateRunnableTask implemen
             updateCallbacks.forEach(consumer -> consumer.accept(newer));
         }
     }
-
+    
     /**
      * Register add call back.
      *
@@ -114,7 +114,7 @@ public abstract class AbstractInformer<E> extends FixedRateRunnableTask implemen
         addCallbacks.add(callback);
         return this;
     }
-
+    
     /**
      * Register delete call back.
      *
@@ -125,7 +125,7 @@ public abstract class AbstractInformer<E> extends FixedRateRunnableTask implemen
         deleteCallbacks.add(callback);
         return this;
     }
-
+    
     /**
      * Register update call back.
      *
@@ -136,24 +136,24 @@ public abstract class AbstractInformer<E> extends FixedRateRunnableTask implemen
         updateCallbacks.add(callback);
         return this;
     }
-
+    
     @Override
     public E get(final Long key) {
         return resources.get(key);
     }
-
+    
     @Override
     public Collection<E> getAll() {
         return resources.values();
     }
-
+    
     /**
      * Informer detects information from other system.
      *
      * @return data
      */
     abstract List<E> query();
-
+    
     /**
      * Element's key.
      *
@@ -161,7 +161,7 @@ public abstract class AbstractInformer<E> extends FixedRateRunnableTask implemen
      * @return key
      */
     abstract Long getKey(E element);
-
+    
     /**
      * If the two is equal.
      *
@@ -170,7 +170,7 @@ public abstract class AbstractInformer<E> extends FixedRateRunnableTask implemen
      * @return is equal or not
      */
     abstract boolean equals(E e1, E e2);
-
+    
     /**
      * Is this record is deleted.
      *
@@ -179,7 +179,7 @@ public abstract class AbstractInformer<E> extends FixedRateRunnableTask implemen
      * @return is deleted or not
      */
     abstract boolean isDeleted(E older, E newer);
-
+    
     /**
      * Get element's update time.
      *
@@ -187,7 +187,7 @@ public abstract class AbstractInformer<E> extends FixedRateRunnableTask implemen
      * @return update time
      */
     abstract Date getUpdateTime(E e);
-
+    
     Date getLastUpdateTime() {
         return this.lastUpdateTime;
     }

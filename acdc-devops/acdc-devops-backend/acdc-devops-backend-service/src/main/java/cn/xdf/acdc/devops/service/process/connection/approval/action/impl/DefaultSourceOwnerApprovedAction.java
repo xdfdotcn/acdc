@@ -18,13 +18,13 @@ import java.util.List;
 
 @Component
 public class DefaultSourceOwnerApprovedAction implements SourceOwnerApprovedAction {
-
+    
     @Autowired
     private ConnectionRequisitionService connectionRequisitionService;
-
+    
     @Autowired
     private ApproveEmailSender emailSender;
-
+    
     @Override
     public void action(
             final ApprovalState from,
@@ -32,20 +32,20 @@ public class DefaultSourceOwnerApprovedAction implements SourceOwnerApprovedActi
             final ApprovalEvent event,
             final ApprovalContext context,
             final ApprovalStateMachine machine) {
-
+        
         // 1. transform
         Long id = context.getId();
         String domainAccount = context.getOperatorId();
         connectionRequisitionService.checkSourceOwnerPermissions(id, domainAccount);
         String approveResult = context.getDescription();
         connectionRequisitionService.updateApproveStateBySourceOwner(id, to, approveResult, domainAccount);
-
+        
         // 2. send email
         List<DomainUser> dbaApprovers = machine.getDbaApprovalUser(id);
         DomainUser proposer = machine.getProposer(id);
         List<DomainUser> cc = new ArrayList<>();
         cc.addAll(Lists.newArrayList(proposer));
-
+        
         emailSender.sendApproveEmail(
                 id,
                 dbaApprovers,

@@ -16,7 +16,7 @@ import java.util.Optional;
 @Repository
 public interface DefaultConnectorConfigurationRepository extends JpaRepository<DefaultConnectorConfigurationDO, Long>,
         JpaSpecificationExecutor<DefaultConnectorConfigurationDO> {
-
+    
     /**
      * 根据 connector class ID 查询.
      *
@@ -24,11 +24,11 @@ public interface DefaultConnectorConfigurationRepository extends JpaRepository<D
      * @return List
      */
     List<DefaultConnectorConfigurationDO> findByConnectorClassId(Long connectorClassId);
-
+    
     /**
      * Find connector class by class id and class name.
      *
-     * @param id   id
+     * @param id id
      * @param name name
      * @return default configuration
      */

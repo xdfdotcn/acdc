@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
-import lombok.experimental.SuperBuilder;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -19,15 +18,14 @@ import javax.persistence.Table;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@SuperBuilder
 @Accessors(chain = true)
 public class UserAuthorityDO {
-
+    
     // todo: 设置为联合主键
     @Id
     @Column(name = "user_id", nullable = false)
     private Long userId;
-
+    
     @Enumerated(EnumType.STRING)
     @Column(name = "authority_name", nullable = false, length = 50)
     private AuthorityRoleType authorityName;

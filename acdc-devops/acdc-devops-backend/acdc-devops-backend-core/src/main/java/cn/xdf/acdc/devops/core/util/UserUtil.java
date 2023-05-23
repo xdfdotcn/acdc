@@ -6,9 +6,9 @@ import cn.xdf.acdc.devops.core.domain.entity.enumeration.AuthorityRoleType;
 import com.google.common.base.Preconditions;
 
 public class UserUtil {
-
+    
     protected static final String EMAIL_SUFFIX = "@xdf.cn";
-
+    
     /**
      * Convert to domain account to email.
      *
@@ -19,7 +19,7 @@ public class UserUtil {
         Preconditions.checkNotNull(domainAccount);
         return String.format("%s%s", domainAccount, EMAIL_SUFFIX);
     }
-
+    
     /**
      * convert email to domain account.
      *
@@ -34,7 +34,7 @@ public class UserUtil {
         }
         return email.substring(0, index);
     }
-
+    
     /**
      * Check if the user is admin or not.
      *

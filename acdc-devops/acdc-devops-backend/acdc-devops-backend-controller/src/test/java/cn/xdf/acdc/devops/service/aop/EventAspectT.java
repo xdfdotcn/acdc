@@ -1,11 +1,11 @@
 package cn.xdf.acdc.devops.service.aop;
 
-import cn.xdf.acdc.devops.dto.Connector;
 import cn.xdf.acdc.devops.core.domain.entity.ConnectorEventDO;
+import cn.xdf.acdc.devops.core.domain.entity.enumeration.ConnectorState;
 import cn.xdf.acdc.devops.core.domain.entity.enumeration.EventLevel;
 import cn.xdf.acdc.devops.core.domain.entity.enumeration.EventReason;
 import cn.xdf.acdc.devops.core.domain.entity.enumeration.EventSource;
-import cn.xdf.acdc.devops.core.domain.enumeration.ConnectorState;
+import cn.xdf.acdc.devops.dto.Connector;
 import cn.xdf.acdc.devops.service.entity.ConnectorEventService;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
@@ -25,20 +25,20 @@ import org.springframework.web.client.ResourceAccessException;
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = {EventAspectT.class, EventAspectT.AopConfig.class})
 public class EventAspectT {
-
+    
     @Autowired
     private EventAspectAopTest eventAspectAopTest;
-
+    
     @MockBean
     private ConnectorEventService connectorEventService;
-
+    
     @Test
     public void testWithoutEventAnnotation() {
         eventAspectAopTest.testWithoutEventAnnotation();
         ArgumentCaptor<ConnectorEventDO> eventCaptor = ArgumentCaptor.forClass(ConnectorEventDO.class);
         Mockito.verify(connectorEventService, Mockito.never()).save(eventCaptor.capture());
     }
-
+    
     @Test
     public void testEventAnnotationWithValues() {
         eventAspectAopTest.testEventAnnotationWithValues();
@@ -51,7 +51,7 @@ public class EventAspectT {
         Assertions.assertThat(event.getSource()).isEqualTo(EventSource.ACDC_SCHEDULER);
         Assertions.assertThat(event.getMessage()).isEqualTo("");
     }
-
+    
     @Test
     public void testEventAnnotationWithProperties() {
         Connector connector = new Connector();
@@ -68,7 +68,7 @@ public class EventAspectT {
         Assertions.assertThat(event.getSource()).isEqualTo(EventSource.ACDC_SCHEDULER);
         Assertions.assertThat(event.getMessage()).isEqualTo("exception xxx");
     }
-
+    
     @Test
     public void testEventAnnotationWithExceptions() {
         Connector connector = new Connector();
@@ -80,7 +80,7 @@ public class EventAspectT {
         } catch (ResourceAccessException e) {
             Assertions.assertThat(e.toString()).isEqualTo("org.springframework.web.client.ResourceAccessException: ResourceAccessException xxx");
         }
-
+        
         ArgumentCaptor<ConnectorEventDO> eventCaptor = ArgumentCaptor.forClass(ConnectorEventDO.class);
         Mockito.verify(connectorEventService).save(eventCaptor.capture());
         ConnectorEventDO event = eventCaptor.getValue();
@@ -90,38 +90,38 @@ public class EventAspectT {
         Assertions.assertThat(event.getSource()).isEqualTo(EventSource.ACDC_SCHEDULER);
         Assertions.assertThat(event.getMessage()).startsWith("org.springframework.web.client.ResourceAccessException: ResourceAccessException xxx");
     }
-
+    
     @Component
     static class EventAspectAopTest {
-
+        
         void testWithoutEventAnnotation() {
-
+        
         }
-
+        
         @Event(connectorId = "'1'", reason = EventReason.CONNECTOR_ACTUAL_STATUS_CHANGED, source = EventSource.ACDC_SCHEDULER)
         void testEventAnnotationWithValues() {
-
+        
         }
-
+        
         @Event(connectorId = "#connector.id", reason = EventReason.CONNECTOR_ACTUAL_STATUS_CHANGED, source = EventSource.ACDC_SCHEDULER, message = "#connector.remark")
         void testEventAnnotationWithProperties(final ConnectorState from, final ConnectorState to,
-                final cn.xdf.acdc.devops.core.domain.enumeration.ConnectorEvent event, final Connector connector) {
-
+                                               final cn.xdf.acdc.devops.core.domain.enumeration.ConnectorEvent event, final Connector connector) {
+            
         }
-
+        
         @Event(connectorId = "#connector.id", reason = EventReason.CONNECTOR_ACTUAL_STATUS_CHANGED, source = EventSource.ACDC_SCHEDULER, message = "#connector.remark")
         void testEventAnnotationWithExceptions(final ConnectorState from, final ConnectorState to,
-                final cn.xdf.acdc.devops.core.domain.enumeration.ConnectorEvent event, final Connector connector) {
-
+                                               final cn.xdf.acdc.devops.core.domain.enumeration.ConnectorEvent event, final Connector connector) {
+            
             throw new ResourceAccessException("ResourceAccessException xxx");
         }
-
+        
     }
-
+    
     @Configuration
-    @ComponentScan({"cn.xdf.acdc.devops.service.aop"})
+    @ComponentScan("cn.xdf.acdc.devops.service.aop")
     @EnableAspectJAutoProxy
     static class AopConfig {
-
+    
     }
 }

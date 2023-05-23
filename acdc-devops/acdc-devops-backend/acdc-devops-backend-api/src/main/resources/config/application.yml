@@ -100,3 +100,4 @@ acdc:
         - /api/v1/users/token
         - /api/v1/system/**
         - /actuator/**
+        - /api/v1/ui/config

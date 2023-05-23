@@ -81,7 +81,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>cn.xdf.acdc.devops.ControllerApplication</mainClass>
+                    <mainClass>cn.xdf.acdc.devops.Application</mainClass>
                 </configuration>
                 <executions>
                     <execution>

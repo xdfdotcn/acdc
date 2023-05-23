@@ -50,32 +50,32 @@ import static org.mockito.Mockito.when;
 @SpringBootTest
 @Transactional
 public class TidbDataSystemSourceConnectorServiceImplTest {
-
+    
     @Autowired
     @Qualifier("tidbDataSystemSourceConnectorServiceImpl")
     private DataSystemSourceConnectorService tidbDataSystemSourceConnectorServiceImpl;
-
+    
     @MockBean
     private DataSystemResourceService dataSystemResourceService;
-
+    
     @MockBean
     private KafkaClusterService kafkaClusterService;
-
+    
     @MockBean
     private KafkaTopicService kafkaTopicService;
-
+    
     @MockBean
     @Qualifier("tidbDataSystemMetadataServiceImpl")
     private DataSystemMetadataService dataSystemMetadataService;
-
+    
     @MockBean
     private ConnectorClassService connectorClassService;
-
+    
     @Before
     public void setUp() throws Exception {
-
+    
     }
-
+    
     @Test
     public void testBeforeConnectorCreationShouldSaveTicdcTopicAndRelationsWithKafkaClusterAndDatabase() {
         Long tableId = 111L;
@@ -85,64 +85,56 @@ public class TidbDataSystemSourceConnectorServiceImplTest {
                 .thenReturn(fakeCluster());
         Mockito.when(kafkaClusterService.getTICDCKafkaCluster())
                 .thenReturn(fakeTicdcKafkaCluster());
-
+        
         tidbDataSystemSourceConnectorServiceImpl.beforeConnectorCreation(tableId);
-
+        
         Mockito.verify(kafkaTopicService)
                 .createTICDCTopicIfAbsent(ArgumentMatchers.eq("ticdc-1-database"),
                         ArgumentMatchers.eq(fakeTicdcKafkaCluster().getId()),
                         ArgumentMatchers.eq(fakeDatabase().getId()));
     }
-
+    
     private KafkaClusterDTO fakeTicdcKafkaCluster() {
-        return KafkaClusterDTO.builder()
-                .id(2L)
-                .build();
+        return new KafkaClusterDTO().setId(2L);
     }
-
+    
     private DataSystemResourceDTO fakeCluster() {
-        return DataSystemResourceDTO.builder()
-                .id(1L)
-                .name("cluster")
-                .build();
+        return new DataSystemResourceDTO().setId(1L).setName("cluster");
     }
-
+    
     private DataSystemResourceDTO fakeDatabase() {
-        return DataSystemResourceDTO.builder()
-                .id(11L)
-                .name("database")
-                .build();
+        return new DataSystemResourceDTO().setId(11L).setName("database");
     }
-
+    
     @Test
     public void testGenerateConnectorNameShouldAsExpect() {
         // check generated connector name as expect
         when(dataSystemResourceService.getParent(anyLong(), eq(DataSystemResourceType.TIDB_CLUSTER))).thenReturn(
-                DataSystemResourceDTO.builder().id(1L).name("cluster").build()
+                new DataSystemResourceDTO().setId(1L).setName("cluster")
         );
         when(dataSystemResourceService.getParent(anyLong(), eq(DataSystemResourceType.TIDB_DATABASE))).thenReturn(
-                DataSystemResourceDTO.builder().id(2L).name("database").build()
+                new DataSystemResourceDTO().setId(2L).setName("database")
         );
         String connectorName = tidbDataSystemSourceConnectorServiceImpl.generateConnectorName(1L);
         Assertions.assertThat(connectorName).isEqualTo("source-tidb-1-database");
     }
-
+    
     @Test
     public void testGenerateKafkaTopicNameShouldAsExpect() {
         // check generated topic name as expect
         when(dataSystemResourceService.getParent(anyLong(), eq(DataSystemResourceType.TIDB_CLUSTER))).thenReturn(
-                DataSystemResourceDTO.builder().id(1L).name("cluster").build()
+                new DataSystemResourceDTO().setId(1L).setName("cluster")
         );
         when(dataSystemResourceService.getParent(anyLong(), eq(DataSystemResourceType.TIDB_DATABASE))).thenReturn(
-                DataSystemResourceDTO.builder().id(2L).name("database").build()
+                new DataSystemResourceDTO().setId(2L).setName("database")
         );
         when(dataSystemResourceService.getById(anyLong())).thenReturn(
-                DataSystemResourceDTO.builder().id(3L).name("table").build()
+                new DataSystemResourceDTO().setId(3L).setName("table")
         );
         String kafkaTopicName = tidbDataSystemSourceConnectorServiceImpl.generateKafkaTopicName(3L);
         Assertions.assertThat(kafkaTopicName).isEqualTo("source-tidb-1-database-table");
     }
-
+    
     @Test
     public void testGenerateConnectorCustomConfigurationShouldAsExpect() {
         // check generated configuration name and value as expect
@@ -150,8 +142,8 @@ public class TidbDataSystemSourceConnectorServiceImplTest {
         // do mock
         List<Long> tableIds = Arrays.asList(1L, 2L, 3L);
         for (Long each : tableIds) {
-            when(dataSystemResourceService.getById(eq(each))).thenReturn(DataSystemResourceDTO.builder().name("table_" + each).build());
-
+            when(dataSystemResourceService.getById(eq(each))).thenReturn(new DataSystemResourceDTO().setName("table_" + each));
+            
             // table definition
             List<DataFieldDefinition> dataFieldDefinitions = new ArrayList<>();
             // table 1 has a primary key, others have unique key
@@ -166,9 +158,7 @@ public class TidbDataSystemSourceConnectorServiceImplTest {
         DataSystemResourceDetailDTO cluster = generateCluster();
         when(dataSystemResourceService.getDetailParent(anyLong(), eq(DataSystemResourceType.TIDB_CLUSTER))).thenReturn(cluster);
         when(dataSystemResourceService.getParent(anyLong(), eq(DataSystemResourceType.TIDB_CLUSTER))).thenReturn(
-                DataSystemResourceDTO.builder()
-                        .id(cluster.getId())
-                        .build()
+                new DataSystemResourceDTO().setId(cluster.getId())
         );
         when(dataSystemResourceService.getParent(anyLong(), eq(DataSystemResourceType.TIDB_DATABASE))).thenReturn(generateDatabase());
         when(dataSystemResourceService.getDetailChildren(eq(cluster.getId()),
@@ -177,18 +167,17 @@ public class TidbDataSystemSourceConnectorServiceImplTest {
                 eq(MysqlInstanceRoleType.DATA_SOURCE.name())))
                 .thenReturn(Arrays.asList(generateDataSourceInstance()));
         when(kafkaClusterService.getTICDCKafkaCluster()).thenReturn(
-                KafkaClusterDTO.builder()
-                        .bootstrapServers("6.6.6.2:6662")
-                        .securityConfiguration(
+                new KafkaClusterDTO()
+                        .setBootstrapServers("6.6.6.2:6662")
+                        .setSecurityConfiguration(
                                 "{\"security.protocol\":\"SASL_PLAINTEXT\","
                                         + "\"sasl.mechanism\":\"SCRAM-SHA-512\","
                                         + "\"sasl.jaas.config\":\"org.apache.kafka.common.security.scram.ScramLoginModule required username=\\\"user\\\" password=\\\"password\\\"\"}")
-                        .build()
         );
-
+        
         // execute
-        Map<String, String> customConfiguration = tidbDataSystemSourceConnectorServiceImpl.generateConnectorCustomConfiguration(tableIds);
-
+        final Map<String, String> customConfiguration = tidbDataSystemSourceConnectorServiceImpl.generateConnectorCustomConfiguration(tableIds);
+        
         // assert
         Map<String, String> desiredCustomConfiguration = new HashMap<>();
         desiredCustomConfiguration.put("database.server.name", "source-tidb-1-database");
@@ -201,102 +190,93 @@ public class TidbDataSystemSourceConnectorServiceImplTest {
         desiredCustomConfiguration.put("source.kafka.sasl.mechanism", "SCRAM-SHA-512");
         desiredCustomConfiguration.put("source.kafka.security.protocol", "SASL_PLAINTEXT");
         desiredCustomConfiguration.put("source.kafka.topic", "ticdc-1-database");
-
+        
         Assertions.assertThat(customConfiguration).isEqualTo(desiredCustomConfiguration);
     }
-
+    
     private DataSystemResourceDetailDTO generateDataSourceInstance() {
         Map<String, DataSystemResourceConfigurationDTO> dataSourceInstanceConfigurations = new HashMap<>();
-        dataSourceInstanceConfigurations.put(MysqlDataSystemResourceConfigurationDefinition.Instance.HOST.getName(), DataSystemResourceConfigurationDTO.builder()
-                .name(MysqlDataSystemResourceConfigurationDefinition.Instance.HOST.getName())
-                .value("6.6.6.2")
-                .build());
-        dataSourceInstanceConfigurations.put(MysqlDataSystemResourceConfigurationDefinition.Instance.PORT.getName(), DataSystemResourceConfigurationDTO.builder()
-                .name(MysqlDataSystemResourceConfigurationDefinition.Instance.PORT.getName())
-                .value("6662")
-                .build());
-        dataSourceInstanceConfigurations.put(MysqlDataSystemResourceConfigurationDefinition.Instance.ROLE_TYPE.getName(), DataSystemResourceConfigurationDTO.builder()
-                .name(MysqlDataSystemResourceConfigurationDefinition.Instance.ROLE_TYPE.getName())
-                .value(MysqlInstanceRoleType.DATA_SOURCE.name())
-                .build());
-
+        dataSourceInstanceConfigurations.put(MysqlDataSystemResourceConfigurationDefinition.Instance.HOST.getName(), new DataSystemResourceConfigurationDTO()
+                .setName(MysqlDataSystemResourceConfigurationDefinition.Instance.HOST.getName())
+                .setValue("6.6.6.2"));
+        dataSourceInstanceConfigurations.put(MysqlDataSystemResourceConfigurationDefinition.Instance.PORT.getName(), new DataSystemResourceConfigurationDTO()
+                .setName(MysqlDataSystemResourceConfigurationDefinition.Instance.PORT.getName())
+                .setValue("6662"));
+        dataSourceInstanceConfigurations.put(MysqlDataSystemResourceConfigurationDefinition.Instance.ROLE_TYPE.getName(), new DataSystemResourceConfigurationDTO()
+                .setName(MysqlDataSystemResourceConfigurationDefinition.Instance.ROLE_TYPE.getName())
+                .setValue(MysqlInstanceRoleType.DATA_SOURCE.name()));
+        
         return new DataSystemResourceDetailDTO()
                 .setId(3L)
                 .setName("data_source")
                 .setResourceType(DataSystemResourceType.TIDB_SERVER)
                 .setDataSystemResourceConfigurations(dataSourceInstanceConfigurations);
     }
-
+    
     private DataSystemResourceDTO generateDatabase() {
-        return DataSystemResourceDTO.builder()
-                .id(2L)
-                .name("database")
-                .resourceType(DataSystemResourceType.TIDB_DATABASE)
-                .build();
+        return new DataSystemResourceDTO()
+                .setId(2L)
+                .setName("database")
+                .setResourceType(DataSystemResourceType.TIDB_DATABASE);
     }
-
+    
     private DataSystemResourceDetailDTO generateCluster() {
         Map<String, DataSystemResourceConfigurationDTO> clusterConfigurations = new HashMap<>();
-        clusterConfigurations.put(TidbDataSystemResourceConfigurationDefinition.Cluster.USERNAME.getName(), DataSystemResourceConfigurationDTO.builder()
-                .name(TidbDataSystemResourceConfigurationDefinition.Cluster.USERNAME.getName())
-                .value("user")
-                .build());
-        clusterConfigurations.put(TidbDataSystemResourceConfigurationDefinition.Cluster.PASSWORD.getName(), DataSystemResourceConfigurationDTO.builder()
-                .name(TidbDataSystemResourceConfigurationDefinition.Cluster.PASSWORD.getName())
-                .value("password")
-                .build());
-
+        clusterConfigurations.put(TidbDataSystemResourceConfigurationDefinition.Cluster.USERNAME.getName(), new DataSystemResourceConfigurationDTO()
+                .setName(TidbDataSystemResourceConfigurationDefinition.Cluster.USERNAME.getName())
+                .setValue("user"));
+        clusterConfigurations.put(TidbDataSystemResourceConfigurationDefinition.Cluster.PASSWORD.getName(), new DataSystemResourceConfigurationDTO()
+                .setName(TidbDataSystemResourceConfigurationDefinition.Cluster.PASSWORD.getName())
+                .setValue("password"));
+        
         return new DataSystemResourceDetailDTO()
                 .setId(1L)
                 .setName("cluster")
                 .setResourceType(DataSystemResourceType.TIDB_CLUSTER)
                 .setDataSystemResourceConfigurations(clusterConfigurations);
     }
-
+    
     @Test
     public void testGetConnectorDefaultConfigurationShouldAsExpect() {
         // setup default configuration first
         Map<String, String> expectedDefaultConfiguration = new HashMap<>();
         expectedDefaultConfiguration.put("default-configuration-name-0", "default-configuration-value-0");
         expectedDefaultConfiguration.put("default-configuration-name-1", "default-configuration-value-1");
-
+        
         Set<DefaultConnectorConfigurationDTO> defaultConnectorConfigurations = new HashSet<>();
         expectedDefaultConfiguration.forEach((key, value) -> {
             defaultConnectorConfigurations.add(
-                    DefaultConnectorConfigurationDTO.builder()
-                            .name(key)
-                            .value(value)
-                            .build()
+                    new DefaultConnectorConfigurationDTO()
+                            .setName(key)
+                            .setValue(value)
             );
         });
-
-        ConnectorClassDetailDTO connectorClassDetail = ConnectorClassDetailDTO.builder()
-                .defaultConnectorConfigurations(defaultConnectorConfigurations)
-                .build();
+        
+        ConnectorClassDetailDTO connectorClassDetail = new ConnectorClassDetailDTO().setDefaultConnectorConfigurations(defaultConnectorConfigurations);
         when(connectorClassService.getDetailByDataSystemTypeAndConnectorType(eq(DataSystemType.TIDB), eq(ConnectorType.SOURCE))).thenReturn(connectorClassDetail);
-
+        
         Map<String, String> defaultConfiguration = tidbDataSystemSourceConnectorServiceImpl.getConnectorDefaultConfiguration();
         Assertions.assertThat(defaultConfiguration).isEqualTo(expectedDefaultConfiguration);
     }
-
+    
     @Test
     public void testGetImmutableConfigurationNamesShouldAsExpect() {
         Assertions.assertThat(tidbDataSystemSourceConnectorServiceImpl.getImmutableConfigurationNames())
                 .isEqualTo(Sets.newHashSet("database.server.name", "source.kafka.topic", "source.kafka.group.id"));
     }
-
+    
     @Test
     public void testGetSensitiveConfigurationNamesShouldAsExpect() {
         Assertions.assertThat(tidbDataSystemSourceConnectorServiceImpl.getSensitiveConfigurationNames())
                 .isEqualTo(TidbDataSystemConstant.Connector.Source.Configuration.SENSITIVE_CONFIGURATION_KEYS);
     }
-
+    
     @Test
     public void testGetConnectorDataSystemResourceTypeShouldReturnDatabase() {
         Assertions.assertThat(tidbDataSystemSourceConnectorServiceImpl.getConnectorDataSystemResourceType())
                 .isEqualTo(DataSystemResourceType.TIDB_DATABASE);
     }
-
+    
     @Test
     public void testGetDataSystemTypeShouldReturnTidb() {
         Assertions.assertThat(tidbDataSystemSourceConnectorServiceImpl.getDataSystemType())

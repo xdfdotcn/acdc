@@ -11,7 +11,7 @@ import org.springframework.web.client.RestTemplate;
  */
 @Configuration
 public class RestTemplateProperties {
-
+    
     /**
      * Get rest template bean.
      *
@@ -22,7 +22,7 @@ public class RestTemplateProperties {
         RestTemplate restTemplate = new RestTemplate(getFactory());
         return restTemplate;
     }
-
+    
     /**
      * Config client http request factory.
      *

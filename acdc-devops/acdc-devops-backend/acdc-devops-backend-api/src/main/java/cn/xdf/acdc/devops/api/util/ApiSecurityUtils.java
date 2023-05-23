@@ -15,12 +15,12 @@ import java.util.stream.Stream;
  * Utility class for Spring Security.
  */
 public final class ApiSecurityUtils {
-
+    
     public static final String ANONYMOUS = "ROLE_ANONYMOUS";
-
+    
     private ApiSecurityUtils() {
     }
-
+    
     /**
      * Get the login of the current user.
      *
@@ -30,7 +30,7 @@ public final class ApiSecurityUtils {
         SecurityContext securityContext = SecurityContextHolder.getContext();
         return Optional.ofNullable(extractPrincipal(securityContext.getAuthentication()));
     }
-
+    
     /**
      * Get the login of the current user's details.
      *
@@ -41,7 +41,7 @@ public final class ApiSecurityUtils {
         Assert.notNull(authentication, "Error state, current user is unauthorized");
         return Optional.of((LoginUserDTO) authentication.getDetails()).get();
     }
-
+    
     private static String extractPrincipal(final Authentication authentication) {
         if (authentication == null) {
             return null;
@@ -53,7 +53,7 @@ public final class ApiSecurityUtils {
         }
         return null;
     }
-
+    
     /**
      * Check if a user is authenticated.
      *
@@ -61,10 +61,9 @@ public final class ApiSecurityUtils {
      */
     public static boolean isAuthenticated() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//    u   return authentication != null && !CollectionUtils.isEmpty(getAuthorities(authentication).collect(Collectors.toSet()));
         return authentication != null && getAuthorities(authentication).noneMatch(ANONYMOUS::equals);
     }
-
+    
     /**
      * Checks if the current user has a specific authority.
      *
@@ -75,7 +74,7 @@ public final class ApiSecurityUtils {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return authentication != null && getAuthorities(authentication).anyMatch(authority::equals);
     }
-
+    
     private static Stream<String> getAuthorities(final Authentication authentication) {
         return authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority);
     }

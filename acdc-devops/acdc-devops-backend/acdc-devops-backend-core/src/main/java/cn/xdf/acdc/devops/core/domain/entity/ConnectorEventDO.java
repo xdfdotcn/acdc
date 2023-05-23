@@ -8,7 +8,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
-import lombok.experimental.SuperBuilder;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -28,36 +27,35 @@ import java.io.Serializable;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@SuperBuilder
 @Accessors(chain = true)
 public class ConnectorEventDO extends BaseDO implements Serializable {
-
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    
     @ApiModelProperty(value = "事件来由", required = true)
     @Column(name = "reason", length = 128, nullable = false)
     private String reason;
-
+    
     @ApiModelProperty(value = "事件信息", required = true)
     @Column(name = "message", length = 3072, nullable = false)
     private String message;
-
+    
     @ApiModelProperty("事件来源")
     @Column(name = "source")
     @Enumerated(EnumType.ORDINAL)
     private EventSource source;
-
+    
     @ApiModelProperty("事件级别")
     @Column(name = "level")
     @Enumerated(EnumType.ORDINAL)
     private EventLevel level;
-
+    
     @ApiModelProperty("connector主键")
     @ManyToOne(fetch = FetchType.LAZY)
     private ConnectorDO connector;
-
+    
     @Override
     public boolean equals(final Object o) {
         if (this == o) {
@@ -68,13 +66,13 @@ public class ConnectorEventDO extends BaseDO implements Serializable {
         }
         return id != null && id.equals(((ConnectorEventDO) o).id);
     }
-
+    
     @Override
     public int hashCode() {
         // see https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
         return getClass().hashCode();
     }
-
+    
     // prettier-ignore
     @Override
     public String toString() {

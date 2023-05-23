@@ -20,26 +20,26 @@ import java.util.Optional;
 @EnableConfigurationProperties({LiquibaseProperties.class, ApplicationProperties.class})
 @Slf4j
 @EnableAsync
-public class AcdcDevopsApp {
-
+public class Application {
+    
     private final Environment env;
-
-    public AcdcDevopsApp(final Environment env) {
+    
+    public Application(final Environment env) {
         this.env = env;
     }
-
+    
     /**
      * Main method, used to run the application.
      *
      * @param args the command line arguments.
      */
     public static void main(final String[] args) {
-        SpringApplication app = new SpringApplication(AcdcDevopsApp.class);
+        SpringApplication app = new SpringApplication(Application.class);
         DefaultProfileUtil.addDefaultProfile(app);
         Environment env = app.run(args).getEnvironment();
         logApplicationStartup(env);
     }
-
+    
     private static void logApplicationStartup(final Environment env) {
         String protocol = Optional.ofNullable(env.getProperty("server.ssl.key-store")).map(key -> "https").orElse("http");
         String serverPort = env.getProperty("server.port");
@@ -59,7 +59,7 @@ public class AcdcDevopsApp {
                         + "Local: \t\t{}://localhost:{}{}\n\t"
                         + "External: \t{}://{}:{}{}\n\t"
                         + "Profile(s): \t{}\n----------------------------------------------------------",
-
+                
                 env.getProperty("spring.application.name"),
                 protocol,
                 serverPort,

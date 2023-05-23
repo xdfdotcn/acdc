@@ -6,7 +6,7 @@ import cn.xdf.acdc.devops.core.domain.dto.ConnectionDetailDTO;
 import cn.xdf.acdc.devops.core.domain.dto.ConnectionRequisitionDetailDTO;
 import cn.xdf.acdc.devops.core.domain.dto.LoginUserDTO;
 import cn.xdf.acdc.devops.core.domain.dto.PageDTO;
-import cn.xdf.acdc.devops.core.domain.enumeration.ConnectionState;
+import cn.xdf.acdc.devops.core.domain.entity.enumeration.ConnectionState;
 import cn.xdf.acdc.devops.core.domain.query.ConnectionQuery;
 import cn.xdf.acdc.devops.service.process.connection.ConnectionRequisitionService;
 import cn.xdf.acdc.devops.service.process.connection.ConnectionService;

@@ -13,14 +13,14 @@ import org.springframework.test.context.junit4.SpringRunner;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class DataSystemServiceManagerImplTest {
-
+    
     @Autowired
     private DataSystemServiceManager dataSystemServiceManager;
-
+    
     @Before
     public void setUp() throws Exception {
     }
-
+    
     @Test
     public void testGetDataSystemMetadataServiceShouldPass() {
         // each data system type must have a data system metadata service
@@ -29,29 +29,29 @@ public class DataSystemServiceManagerImplTest {
         dataSystemServiceManager.getDataSystemMetadataService(DataSystemType.HIVE);
         dataSystemServiceManager.getDataSystemMetadataService(DataSystemType.KAFKA);
     }
-
+    
     @Test(expected = ServerErrorException.class)
     public void testGetDataSystemMetadataServiceShouldErrorWhenInputIsOracle() {
         dataSystemServiceManager.getDataSystemMetadataService(DataSystemType.ORACLE);
     }
-
+    
     @Test(expected = ServerErrorException.class)
     public void testGetDataSystemMetadataServiceShouldErrorWhenInputIsSqlServer() {
         dataSystemServiceManager.getDataSystemMetadataService(DataSystemType.SQLSERVER);
     }
-
+    
     @Test
     public void testGetDataSystemSourceConnectorServiceShouldPass() {
         dataSystemServiceManager.getDataSystemSourceConnectorService(DataSystemType.MYSQL);
         dataSystemServiceManager.getDataSystemSourceConnectorService(DataSystemType.TIDB);
     }
-
+    
     @Test(expected = ServerErrorException.class)
     public void testGetDataSystemSourceConnectorServiceShouldErrorWhenInputIsKafka() {
         // data data system type must have a data system metadata service
         dataSystemServiceManager.getDataSystemSourceConnectorService(DataSystemType.KAFKA);
     }
-
+    
     @Test
     public void testGetDataSystemSinkConnectorServiceShouldPass() {
         // each data system type must have a data system sink connector service
@@ -60,7 +60,7 @@ public class DataSystemServiceManagerImplTest {
         dataSystemServiceManager.getDataSystemSinkConnectorService(DataSystemType.KAFKA);
         dataSystemServiceManager.getDataSystemSinkConnectorService(DataSystemType.HIVE);
     }
-
+    
     @Test(expected = ServerErrorException.class)
     public void testGetDataSystemSinkConnectorServiceShouldErrorWhenInputIsSqlServer() {
         dataSystemServiceManager.getDataSystemSinkConnectorService(DataSystemType.SQLSERVER);

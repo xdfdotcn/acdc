@@ -12,20 +12,20 @@ import java.util.Set;
 
 @RunWith(MockitoJUnitRunner.class)
 public class Jdbc2HiveConnectionColumnConfigurationGeneratorTest {
-
+    
     private ConnectionColumnConfigurationGenerator connectionColumnConfigurationGenerator;
-
+    
     @Before
     public void setup() {
         connectionColumnConfigurationGenerator = new Jdbc2HiveConnectionColumnConfigurationGenerator();
     }
-
+    
     @Test
     public void testSupportSourceDataSystemTypes() {
         Set<DataSystemType> dataSystemTypes = connectionColumnConfigurationGenerator.supportedSourceDataSystemTypes();
         Assertions.assertThat(dataSystemTypes).contains(DataSystemType.MYSQL, DataSystemType.TIDB);
     }
-
+    
     @Test
     public void testSupportSinkDataSystemTypes() {
         Set<DataSystemType> dataSystemTypes = connectionColumnConfigurationGenerator.supportedSinkDataSystemTypes();

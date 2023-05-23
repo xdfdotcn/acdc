@@ -360,7 +360,7 @@ public class JdbcSinkConfig extends SinkConfig {
     public enum InsertMode {
         INSERT,
         UPSERT,
-        UPDATE;
+        UPDATE
     }
 
     public enum NumericMapping {

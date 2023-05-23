@@ -30,7 +30,7 @@ import java.util.Objects;
 @SuppressWarnings("unused")
 @Repository
 public interface ProjectRepository extends JpaRepository<ProjectDO, Long>, JpaSpecificationExecutor<ProjectDO> {
-
+    
     /**
      * Find projects by source type.
      *
@@ -38,7 +38,7 @@ public interface ProjectRepository extends JpaRepository<ProjectDO, Long>, JpaSp
      * @return projects
      */
     List<ProjectDO> findBySource(MetadataSourceType source);
-
+    
     /**
      * Dynamic condition.
      *
@@ -47,14 +47,14 @@ public interface ProjectRepository extends JpaRepository<ProjectDO, Long>, JpaSp
      */
     default Specification specificationOf(final ProjectQuery query) {
         Preconditions.checkNotNull(query);
-
+        
         return (root, criteriaQuery, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-
+            
             if (StringUtils.isNotBlank(query.getName())) {
                 predicates.add(cb.like(root.get("name"), QueryUtil.like("%", query.getName(), "%")));
             }
-
+            
             if (!CollectionUtils.isEmpty(query.getProjectIds())) {
                 CriteriaBuilder.In in = cb.in(root.get("id"));
                 for (Long id : query.getProjectIds()) {
@@ -62,25 +62,25 @@ public interface ProjectRepository extends JpaRepository<ProjectDO, Long>, JpaSp
                 }
                 predicates.add(in);
             }
-
+            
             if (!Strings.isNullOrEmpty(query.getOwnerDomainAccount())) {
                 Join<ProjectDO, UserDO> userJoin = root.join("owner", JoinType.INNER);
                 predicates.add(cb.equal(userJoin.get("domainAccount"), query.getOwnerDomainAccount()));
             }
-
+            
             if (!Strings.isNullOrEmpty(query.getMemberDomainAccount())) {
                 Join<ProjectDO, UserDO> userJoin = root.join("users", JoinType.INNER);
                 predicates.add(cb.equal(userJoin.get("domainAccount"), query.getMemberDomainAccount()));
             }
-
+            
             if (Objects.nonNull(query.getDeleted())) {
                 predicates.add(cb.equal(root.get("deleted"), query.getDeleted()));
             }
-
+            
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }
-
+    
     /**
      * Common query.
      *
@@ -90,7 +90,7 @@ public interface ProjectRepository extends JpaRepository<ProjectDO, Long>, JpaSp
     default List<ProjectDO> query(final ProjectQuery query) {
         return findAll(specificationOf(query));
     }
-
+    
     /**
      * Paging query.
      *

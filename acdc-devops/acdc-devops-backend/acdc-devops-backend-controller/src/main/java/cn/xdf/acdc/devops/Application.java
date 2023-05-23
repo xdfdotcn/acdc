@@ -9,15 +9,15 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
  * Controller application.
  */
 @SpringBootApplication
-@EnableConfigurationProperties({LiquibaseProperties.class})
-public class ControllerApplication {
-
+@EnableConfigurationProperties(LiquibaseProperties.class)
+public class Application {
+    
     /**
      * Controller project entry point.
+     *
      * @param args string arrays
      */
     public static void main(final String[] args) {
-        SpringApplication.run(ControllerApplication.class, args);
+        SpringApplication.run(Application.class, args);
     }
-
 }

@@ -1,5 +1,6 @@
 package cn.xdf.acdc.devops.core.domain.enumeration;
 
+import cn.xdf.acdc.devops.core.domain.entity.enumeration.EventType;
 import lombok.Getter;
 
 @Getter
@@ -15,9 +16,9 @@ public enum ConnectorEvent {
     CREATE_FAILURE(EventType.RUNTIME),
     TASK_FAILURE(EventType.RUNTIME),
     RETRY(EventType.RUNTIME);
-
+    
     private final EventType type;
-
+    
     ConnectorEvent(final EventType type) {
         this.type = type;
     }

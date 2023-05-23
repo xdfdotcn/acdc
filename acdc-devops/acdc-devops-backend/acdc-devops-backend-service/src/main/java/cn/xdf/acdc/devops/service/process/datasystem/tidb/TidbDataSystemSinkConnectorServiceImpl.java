@@ -28,40 +28,40 @@ import java.util.Set;
 @Service
 @Slf4j
 public class TidbDataSystemSinkConnectorServiceImpl extends AbstractDataSystemSinkConnectorService {
-
+    
     @Autowired
     private ConnectorClassService connectorClassService;
-
+    
     @Autowired
     private DataSystemResourceService dataSystemResourceService;
-
+    
     @Autowired
     private ConnectionService connectionService;
-
+    
     @Override
     public DataSystemType getDataSystemType() {
         return DataSystemType.TIDB;
     }
-
+    
     @Override
     public void verifyDataSystemMetadata(final Long resourceId) {
         //keep empty
     }
-
+    
     @Override
     public void beforeConnectorCreation(final Long resourceId) {
         //keep empty
     }
-
+    
     @Override
     public Map<String, String> getConnectorDefaultConfiguration() {
         ConnectorClassDetailDTO connectorClassDetail = connectorClassService.getDetailByDataSystemTypeAndConnectorType(DataSystemType.TIDB, ConnectorType.SINK);
-
+        
         Map<String, String> defaultConfigurations = new HashMap<>();
         connectorClassDetail.getDefaultConnectorConfigurations().forEach(each -> defaultConfigurations.put(each.getName(), each.getValue()));
         return defaultConfigurations;
     }
-
+    
     @Override
     public Map<String, String> generateConnectorCustomConfiguration(final Long connectionId) {
         ConnectionDetailDTO connectionDetail = connectionService.getDetailById(connectionId);
@@ -69,20 +69,20 @@ public class TidbDataSystemSinkConnectorServiceImpl extends AbstractDataSystemSi
         DataSystemResourceDTO sinkTable = dataSystemResourceService.getById(connectionDetail.getSinkDataCollectionId());
         DataSystemResourceDetailDTO sinkClusterDetail = dataSystemResourceService.getDetailParent(connectionDetail.getSinkDataCollectionId(), DataSystemResourceType.TIDB_CLUSTER);
         DataSystemResourceDTO sinkDatabase = dataSystemResourceService.getParent(connectionDetail.getSinkDataCollectionId(), DataSystemResourceType.TIDB_DATABASE);
-
+        
         Map<String, String> configurations = new HashMap<>();
-
+        
         configurations.put(TidbDataSystemConstant.Connector.Sink.Configuration.TOPICS, sourceDataCollection.getKafkaTopicName());
         configurations.put(TidbDataSystemConstant.Connector.Sink.Configuration.DESTINATIONS, sinkTable.getName());
         configurations.put(TidbDataSystemConstant.Connector.Sink.Configuration.CONNECTION_URL, generateJDBCUrl(connectionDetail, sinkDatabase));
         configurations.put(TidbDataSystemConstant.Connector.Sink.Configuration.CONNECTION_USER, sinkClusterDetail.getDataSystemResourceConfigurations().get(Cluster.USERNAME.getName()).getValue());
         configurations.put(TidbDataSystemConstant.Connector.Sink.Configuration.CONNECTION_PASSWORD, sinkClusterDetail.getDataSystemResourceConfigurations().get(Cluster.PASSWORD.getName()).getValue());
-
+        
         // destination configurations
         configurations.putAll(super.generateDestinationsConfiguration(sinkTable.getName(), connectionDetail.getConnectionColumnConfigurations()));
         return configurations;
     }
-
+    
     private String generateJDBCUrl(final ConnectionDetailDTO connectionDetail, final DataSystemResourceDTO database) {
         Long sinkInstanceId = connectionDetail.getSinkInstanceId();
         DataSystemResourceDetailDTO detailById = dataSystemResourceService.getDetailById(sinkInstanceId);
@@ -92,17 +92,17 @@ public class TidbDataSystemSinkConnectorServiceImpl extends AbstractDataSystemSi
                 Integer.parseInt(sinkConfigs.get(CommonDataSystemResourceConfigurationDefinition.Endpoint.PORT_NAME).getValue()),
                 database.getName());
     }
-
+    
     @Override
     public Set<ConfigurationDefinition> getConnectorSpecificConfigurationDefinitions() {
         return Collections.emptySet();
     }
-
+    
     @Override
     public Set<String> getSensitiveConfigurationNames() {
         return TidbDataSystemConstant.Connector.Sink.Configuration.SENSITIVE_CONFIGURATION_NAMES;
     }
-
+    
     @Override
     public ConnectorClassDetailDTO getConnectorClass() {
         return connectorClassService.getDetailByDataSystemTypeAndConnectorType(DataSystemType.TIDB, ConnectorType.SINK);
