@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Set;
 
 public interface ProjectService {
-
+    
     /**
      * 创建项目.
      *
@@ -18,14 +18,14 @@ public interface ProjectService {
      * @return 插入数据库成功的 Project
      */
     ProjectDTO create(ProjectDTO project);
-
+    
     /**
      * Update project.
      *
      * @param projectDTO project DTO
      */
     void update(ProjectDTO projectDTO);
-
+    
     /**
      * 批量创建项目.
      *
@@ -33,7 +33,7 @@ public interface ProjectService {
      * @return 插入数据库成功的项目集合
      */
     List<ProjectDTO> batchCreate(List<ProjectDTO> projects);
-
+    
     /**
      * 根据条件,获取分页的项目列表.
      *
@@ -41,7 +41,7 @@ public interface ProjectService {
      * @return 项目分页列表
      */
     Page<ProjectDTO> pagedQuery(ProjectQuery projectQuery);
-
+    
     /**
      * 根据ID查询项目.
      *
@@ -49,7 +49,7 @@ public interface ProjectService {
      * @return 项目
      */
     ProjectDTO getById(Long id);
-
+    
     /**
      * Get project list.
      *
@@ -57,7 +57,7 @@ public interface ProjectService {
      * @return project list
      */
     List<ProjectDTO> getByIds(List<Long> ids);
-
+    
     /**
      * 查询所有项目.
      *
@@ -65,25 +65,25 @@ public interface ProjectService {
      * @return 所有项目列表
      */
     List<ProjectDTO> query(ProjectQuery projectQuery);
-
+    
     /**
      * 添加项目人员.
      *
-     * @param id       项目id
+     * @param id 项目id
      * @param userDTOS 用户列表
      * @date 2022/8/2 6:40 下午
      */
     void createProjectUsers(Long id, List<UserDTO> userDTOS);
-
+    
     /**
      * 删除项目人员.
      *
-     * @param id      项目id
+     * @param id 项目id
      * @param userIds 用户id集合
      * @date 2022/8/2 6:44 下午
      */
     void deleteProjectUsers(Long id, List<Long> userIds);
-
+    
     /**
      * Merge all projects on original id, maybe insert, update, delete project record.
      *

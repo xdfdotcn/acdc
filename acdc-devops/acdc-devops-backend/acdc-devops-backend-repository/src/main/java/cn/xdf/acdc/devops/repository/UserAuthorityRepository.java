@@ -15,14 +15,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public interface UserAuthorityRepository extends JpaRepository<UserAuthorityDO, String>, JpaSpecificationExecutor<UserAuthorityDO> {
-
+    
     /**
      * Delete role by userId.
      *
      * @param userId user id
      */
     void deleteRoleByUserId(Long userId);
-
+    
     /**
      * Query all entity with specific condition.
      *
@@ -32,7 +32,7 @@ public interface UserAuthorityRepository extends JpaRepository<UserAuthorityDO, 
     default List<UserAuthorityDO> queryAll(UserAuthorityQuery query) {
         return findAll(specificationOf(query));
     }
-
+    
     /**
      * Dynamic condition.
      *

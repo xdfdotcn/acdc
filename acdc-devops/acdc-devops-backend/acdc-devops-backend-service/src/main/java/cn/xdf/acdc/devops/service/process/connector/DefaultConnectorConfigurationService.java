@@ -1,6 +1,7 @@
 package cn.xdf.acdc.devops.service.process.connector;
 
 import cn.xdf.acdc.devops.core.domain.entity.DefaultConnectorConfigurationDO;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -9,7 +10,7 @@ import java.util.Optional;
  *  TODO 与process service 进行合并
  */
 public interface DefaultConnectorConfigurationService {
-
+    
     /**
      * 单条保存.
      *
@@ -17,14 +18,14 @@ public interface DefaultConnectorConfigurationService {
      * @return DefaultConnectorConfiguration
      */
     DefaultConnectorConfigurationDO save(DefaultConnectorConfigurationDO defaultConnectorConfiguration);
-
+    
     /**
      * 查询所有.
      *
      * @return List
      */
     List<DefaultConnectorConfigurationDO> findAll();
-
+    
     /**
      * 根据ID查询.
      *
@@ -32,7 +33,7 @@ public interface DefaultConnectorConfigurationService {
      * @return DefaultConnectorConfiguration
      */
     Optional<DefaultConnectorConfigurationDO> findById(Long id);
-
+    
     /**
      * 根据 Connector Class ID查询.
      *

@@ -41,13 +41,13 @@ public class ConnectorStateSchedulerTest {
 
     @Test
     public void testRefreshSchedulerTasksShouldAddNewSchedulerTasks() {
-        ConnectClusterDO connectCluster1 = ConnectClusterDO.builder().id(1L).connectRestApiUrl("test1:8083").build();
+        ConnectClusterDO connectCluster1 = new ConnectClusterDO().setId(1L).setConnectRestApiUrl("test1:8083");
         Mockito.when(connectClusterService.findAll()).thenReturn(Lists.newArrayList(connectCluster1));
         Mockito.when(connectorStateHandler.getUserTriggerEventHandlers()).thenReturn(new HashMap<>());
         Mockito.when(taskScheduler.scheduleAtFixedRate(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(scheduledFuture);
         scheduler.refreshSchedulerTasks();
         Mockito.verify(taskScheduler, Mockito.times(2)).scheduleAtFixedRate(ArgumentMatchers.any(), ArgumentMatchers.any());
-        ConnectClusterDO connectCluster2 = ConnectClusterDO.builder().id(2L).connectRestApiUrl("test2:8083").build();
+        ConnectClusterDO connectCluster2 = new ConnectClusterDO().setId(2L).setConnectRestApiUrl("test2:8083");
         Mockito.when(connectClusterService.findAll()).thenReturn(Lists.newArrayList(connectCluster1, connectCluster2));
         Mockito.when(connectorStateHandler.getUserTriggerEventHandlers()).thenReturn(new HashMap<>());
         Mockito.when(taskScheduler.scheduleAtFixedRate(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(scheduledFuture);
@@ -58,7 +58,7 @@ public class ConnectorStateSchedulerTest {
     @Test
     public void testRefreshSchedulerTasksShouldRemoveSchedulerTasksWhichNotExists() {
         testRefreshSchedulerTasksShouldAddNewSchedulerTasks();
-        ConnectClusterDO connectCluster2 = ConnectClusterDO.builder().id(2L).connectRestApiUrl("test2:8083").build();
+        ConnectClusterDO connectCluster2 = new ConnectClusterDO().setId(2L).setConnectRestApiUrl("test2:8083");
         List<ConnectClusterDO> connectClusters = Lists.newArrayList(connectCluster2, connectCluster2);
         Mockito.when(connectClusterService.findAll()).thenReturn(connectClusters);
         scheduler.refreshSchedulerTasks();

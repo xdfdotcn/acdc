@@ -54,124 +54,124 @@ import static org.mockito.Mockito.when;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class MysqlDataSystemSourceConnectorServiceImplTest {
-
+    
     @Autowired
     @Qualifier("mysqlDataSystemSourceConnectorServiceImpl")
     private DataSystemSourceConnectorService dataSystemSourceConnectorService;
-
+    
     @Autowired
     private TopicProperties topicProperties;
-
+    
     @MockBean
     private DataSystemResourceService dataSystemResourceService;
-
+    
     @MockBean
     private KafkaClusterService kafkaClusterService;
-
+    
     @MockBean
     private KafkaHelperService kafkaHelperService;
-
+    
     @MockBean
     private ConnectorClassService connectorClassService;
-
+    
     @MockBean(name = "mysqlDataSystemMetadataServiceImpl")
     private DataSystemMetadataService dataSystemMetadataService;
-
+    
     @Before
     public void setUp() throws Exception {
-
+    
     }
-
+    
     @Test
     public void testVerifyDataSystemMetadataShouldPass() {
         when(dataSystemResourceService.getParent(anyLong(), eq(DataSystemResourceType.MYSQL_CLUSTER))).thenReturn(
-                DataSystemResourceDTO.builder().id(1L).build()
+                new DataSystemResourceDTO().setId(1L)
         );
         when(dataSystemResourceService.getDetailChildren(anyLong(), eq(DataSystemResourceType.MYSQL_INSTANCE), eq(Instance.ROLE_TYPE.getName()), eq(MysqlInstanceRoleType.DATA_SOURCE.name())))
                 .thenReturn(Arrays.asList(new DataSystemResourceDetailDTO()));
-
+        
         dataSystemSourceConnectorService.verifyDataSystemMetadata(1L);
     }
-
+    
     @Test(expected = ServerErrorException.class)
     public void testVerifyDataSystemMetadataShouldErrorWhenThereIsNoDataSourceInstance() {
         when(dataSystemResourceService.getParent(anyLong(), eq(DataSystemResourceType.MYSQL_CLUSTER))).thenReturn(
-                DataSystemResourceDTO.builder().id(1L).build()
+                new DataSystemResourceDTO().setId(1L)
         );
         when(dataSystemResourceService.getDetailChildren(anyLong(), eq(DataSystemResourceType.MYSQL_INSTANCE), anyString(), anyString()))
                 .thenReturn(Lists.emptyList());
-
+        
         dataSystemSourceConnectorService.verifyDataSystemMetadata(1L);
     }
-
+    
     @Test
     public void testAfterConnectorCreationShouldCreateSchemaChangeAndHistoryTopic() {
         when(dataSystemResourceService.getParent(anyLong(), eq(DataSystemResourceType.MYSQL_CLUSTER))).thenReturn(
-                DataSystemResourceDTO.builder().id(1L).name("cluster").build()
+                new DataSystemResourceDTO().setId(1L).setName("cluster")
         );
         when(dataSystemResourceService.getParent(anyLong(), eq(DataSystemResourceType.MYSQL_DATABASE))).thenReturn(
-                DataSystemResourceDTO.builder().id(2L).name("database").build()
+                new DataSystemResourceDTO().setId(2L).setName("database")
         );
-        when(kafkaClusterService.getACDCKafkaCluster()).thenReturn(KafkaClusterDTO.builder().id(1L).build());
-
+        when(kafkaClusterService.getACDCKafkaCluster()).thenReturn(new KafkaClusterDTO().setId(1L));
+        
         dataSystemSourceConnectorService.afterConnectorCreation(1L);
-
+        
         ArgumentCaptor<String> topicNameCaptor = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<Integer> numPartitionsCaptor = ArgumentCaptor.forClass(Integer.class);
         ArgumentCaptor<Short> replicationFactorCaptor = ArgumentCaptor.forClass(Short.class);
         ArgumentCaptor<Map<String, String>> topicConfigCaptor = ArgumentCaptor.forClass(Map.class);
-
+        
         Mockito.verify(kafkaHelperService, times(2)).createTopic(topicNameCaptor.capture(), numPartitionsCaptor.capture(), replicationFactorCaptor.capture(), topicConfigCaptor.capture(), anyMap());
-
+        
         // schema history topic
         Assertions.assertThat(topicNameCaptor.getAllValues().get(0)).isEqualTo("schema_history-source-mysql-1-database");
         Assertions.assertThat(numPartitionsCaptor.getAllValues().get(0)).isEqualTo(Integer.valueOf(topicProperties.getSchemaHistory().getPartitions()));
         Assertions.assertThat(replicationFactorCaptor.getAllValues().get(0)).isEqualTo(Short.valueOf(topicProperties.getSchemaHistory().getReplicationFactor()));
         Assertions.assertThat(topicConfigCaptor.getAllValues().get(0)).isEqualTo(topicProperties.getSchemaHistory().getConfigs());
-
+        
         // schema change topic
         Assertions.assertThat(topicNameCaptor.getAllValues().get(1)).isEqualTo("source-mysql-1-database");
         Assertions.assertThat(numPartitionsCaptor.getAllValues().get(1)).isEqualTo(Integer.valueOf(Integer.valueOf(topicProperties.getSchemaChange().getPartitions())));
         Assertions.assertThat(replicationFactorCaptor.getAllValues().get(1)).isEqualTo(Short.valueOf(topicProperties.getSchemaChange().getReplicationFactor()));
         Assertions.assertThat(topicConfigCaptor.getAllValues().get(1)).isEqualTo(topicProperties.getSchemaChange().getConfigs());
     }
-
+    
     @Test
     public void testGenerateConnectorNameShouldAsExpect() {
         // check generated connector name as expect
         when(dataSystemResourceService.getParent(anyLong(), eq(DataSystemResourceType.MYSQL_CLUSTER))).thenReturn(
-                DataSystemResourceDTO.builder().id(1L).name("cluster").build()
+                new DataSystemResourceDTO().setId(1L).setName("cluster")
         );
         when(dataSystemResourceService.getParent(anyLong(), eq(DataSystemResourceType.MYSQL_DATABASE))).thenReturn(
-                DataSystemResourceDTO.builder().id(2L).name("database").build()
+                new DataSystemResourceDTO().setId(2L).setName("database")
         );
         String connectorName = dataSystemSourceConnectorService.generateConnectorName(1L);
         Assertions.assertThat(connectorName).isEqualTo("source-mysql-1-database");
     }
-
+    
     @Test
     public void testGenerateKafkaTopicNameShouldAsExpect() {
         // check generated topic name as expect
         when(dataSystemResourceService.getParent(anyLong(), eq(DataSystemResourceType.MYSQL_CLUSTER))).thenReturn(
-                DataSystemResourceDTO.builder().id(1L).name("cluster").build()
+                new DataSystemResourceDTO().setId(1L).setName("cluster")
         );
         when(dataSystemResourceService.getParent(anyLong(), eq(DataSystemResourceType.MYSQL_DATABASE))).thenReturn(
-                DataSystemResourceDTO.builder().id(2L).name("database").build()
+                new DataSystemResourceDTO().setId(2L).setName("database")
         );
         when(dataSystemResourceService.getById(anyLong())).thenReturn(
-                DataSystemResourceDTO.builder().id(3L).name("table").build()
+                new DataSystemResourceDTO().setId(3L).setName("table")
         );
         String kafkaTopicName = dataSystemSourceConnectorService.generateKafkaTopicName(3L);
         Assertions.assertThat(kafkaTopicName).isEqualTo("source-mysql-1-database-table");
     }
-
+    
     @Test
     public void testGenerateConnectorCustomConfigurationShouldAsExpect() {
         // do mock
         List<Long> tableIds = Arrays.asList(1L, 2L, 3L);
         for (Long each : tableIds) {
-            when(dataSystemResourceService.getById(eq(each))).thenReturn(DataSystemResourceDTO.builder().name("table_" + each).build());
-
+            when(dataSystemResourceService.getById(eq(each))).thenReturn(new DataSystemResourceDTO().setName("table_" + each));
+            
             // table definition
             List<DataFieldDefinition> dataFieldDefinitions = new ArrayList();
             // table 1 has a primary key, others have unique key
@@ -186,27 +186,24 @@ public class MysqlDataSystemSourceConnectorServiceImplTest {
         DataSystemResourceDetailDTO cluster = generateCluster();
         when(dataSystemResourceService.getDetailParent(anyLong(), eq(DataSystemResourceType.MYSQL_CLUSTER))).thenReturn(cluster);
         when(dataSystemResourceService.getParent(anyLong(), eq(DataSystemResourceType.MYSQL_CLUSTER))).thenReturn(
-                DataSystemResourceDTO.builder()
-                        .id(cluster.getId())
-                        .build()
+                new DataSystemResourceDTO().setId(cluster.getId())
         );
         when(dataSystemResourceService.getParent(anyLong(), eq(DataSystemResourceType.MYSQL_DATABASE))).thenReturn(generateDatabase());
         when(dataSystemResourceService
                 .getDetailChildren(eq(cluster.getId()), eq(DataSystemResourceType.MYSQL_INSTANCE), eq(Instance.ROLE_TYPE.getName()), eq(MysqlInstanceRoleType.DATA_SOURCE.name())))
                 .thenReturn(Arrays.asList(generateDataSourceInstance()));
         when(kafkaClusterService.getACDCKafkaCluster()).thenReturn(
-                KafkaClusterDTO.builder()
-                        .bootstrapServers("6.6.6.2:6662")
-                        .securityConfiguration(
+                new KafkaClusterDTO()
+                        .setBootstrapServers("6.6.6.2:6662")
+                        .setSecurityConfiguration(
                                 "{\"security.protocol\":\"SASL_PLAINTEXT\","
                                         + "\"sasl.mechanism\":\"SCRAM-SHA-512\","
                                         + "\"sasl.jaas.config\":\"org.apache.kafka.common.security.scram.ScramLoginModule required username=\\\"user\\\" password=\\\"password\\\"\"}")
-                        .build()
         );
-
+        
         // execute
-        Map<String, String> customConfiguration = dataSystemSourceConnectorService.generateConnectorCustomConfiguration(tableIds);
-
+        final Map<String, String> customConfiguration = dataSystemSourceConnectorService.generateConnectorCustomConfiguration(tableIds);
+        
         // assert
         Map<String, String> desiredCustomConfiguration = new HashMap<>();
         desiredCustomConfiguration.put("database.server.name", "source-mysql-1-database");
@@ -225,111 +222,104 @@ public class MysqlDataSystemSourceConnectorServiceImplTest {
         desiredCustomConfiguration.put("database.include", "database");
         desiredCustomConfiguration.put("table.include.list", "database.table_1,database.table_2,database.table_3");
         desiredCustomConfiguration.put("message.key.columns", "database.table_1:table_1-field_1;database.table_2:table_2-field_1,table_2-field_2;database.table_3:table_3-field_1,table_3-field_2;");
-
+        
         Assertions.assertThat(customConfiguration).isEqualTo(desiredCustomConfiguration);
     }
-
+    
     private DataSystemResourceDetailDTO generateCluster() {
         Map<String, DataSystemResourceConfigurationDTO> clusterConfigurations = new HashMap();
-        clusterConfigurations.put(Cluster.USERNAME.getName(), DataSystemResourceConfigurationDTO.builder()
-                .name(Cluster.USERNAME.getName())
-                .value("user")
-                .build());
-        clusterConfigurations.put(Cluster.PASSWORD.getName(), DataSystemResourceConfigurationDTO.builder()
-                .name(Cluster.PASSWORD.getName())
-                .value("password")
-                .build());
-
+        clusterConfigurations.put(Cluster.USERNAME.getName(), new DataSystemResourceConfigurationDTO()
+                .setName(Cluster.USERNAME.getName())
+                .setValue("user"));
+        clusterConfigurations.put(Cluster.PASSWORD.getName(), new DataSystemResourceConfigurationDTO()
+                .setName(Cluster.PASSWORD.getName())
+                .setValue("password"));
+        
         return new DataSystemResourceDetailDTO()
                 .setId(1L)
                 .setName("cluster")
                 .setResourceType(DataSystemResourceType.MYSQL_CLUSTER)
                 .setDataSystemResourceConfigurations(clusterConfigurations);
     }
-
+    
     private DataSystemResourceDTO generateDatabase() {
         return new DataSystemResourceDTO()
                 .setId(2L)
                 .setName("database")
                 .setResourceType(DataSystemResourceType.MYSQL_DATABASE);
     }
-
+    
     private DataSystemResourceDetailDTO generateDataSourceInstance() {
         Map<String, DataSystemResourceConfigurationDTO> dataSourceInstanceConfigurations = new HashMap();
-        dataSourceInstanceConfigurations.put(Instance.HOST.getName(), DataSystemResourceConfigurationDTO.builder()
-                .name(Instance.HOST.getName())
-                .value("6.6.6.2")
-                .build());
-        dataSourceInstanceConfigurations.put(Instance.PORT.getName(), DataSystemResourceConfigurationDTO.builder()
-                .name(Instance.PORT.getName())
-                .value("6662")
-                .build());
-        dataSourceInstanceConfigurations.put(Instance.ROLE_TYPE.getName(), DataSystemResourceConfigurationDTO.builder()
-                .name(Instance.ROLE_TYPE.getName())
-                .value(MysqlInstanceRoleType.DATA_SOURCE.name())
-                .build());
-
+        dataSourceInstanceConfigurations.put(Instance.HOST.getName(), new DataSystemResourceConfigurationDTO()
+                .setName(Instance.HOST.getName())
+                .setValue("6.6.6.2"));
+        dataSourceInstanceConfigurations.put(Instance.PORT.getName(), new DataSystemResourceConfigurationDTO()
+                .setName(Instance.PORT.getName())
+                .setValue("6662"));
+        dataSourceInstanceConfigurations.put(Instance.ROLE_TYPE.getName(), new DataSystemResourceConfigurationDTO()
+                .setName(Instance.ROLE_TYPE.getName())
+                .setValue(MysqlInstanceRoleType.DATA_SOURCE.name()));
+        
         return new DataSystemResourceDetailDTO()
                 .setId(3L)
                 .setName("data_source")
                 .setResourceType(DataSystemResourceType.MYSQL_INSTANCE)
                 .setDataSystemResourceConfigurations(dataSourceInstanceConfigurations);
     }
-
+    
     @Test
     public void testGetConnectorDefaultConfigurationShouldAsExpect() {
         Map<String, String> expectedDefaultConfiguration = new HashMap<>();
         expectedDefaultConfiguration.put("default-configuration-name-0", "default-configuration-value-0");
         expectedDefaultConfiguration.put("default-configuration-name-1", "default-configuration-value-1");
-
+        
         Set<DefaultConnectorConfigurationDTO> defaultConnectorConfigurations = new HashSet<>();
         expectedDefaultConfiguration.forEach((key, value) -> {
             defaultConnectorConfigurations.add(
-                    DefaultConnectorConfigurationDTO.builder()
-                            .name(key)
-                            .value(value)
-                            .build()
+                    new DefaultConnectorConfigurationDTO()
+                            .setName(key)
+                            .setValue(value)
             );
         });
-
-        ConnectorClassDetailDTO connectorClassDetail = ConnectorClassDetailDTO.builder()
-                .defaultConnectorConfigurations(defaultConnectorConfigurations)
-                .build();
+        
+        ConnectorClassDetailDTO connectorClassDetail = new ConnectorClassDetailDTO()
+                .setDefaultConnectorConfigurations(defaultConnectorConfigurations);
         when(connectorClassService.getDetailByDataSystemTypeAndConnectorType(eq(DataSystemType.MYSQL), eq(ConnectorType.SOURCE))).thenReturn(connectorClassDetail);
-
+        
         Map<String, String> defaultConfiguration = dataSystemSourceConnectorService.getConnectorDefaultConfiguration();
         Assertions.assertThat(defaultConfiguration).isEqualTo(expectedDefaultConfiguration);
     }
-
+    
     @Test
     public void testGetImmutableConfigurationNamesShouldAsExpect() {
         Assertions.assertThat(dataSystemSourceConnectorService.getImmutableConfigurationNames())
                 .isEqualTo(Sets.newHashSet("database.server.name", "database.history.kafka.topic"));
     }
-
+    
     @Test
     public void testGetSensitiveConfigurationNamesShouldAsExpect() {
         Assertions.assertThat(dataSystemSourceConnectorService.getSensitiveConfigurationNames())
                 .isEqualTo(Sets.newHashSet("database.password", "database.history.producer.sasl.jaas.config", "database.history.consumer.sasl.jaas.config"));
     }
-
+    
     @Test
     public void testGetConnectorDataSystemResourceTypeShouldReturnDatabase() {
         Assertions.assertThat(dataSystemSourceConnectorService.getConnectorDataSystemResourceType()).isEqualTo(DataSystemResourceType.MYSQL_DATABASE);
     }
-
+    
     @Test
     public void testGetDataSystemTypeShouldReturnMysql() {
         Assertions.assertThat(dataSystemSourceConnectorService.getDataSystemType()).isEqualTo(DataSystemType.MYSQL);
     }
-
+    
     @Test
     public void testGetConnectorClassShouldAsExpect() {
         dataSystemSourceConnectorService.getConnectorClass();
-
+        
         ArgumentCaptor<DataSystemType> dataSystemTypeCaptor = ArgumentCaptor.forClass(DataSystemType.class);
         ArgumentCaptor<ConnectorType> connectorTypeCaptor = ArgumentCaptor.forClass(ConnectorType.class);
-
+        
         Mockito.verify(connectorClassService).getDetailByDataSystemTypeAndConnectorType(dataSystemTypeCaptor.capture(), connectorTypeCaptor.capture());
         Assertions.assertThat(dataSystemTypeCaptor.getValue()).isEqualTo(DataSystemType.MYSQL);
         Assertions.assertThat(connectorTypeCaptor.getValue()).isEqualTo(ConnectorType.SOURCE);

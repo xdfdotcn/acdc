@@ -2,34 +2,34 @@ package cn.xdf.acdc.devops.core.domain.dto;
 
 import cn.xdf.acdc.devops.core.domain.entity.ConnectorEventDO;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
 
 import java.util.Date;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@Accessors(chain = true)
 public class ConnectorEventDTO {
-
+    
     private Long id;
-
+    
     private String reason;
-
+    
     private String message;
-
+    
     private Date creationTime;
-
+    
     private Date updateTime;
-
+    
     private Integer source;
-
+    
     private Integer level;
-
+    
     private Long connectorId;
-
+    
     public ConnectorEventDTO(final ConnectorEventDO connectorEvent) {
         this.id = connectorEvent.getId();
         this.reason = connectorEvent.getReason();

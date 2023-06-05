@@ -1,17 +1,13 @@
 // @ts-ignore
-/CONSTANT* eslint-disable */
+/CONSTANT* eslint-disable */;
 
 import { request } from 'umi';
 
-
+/**
+ ***********************A CDC API********************************
+ */
 
 /**
-***********************A CDC API********************************
-*/
-
-
-
-/** 
  * Login
  */
 export async function login(options?: { [key: string]: any }) {
@@ -19,55 +15,50 @@ export async function login(options?: { [key: string]: any }) {
     options = {};
   }
   return request<{
-    data: API.LoginGuider
+    data: API.LoginGuider;
   }>('/api/login', {
     method: 'POST',
     params: {
-      ...options
+      ...options,
     },
     ...(options || {}),
   });
 }
 
-/** 
+/**
  * Logout
  */
 export async function logout(options?: { [key: string]: any }) {
   return request<{
-    data: API.LoginGuider
+    data: API.LoginGuider;
   }>('/api/logout', {
     method: 'POST',
     params: {
-      ...options
+      ...options,
     },
     ...(options || {}),
   });
 }
 
-/** 
+/**
  * Get UI config
  */
-export async function getUiConfig(
-  options?: { [key: string]: any },
-) {
+export async function getUiConfig(options?: { [key: string]: any }) {
   let url = '/api/v1/ui/config';
   return request<{
-    data: Map<String, String>
+    data: Map<String, String>;
   }>(url, {
     method: 'GET',
     ...(options || {}),
   });
 }
 
-/** 
+/**
  * 查询项目列表,分页
-*/
-export async function pagedQueryProject(
-  query: API.ProjectQuery,
-  options?: { [key: string]: any },
-) {
+ */
+export async function pagedQueryProject(query: API.ProjectQuery, options?: { [key: string]: any }) {
   if (typeof query.deleted === 'undefined') {
-    query.deleted = false
+    query.deleted = false;
   }
 
   return request<API.ProjectPageList>('/api/v1/projects', {
@@ -79,7 +70,7 @@ export async function pagedQueryProject(
   });
 }
 
-/** 
+/**
  * 获取项目
  */
 export async function getProject(
@@ -88,9 +79,8 @@ export async function getProject(
   },
   options?: { [key: string]: any },
 ) {
-
   if (!params || !params.projectId) {
-    return {}
+    return {};
   }
   let url = '/api/v1/projects/' + params.projectId;
   return request(url, {
@@ -102,7 +92,7 @@ export async function getProject(
   });
 }
 
-/** 
+/**
  * 创建项目
  */
 export async function createProject(body: API.Project, options?: { [key: string]: any }) {
@@ -113,9 +103,9 @@ export async function createProject(body: API.Project, options?: { [key: string]
   });
 }
 
-/** 
- * 编辑项目 
-*/
+/**
+ * 编辑项目
+ */
 export async function editProject(body: API.Project, options?: { [key: string]: any }) {
   return request('/api/v1/projects', {
     method: 'PATCH',
@@ -139,11 +129,10 @@ export async function queryProjectUser(
   },
   options?: { [key: string]: any },
 ) {
-
   if (!params || !params.projectId) {
-    return []
+    return [];
   }
-  let url = '/api/v1/projects/' + params.projectId + '/users'
+  let url = '/api/v1/projects/' + params.projectId + '/users';
   return request<API.AcdcUser>(url, {
     method: 'GET',
     params: {
@@ -153,16 +142,15 @@ export async function queryProjectUser(
   });
 }
 
-/** 
- * 创建项目 
-*/
+/**
+ * 创建项目
+ */
 export async function editProjectUser(body: API.AcdcUser[], options?: { [key: string]: any }) {
-
   if (!body || !options || !options.projectId) {
-    return
+    return;
   }
 
-  let url = '/api/v1/projects/' + options.projectId + '/users'
+  let url = '/api/v1/projects/' + options.projectId + '/users';
   return request(url, {
     method: 'POST',
     data: body,
@@ -170,7 +158,7 @@ export async function editProjectUser(body: API.AcdcUser[], options?: { [key: st
   });
 }
 
-/** 
+/**
  * 查询所有用户信息
  */
 export async function queryUser(
@@ -194,40 +182,37 @@ export async function queryUser(
 
 /**
  * 获取字段配置列表
-*/
+ */
 export async function generateConnectionColumnConf(
   sourceDataCollectionId: number,
-  sinkDataCollectionId: number) {
-  let url = '/api/v1/connections/column-configurations/generate'
+  sinkDataCollectionId: number,
+) {
+  let url = '/api/v1/connections/column-configurations/generate';
   return request<API.ConnectionColumnConf[]>(url, {
     method: 'GET',
     params: {
       sourceDataCollectionId: sourceDataCollectionId,
-      sinkDataCollectionId: sinkDataCollectionId
+      sinkDataCollectionId: sinkDataCollectionId,
     },
   });
 }
 
-export async function generateConnectionColumnConfByConnectionId(
-  connectionId: number
-) {
-  let url = '/api/v1/connections/' + connectionId + '/column-configurations/generate'
+export async function generateConnectionColumnConfByConnectionId(connectionId: number) {
+  let url = '/api/v1/connections/' + connectionId + '/column-configurations/generate';
   return request<API.ConnectionColumnConf[]>(url, {
     method: 'GET',
-    params: {
-    },
+    params: {},
   });
 }
 
-
-/** 
+/**
  * 获取数据集字段声明
  */
 export async function getDataCollectionDefinition(options?: { [key: string]: any }) {
   if (!options?.id) {
     return [];
   }
-  let url = '/api/v1/data-system-resources/' + options?.id + '/definition';
+  let url = '/api/v1/data-system-resources/' + options?.id + '/data-collection-definition';
   return request<API.DataCollectionDefinition>(url, {
     method: 'GET',
     ...(options || {}),
@@ -236,9 +221,12 @@ export async function getDataCollectionDefinition(options?: { [key: string]: any
 
 /**
  * 申请链路
- * 
+ *
  */
-export async function applyConnection(body: API.ConnectionRequisitionDetail, options?: { [key: string]: any }) {
+export async function applyConnection(
+  body: API.ConnectionRequisitionDetail,
+  options?: { [key: string]: any },
+) {
   return request('/api/v1/connections', {
     method: 'POST',
     data: body,
@@ -249,7 +237,10 @@ export async function applyConnection(body: API.ConnectionRequisitionDetail, opt
 /**
  * 更新链路
  */
-export async function updateConnection(body: API.ConnectionDetail[], options?: { [key: string]: any }) {
+export async function updateConnection(
+  body: API.ConnectionDetail[],
+  options?: { [key: string]: any },
+) {
   if (body.length <= 0) {
     return;
   }
@@ -263,51 +254,43 @@ export async function updateConnection(body: API.ConnectionDetail[], options?: {
   });
 }
 
-/** 
+/**
  * start a connector
  */
-export async function startConnector(
-  connectorId: number
-) {
+export async function startConnector(connectorId: number) {
   let url = '/api/connectors/' + connectorId + '/start';
   return request<any>(url, {
-    method: 'POST'
+    method: 'POST',
   });
 }
 
-/** 
+/**
  * start a connector
  */
-export async function stopConnector(
-  connectorId: number
-) {
+export async function stopConnector(connectorId: number) {
   let url = '/api/connectors/' + connectorId + '/stop';
   return request<any>(url, {
-    method: 'POST'
+    method: 'POST',
   });
 }
 
-/** 
- * start a connection
-*/
-export async function startConnection(
-  connectionId: number
-) {
-  let url = '/api/v1/connections/' + connectionId + '/start';
-  return request<any>(url, {
-    method: 'POST'
-  });
-}
-
-/** 
+/**
  * start a connection
  */
-export async function stopConnection(
-  connectionId: number
-) {
+export async function startConnection(connectionId: number) {
+  let url = '/api/v1/connections/' + connectionId + '/start';
+  return request<any>(url, {
+    method: 'POST',
+  });
+}
+
+/**
+ * start a connection
+ */
+export async function stopConnection(connectionId: number) {
   let url = '/api/v1/connections/' + connectionId + '/stop';
   return request<any>(url, {
-    method: 'POST'
+    method: 'POST',
   });
 }
 
@@ -316,7 +299,7 @@ export async function stopConnection(
  */
 export async function getConnectionActualStatus(options?: { [key: string]: any }) {
   if (!options?.id) {
-    return
+    return;
   }
 
   let url = '/api/v1/connections/' + options?.id + '/actualStatus';
@@ -326,7 +309,7 @@ export async function getConnectionActualStatus(options?: { [key: string]: any }
   });
 }
 
-/** 
+/**
  * 查询 connector 列表
  */
 export async function queryConnectors(
@@ -347,7 +330,7 @@ export async function queryConnectors(
   });
 }
 
-/** 
+/**
  * 查询 connection 列表
  */
 export async function queryConnection(
@@ -359,7 +342,7 @@ export async function queryConnection(
   },
   options?: { [key: string]: any },
 ) {
-  console.log(options)
+  console.log(options);
   return request<API.ConnectionList>('/api/v1/connections', {
     method: 'GET',
     params: {
@@ -370,12 +353,10 @@ export async function queryConnection(
   });
 }
 
-/** 
+/**
  * 删除 connection
  */
-export async function deleteConnection(
-  options?: { [key: string]: any }
-) {
+export async function deleteConnection(options?: { [key: string]: any }) {
   if (!options?.connectionId) {
     return [];
   }
@@ -383,18 +364,17 @@ export async function deleteConnection(
 
   return request(url, {
     method: 'DELETE',
-    params: {
-    },
+    params: {},
     ...(options || {}),
   });
 }
 
 /**
  * 获取 conection 详情
-*/
+ */
 export async function getConnectionDetail(id: number) {
   if (!id) {
-    return
+    return;
   }
 
   const url = '/api/v1/connections/' + id;
@@ -407,7 +387,7 @@ export async function getConnectionDetail(id: number) {
 /**获取 sink 详情 */
 export async function getConnectorDetail(id: number) {
   if (!id) {
-    return
+    return;
   }
 
   const url = '/api/connectors/' + id;
@@ -416,10 +396,9 @@ export async function getConnectorDetail(id: number) {
   });
 }
 
-
-/** 
+/**
  * 查询  connector event列表
-*/
+ */
 export async function getEventList(
   connectorId: number,
   params: API.EventListQueryparams,
@@ -434,13 +413,12 @@ export async function getEventList(
   });
 }
 
-
 /**
  * 获取申请单详情
  */
 export async function getConnectionRequisitionDetail(id: number) {
   if (!id) {
-    return
+    return;
   }
 
   const url = '/api/v1/connection-requisition/' + id;
@@ -453,9 +431,13 @@ export async function getConnectionRequisitionDetail(id: number) {
 /**
  * 申请单审批
  */
-export async function doConnectionRequisitionApprove(id: number, approved: boolean, approveResult: string) {
+export async function doConnectionRequisitionApprove(
+  id: number,
+  approved: boolean,
+  approveResult: string,
+) {
   if (!id) {
-    return
+    return;
   }
 
   const url = '/api/v1/connection-requisitions/' + id + '/approve';
@@ -465,7 +447,7 @@ export async function doConnectionRequisitionApprove(id: number, approved: boole
     data: {
       approveResult: approveResult,
       approved: approved,
-    }
+    },
   });
 }
 
@@ -481,9 +463,8 @@ export async function queryConnectonRequisition(
   },
   options?: { [key: string]: any },
 ) {
-
   if (!params.connectionId) {
-    return []
+    return [];
   }
   let url = '/api/v1/connections/' + params.connectionId + '/connection-requisitions';
   return request(url, {
@@ -500,11 +481,10 @@ export async function queryConnectonRequisition(
  */
 export async function getDataSystemResource(
   params: {
-    id?: number
+    id?: number;
   },
   options?: { [key: string]: any },
 ) {
-
   let url = '/api/v1/data-system-resources/' + params.id;
   return request<API.DataSystemResource>(url, {
     method: 'GET',
@@ -522,25 +502,25 @@ export async function pagedQueryDataSystemResource(
   query: API.DataSystemResourceQuery,
   options?: { [key: string]: any },
 ) {
-
-  if (!query.projectId && !query.parentResourceId) {
-    return []
+  // TODO 临时兼容老版本的链路申请接口调用，增加'DcSearcher'页面来源
+  if (!query.projectId && !query.parentResourceId && 'DcSearcher' != query.from) {
+    return {};
   }
 
   if (typeof query.deleted === 'undefined') {
-    query.deleted = false
+    query.deleted = false;
   }
 
-  let requestParams = { ...query }
+  let requestParams = { ...query };
 
   if (query.resourceConfigurations) {
     let resourceConfigurations = query.resourceConfigurations;
-    let resourceConfigurationsKey = "resourceConfigurations"
+    let resourceConfigurationsKey = 'resourceConfigurations';
 
     delete requestParams.resourceConfigurations;
 
     for (let key in resourceConfigurations) {
-      requestParams[resourceConfigurationsKey + '[' + key + ']'] = resourceConfigurations[key]
+      requestParams[resourceConfigurationsKey + '[' + key + ']'] = resourceConfigurations[key];
     }
   }
 
@@ -554,10 +534,13 @@ export async function pagedQueryDataSystemResource(
   });
 }
 
-/** 
+/**
  * 编辑数据系统资源
-*/
-export async function updateDataSystemResource(body: API.DataSystemResource, options?: { [key: string]: any }) {
+ */
+export async function updateDataSystemResource(
+  body: API.DataSystemResource,
+  options?: { [key: string]: any },
+) {
   let url = '/api/v1/data-system-resources/' + body.id;
 
   return request(url, {
@@ -570,7 +553,11 @@ export async function updateDataSystemResource(body: API.DataSystemResource, opt
 /**
  * 更新某个父节点的子节点
  */
-export async function updateChildDataSystemResources(parentResourceId: number, body: API.DataSystemResource[], options?: { [key: string]: any }) {
+export async function updateChildDataSystemResources(
+  parentResourceId: number,
+  body: API.DataSystemResource[],
+  options?: { [key: string]: any },
+) {
   let url = '/api/v1/data-system-resources/' + parentResourceId + '/data-system-resources';
 
   return request(url, {
@@ -583,7 +570,10 @@ export async function updateChildDataSystemResources(parentResourceId: number, b
 /**
  * 创建数据系统资源
  */
-export async function createDataSystemResource(body: API.DataSystemResource, options?: { [key: string]: any }) {
+export async function createDataSystemResource(
+  body: API.DataSystemResource,
+  options?: { [key: string]: any },
+) {
   let url = '/api/v1/data-system-resources/';
   return request(url, {
     method: 'POST',
@@ -595,10 +585,35 @@ export async function createDataSystemResource(body: API.DataSystemResource, opt
 /**
  * 刷新数据系统
  */
-export async function refreshDynamicDataSystemResource(resourceId: number, options?: { [key: string]: any }) {
+export async function refreshDynamicDataSystemResource(
+  resourceId: number,
+  options?: { [key: string]: any },
+) {
   let url = '/api/v1/data-system-resources/' + resourceId + '/refresh';
   return request(url, {
     method: 'POST',
+    ...(options || {}),
+  });
+}
+
+/**
+ * 数据系统资源列表查询(分页)
+ */
+export async function queryDataSystemResourceDefinition() {
+  let url = '/api/v1/data-system-resources/definitions';
+  return request<API.DataSystemResourceDefinition[]>(url, {
+    method: 'GET',
+    params: {},
+    ...{},
+  });
+}
+
+export async function validateDataCollection(body: number[], options?: { [key: string]: any }) {
+  let url = '/api/v1/data-system-resources/data-collection/validate';
+
+  return request<boolean>(url, {
+    method: 'POST',
+    data: body,
     ...(options || {}),
   });
 }

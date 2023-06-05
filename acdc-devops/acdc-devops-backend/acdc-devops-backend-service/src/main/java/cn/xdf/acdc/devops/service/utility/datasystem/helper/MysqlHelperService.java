@@ -36,20 +36,22 @@ import java.util.stream.Collectors;
 /**
  * A utility service for Mysql, such as show tables of a database.
  *
- * <p>Make sure every password argument is decrypted.
+ * <p>
+ * Make sure every password argument is decrypted.
+ * </p>
  */
 @Slf4j
 @Service
 public class MysqlHelperService {
-
+    
     protected static final String SHOW_VARIABLES_SQL = "show variables";
-
+    
     protected static final String ALL_PRIVILEGES = "ALL PRIVILEGES";
-
+    
     protected static final String SQL_SHOW_DATABASES = " SHOW DATABASES ";
-
+    
     protected static final String SQL_SHOW_TABLES = " SHOW TABLES ";
-
+    
     protected static final String SQL_DESC_TABLE = new StringBuilder()
             .append("SELECT ")
             .append("info_schema_columns.column_name,")
@@ -62,17 +64,17 @@ public class MysqlHelperService {
             .append(" ON ")
             .append("info_schema_columns.column_name = info_schema_statistics.column_name")
             .toString();
-
+    
     protected static final String CONNECTION_PROPERTY = "useSSL=false";
-
+    
     private static final String SHOW_GRANTS_SQL_PATTERN = "show grants for %s@'%s'";
-
+    
     private static final String SHOW_GRANTS_RESULT_KEYWORD_ON = " ON ";
-
+    
     private static final String SHOW_GRANTS_RESULT_KEYWORD_GRANT = "GRANT ";
-
+    
     private static final String SHOW_GRANTS_RESULT_SPLIT = ",";
-
+    
     static {
         try {
             Class.forName("com.mysql.jdbc.Driver");
@@ -81,22 +83,22 @@ public class MysqlHelperService {
             throw new ServerErrorException(e);
         }
     }
-
+    
     private RuntimeProperties runtimeProperties;
-
+    
     @Autowired
     public MysqlHelperService(final RuntimeProperties runtimeProperties) {
         this.runtimeProperties = runtimeProperties;
     }
-
+    
     /**
      * Execute a query sql to mysql.
      *
-     * @param hostAndPort         host and port model
+     * @param hostAndPort host and port model
      * @param usernameAndPassword username and password model
-     * @param sql                 sql
-     * @param callback            callback function
-     * @param <R>                 callback function method return value
+     * @param sql sql
+     * @param callback callback function
+     * @param <R> callback function method return value
      * @return jdbc query result
      */
     public <R> R executeQuery(
@@ -106,16 +108,16 @@ public class MysqlHelperService {
             final Function<ResultSet, R> callback) {
         return executeQuery(hostAndPort, usernameAndPassword, null, sql, callback);
     }
-
+    
     /**
      * Execute a query sql to mysql in a database.
      *
-     * @param hostAndPort         host and port model
+     * @param hostAndPort host and port model
      * @param usernameAndPassword username and password model
-     * @param database            database name
-     * @param sql                 sql
-     * @param callback            callback function
-     * @param <R>                 callback function method return value
+     * @param database database name
+     * @param sql sql
+     * @param callback callback function
+     * @param <R> callback function method return value
      * @return jdbc query result
      */
     public <R> R executeQuery(
@@ -126,15 +128,15 @@ public class MysqlHelperService {
             final Function<ResultSet, R> callback) {
         return executeQuery(createConnection(generateMysqlUrl(hostAndPort, database), usernameAndPassword), sql, callback);
     }
-
+    
     /**
      * Execute a query sql to mysql in a database.
      *
-     * @param url                 jdbc url
+     * @param url jdbc url
      * @param usernameAndPassword username and password model
-     * @param sql                 sql
-     * @param callback            callback function
-     * @param <R>                 callback function method return value
+     * @param sql sql
+     * @param callback callback function
+     * @param <R> callback function method return value
      * @return jdbc query result
      */
     public <R> R executeQuery(
@@ -144,16 +146,16 @@ public class MysqlHelperService {
             final Function<ResultSet, R> callback) {
         return executeQuery(createConnection(url, usernameAndPassword), sql, callback);
     }
-
+    
     /**
      * Execute a query sql to mysql in a database.
      *
-     * @param url                 jdbc url
+     * @param url jdbc url
      * @param usernameAndPassword username and password model
-     * @param sql                 sql
-     * @param prepareFun          preprocessing function
-     * @param callback            callback function
-     * @param <R>                 callback function method return value
+     * @param sql sql
+     * @param prepareFun preprocessing function
+     * @param callback callback function
+     * @param <R> callback function method return value
      * @return jdbc query result
      */
     public <R> R executeQuery(
@@ -164,7 +166,7 @@ public class MysqlHelperService {
             final Function<ResultSet, R> callback) {
         return executeQuery(createConnection(url, usernameAndPassword), sql, prepareFun, callback);
     }
-
+    
     protected <R> R executeQuery(
             final Connection connection,
             final String sql,
@@ -184,7 +186,7 @@ public class MysqlHelperService {
             close(conn, stmt, rs);
         }
     }
-
+    
     protected <R> R executeQuery(
             final Connection connection,
             final String sql,
@@ -207,13 +209,13 @@ public class MysqlHelperService {
             close(conn, stmt, rs);
         }
     }
-
+    
     /**
      * Show grants of a user and client host.
      *
-     * @param hostAndPort         host and port model
+     * @param hostAndPort host and port model
      * @param usernameAndPassword username and password model
-     * @param clientHost          client host
+     * @param clientHost client host
      * @return grants set
      */
     public Set<String> showGrants(
@@ -233,16 +235,16 @@ public class MysqlHelperService {
                         String.format("error while execute show grants error for user '%s'@'%s' in rdb instance '%s:%s'", usernameAndPassword.getUsername(), clientHost, hostAndPort.getHost(),
                                 hostAndPort.getPort()), e);
             }
-
+            
             if (log.isDebugEnabled()) {
                 log.debug("extract permissions successfully. [mysqlHost]:{}, [port]:{}, [permissions]:{}, [readyForCheckHost]:{}", hostAndPort.getHost(), hostAndPort.getPort(), permissions,
                         clientHost);
             }
-
+            
             return permissions;
         });
     }
-
+    
     protected Set<String> extractPermissionsFromShowGrantsResult(final String grantedPermissionsString) {
         /*
          * grantedPermissionsString's format is like:
@@ -257,11 +259,11 @@ public class MysqlHelperService {
         String substring = grantedPermissionsString.substring(6, grantedPermissionsString.indexOf(SHOW_GRANTS_RESULT_KEYWORD_ON)).toUpperCase();
         return Arrays.stream(substring.split(SHOW_GRANTS_RESULT_SPLIT)).map(String::trim).collect(Collectors.toSet());
     }
-
+    
     /**
      * Show variables of a mysql instance.
      *
-     * @param hostAndPort         host and port model
+     * @param hostAndPort host and port model
      * @param usernameAndPassword username and password model
      * @return variables map
      */
@@ -277,26 +279,26 @@ public class MysqlHelperService {
             } catch (SQLException e) {
                 throw new ServerErrorException(String.format("error while execute show variables at mysql instance '%s:%s'", hostAndPort.getHost(), hostAndPort.getPort()), e);
             }
-
+            
             if (log.isDebugEnabled()) {
                 log.debug("execute show variables successfully, variables: {}", variables);
             }
-
+            
             return variables;
         });
     }
-
+    
     /**
      * Get database names of an instance.
      *
-     * @param hostAndPort         host and port model
+     * @param hostAndPort host and port model
      * @param usernameAndPassword username and password model
      * @return database name list
      */
     public List<String> showDataBases(final HostAndPort hostAndPort, final UsernameAndPassword usernameAndPassword) {
         Preconditions.checkArgument(!Strings.isNullOrEmpty(hostAndPort.getHost()), "Ip is empty.");
         Preconditions.checkArgument(hostAndPort.getPort() > 0, "Port is illegal.");
-
+        
         return executeQuery(hostAndPort, usernameAndPassword, sqlOfShowDatabase(), rs -> {
             List<String> databases = Lists.newArrayList();
             try {
@@ -306,17 +308,17 @@ public class MysqlHelperService {
             } catch (SQLException e) {
                 throw new ServerErrorException(e);
             }
-
+            
             return CollectionUtils.isEmpty(databases) ? Collections.EMPTY_LIST : databases;
         });
     }
-
+    
     /**
      * Get database names of an instance.
      *
-     * @param hostAndPort         host and port model
+     * @param hostAndPort host and port model
      * @param usernameAndPassword username and password model
-     * @param predicate           filter function
+     * @param predicate filter function
      * @return database list
      */
     public List<String> showDataBases(final HostAndPort hostAndPort, final UsernameAndPassword usernameAndPassword, final Predicate<String> predicate) {
@@ -324,13 +326,13 @@ public class MysqlHelperService {
                 .filter(predicate)
                 .collect(Collectors.toList());
     }
-
+    
     /**
      * Get database names of an instances.
      *
-     * @param hostAndPorts        host and port model
+     * @param hostAndPorts host and port model
      * @param usernameAndPassword username and password model
-     * @param predicate           filter function
+     * @param predicate filter function
      * @return database list
      */
     public List<String> showDataBases(final Set<HostAndPort> hostAndPorts, final UsernameAndPassword usernameAndPassword, final Predicate<String> predicate) {
@@ -339,12 +341,12 @@ public class MysqlHelperService {
                 .filter(predicate)
                 .collect(Collectors.toList());
     }
-
+    
     /**
      * Get table names of a mysql database.
      *
-     * @param hostAndPorts        host and port model
-     * @param database            database name
+     * @param hostAndPorts host and port model
+     * @param database database name
      * @param usernameAndPassword username and password model
      * @return table list
      */
@@ -352,12 +354,12 @@ public class MysqlHelperService {
         HostAndPort hostAndPort = choiceAvailableInstance(hostAndPorts, usernameAndPassword);
         return showTables(hostAndPort, usernameAndPassword, database);
     }
-
+    
     /**
      * Get table names of a mysql database.
      *
-     * @param hostAndPort         host and port model
-     * @param database            database name
+     * @param hostAndPort host and port model
+     * @param database database name
      * @param usernameAndPassword username and password model
      * @return table list
      */
@@ -365,7 +367,7 @@ public class MysqlHelperService {
         Preconditions.checkArgument(!Strings.isNullOrEmpty(hostAndPort.getHost()), "Ip is illegal.");
         Preconditions.checkArgument(hostAndPort.getPort() > 0, "Port is illegal.");
         Preconditions.checkArgument(!Strings.isNullOrEmpty(database), "Database is illegal.");
-
+        
         Connection conn = createConnection(generateMysqlUrl(hostAndPort, database), usernameAndPassword);
         return executeQuery(conn, sqlOfShowTable(), rs -> {
             List<String> tables = Lists.newArrayList();
@@ -376,32 +378,32 @@ public class MysqlHelperService {
             } catch (SQLException e) {
                 throw new ServerErrorException(e);
             }
-
+            
             return CollectionUtils.isEmpty(tables) ? Collections.EMPTY_LIST : tables;
         });
     }
-
+    
     /**
      * 从 rdb 实例中选择一个可用的，读取并返回某张 rdb 表的 ddl 信息.
      *
-     * @param hostAndPosts        host and port model
+     * @param hostAndPosts host and port model
      * @param usernameAndPassword username and password model
-     * @param database            database name
-     * @param table               table name
+     * @param database database name
+     * @param table table name
      * @return table filed list
      */
     public List<RelationalDatabaseTableField> descTable(final Set<HostAndPort> hostAndPosts, final UsernameAndPassword usernameAndPassword, final String database, final String table) {
         HostAndPort hostAndPort = choiceAvailableInstance(hostAndPosts, usernameAndPassword);
         return descTable(hostAndPort, usernameAndPassword, database, table);
     }
-
+    
     /**
      * 获取表结构.
      *
-     * @param hostAndPort         host and port model
+     * @param hostAndPort host and port model
      * @param usernameAndPassword username and password model
-     * @param database            database name
-     * @param table               table name
+     * @param database database name
+     * @param table table name
      * @return table field list
      */
     public List<RelationalDatabaseTableField> descTable(final HostAndPort hostAndPort, final UsernameAndPassword usernameAndPassword, final String database, final String table) {
@@ -409,7 +411,7 @@ public class MysqlHelperService {
         Preconditions.checkArgument(hostAndPort.getPort() > 0, "Port is illegal.");
         Preconditions.checkArgument(!Strings.isNullOrEmpty(database), "Database is illegal.");
         Preconditions.checkArgument(!Strings.isNullOrEmpty(table), "Database is illegal.");
-
+        
         Connection conn = createConnection(generateMysqlUrl(hostAndPort, database), usernameAndPassword);
         return executeQuery(conn, sqlOfDescTable(database, table), rs -> {
             Map<String, RelationalDatabaseTableField> nameToFields = new HashMap<>();
@@ -418,12 +420,11 @@ public class MysqlHelperService {
                     String columnName = rs.getString(1);
                     String columnType = rs.getString(2);
                     String columnUniqueIndexName = rs.getString(3);
-
-                    nameToFields.computeIfAbsent(columnName, key -> RelationalDatabaseTableField.builder()
-                            .name(columnName)
-                            .type(columnType)
-                            .build());
-
+                    
+                    nameToFields.computeIfAbsent(columnName, key -> new RelationalDatabaseTableField()
+                            .setName(columnName)
+                            .setType(columnType));
+                    
                     if (!Strings.isNullOrEmpty(columnUniqueIndexName)) {
                         nameToFields.get(columnName).getUniqueIndexNames().add(columnUniqueIndexName);
                     }
@@ -431,24 +432,24 @@ public class MysqlHelperService {
             } catch (SQLException e) {
                 throw new ServerErrorException(e);
             }
-
+            
             if (nameToFields.isEmpty()) {
                 throw new ServerErrorException("Not exist fields, table is: " + table);
             }
-
+            
             return new ArrayList<>(nameToFields.values());
         });
     }
-
+    
     /**
      * Check rdb instance permissions.
      *
-     * @param hostAndPort         instance host and port
+     * @param hostAndPort instance host and port
      * @param usernameAndPassword username and password
      * @param requiredPermissions required permissions
      */
     public void checkPermissions(final HostAndPort hostAndPort, final UsernameAndPassword usernameAndPassword,
-            final List<String[]> requiredPermissions) {
+                                 final List<String[]> requiredPermissions) {
         // check host range first
         for (String each : runtimeProperties.getHost().getRanges()) {
             try {
@@ -463,7 +464,7 @@ public class MysqlHelperService {
                         usernameAndPassword.getUsername(), each, hostAndPort.getHost(), hostAndPort.getPort()), e);
             }
         }
-
+        
         try {
             // if no permissions for host range, check for each ip
             for (String each : runtimeProperties.getHost().getIps()) {
@@ -473,7 +474,7 @@ public class MysqlHelperService {
             throw new ServerErrorException(String.format("%s for user '%s'", ErrorMsg.Authorization.INSUFFICIENT_PERMISSIONS, usernameAndPassword.getUsername()), e);
         }
     }
-
+    
     protected void checkPermissions(final Set<String> grantedPermissions, final List<String[]> requiredPermissions) {
         if (grantedPermissions.contains(ALL_PRIVILEGES)) {
             return;
@@ -490,14 +491,14 @@ public class MysqlHelperService {
             }
         }
     }
-
+    
     private void checkPermissions(final HostAndPort hostAndPort, final UsernameAndPassword usernameAndPassword,
-            final List<String[]> requiredPermissions, final String clientHost) {
+                                  final List<String[]> requiredPermissions, final String clientHost) {
         Set<String> grantedPermissions = this.showGrants(hostAndPort, usernameAndPassword, clientHost);
         // check if permission is enough
         checkPermissions(grantedPermissions, requiredPermissions);
     }
-
+    
     private HostAndPort choiceAvailableInstance(final Set<HostAndPort> hostAndPorts, final UsernameAndPassword usernameAndPassword) {
         if (!CollectionUtils.isEmpty(hostAndPorts)) {
             for (HostAndPort each : hostAndPorts) {
@@ -511,27 +512,27 @@ public class MysqlHelperService {
         }
         throw new ServerErrorException("No available rdb instance host: " + hostAndPorts);
     }
-
+    
     protected String sqlOfShowTable() {
         return SQL_SHOW_TABLES;
     }
-
+    
     protected String sqlOfShowDatabase() {
         return SQL_SHOW_DATABASES;
     }
-
+    
     protected String sqlOfDescTable(final String database, final String table) {
         return String.format(SQL_DESC_TABLE, database, table, database, table);
     }
-
+    
     protected String generateMysqlUrl(final HostAndPort hostAndPort) {
         return generateMysqlUrl(hostAndPort, null);
     }
-
+    
     protected String generateMysqlUrl(final HostAndPort hostAndPort, final String database) {
         return UrlUtil.generateJDBCUrl(DataSystemType.MYSQL.name().toLowerCase(), hostAndPort.getHost(), hostAndPort.getPort(), database, CONNECTION_PROPERTY);
     }
-
+    
     protected Connection createConnection(
             final String url,
             final UsernameAndPassword usernameAndPassword) {
@@ -544,7 +545,7 @@ public class MysqlHelperService {
             throw new ServerErrorException(String.format("Can not connect to %s with user %s", url, usernameAndPassword.getUsername()), e);
         }
     }
-
+    
     protected void close(final Connection conn, final Statement stmt, final ResultSet rs) {
         if (Objects.nonNull(conn)) {
             try {
@@ -560,7 +561,7 @@ public class MysqlHelperService {
                 throw new ServerErrorException(e);
             }
         }
-
+        
         if (Objects.nonNull(rs)) {
             try {
                 rs.close();

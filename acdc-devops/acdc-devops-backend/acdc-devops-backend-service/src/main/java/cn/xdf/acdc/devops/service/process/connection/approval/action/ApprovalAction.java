@@ -6,13 +6,13 @@ import cn.xdf.acdc.devops.service.process.connection.approval.ApprovalStateMachi
 import cn.xdf.acdc.devops.service.process.connection.approval.event.ApprovalEvent;
 
 public interface ApprovalAction {
-
+    
     /**
      * Execute action.
      *
-     * @param from    from state
-     * @param to      to state
-     * @param event   event
+     * @param from from state
+     * @param to to state
+     * @param event event
      * @param context context
      * @param machine machine
      */

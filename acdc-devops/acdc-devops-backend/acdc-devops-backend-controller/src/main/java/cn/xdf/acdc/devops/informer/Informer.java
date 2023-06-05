@@ -10,7 +10,7 @@ import java.util.concurrent.TimeoutException;
  * @param <E> element
  */
 public interface Informer<E> extends Runnable {
-
+    
     /**
      * Wait until informer is initialized.
      *
@@ -20,23 +20,24 @@ public interface Informer<E> extends Runnable {
      * @throws TimeoutException timeout exception
      */
     void waitForInitialized(long timeout, TimeUnit unit) throws InterruptedException, TimeoutException;
-
+    
     /**
      * Is this informer initialized.
      *
      * @return is initialized or not
      */
     boolean isInitialized();
-
+    
     /**
      * This informer's data.
      *
      * @return data
      */
     Collection<E> getAll();
-
+    
     /**
      * Get data by key.
+     *
      * @param key key
      * @return element
      */

@@ -20,17 +20,18 @@ import java.util.concurrent.Executor;
 
 @Configuration
 public class LiquibaseConfiguration {
-
+    
     private final Logger log = LoggerFactory.getLogger(LiquibaseConfiguration.class);
-
+    
     private final Environment env;
-
+    
     public LiquibaseConfiguration(final Environment env) {
         this.env = env;
     }
-
+    
     /**
      * liquibase 配置.
+     *
      * @param executor executor
      * @param liquibaseDataSource liquibaseDataSource
      * @param liquibaseProperties liquibaseProperties
@@ -40,21 +41,21 @@ public class LiquibaseConfiguration {
      */
     @Bean
     public SpringLiquibase liquibase(
-        @Qualifier("taskExecutor") final Executor executor,
-        @LiquibaseDataSource final ObjectProvider<DataSource> liquibaseDataSource,
-        final LiquibaseProperties liquibaseProperties,
-        final ObjectProvider<DataSource> dataSource,
-        final DataSourceProperties dataSourceProperties
+            @Qualifier("taskExecutor") final Executor executor,
+            @LiquibaseDataSource final ObjectProvider<DataSource> liquibaseDataSource,
+            final LiquibaseProperties liquibaseProperties,
+            final ObjectProvider<DataSource> dataSource,
+            final DataSourceProperties dataSourceProperties
     ) {
         // If you don't want Liquibase to start asynchronously, substitute by this:
         // SpringLiquibase liquibase = SpringLiquibaseUtil.createSpringLiquibase(liquibaseDataSource.getIfAvailable(), liquibaseProperties, dataSource.getIfUnique(), dataSourceProperties);
         SpringLiquibase liquibase = SpringLiquibaseUtil.createAsyncSpringLiquibase(
-            this.env,
-            executor,
-            liquibaseDataSource.getIfAvailable(),
-            liquibaseProperties,
-            dataSource.getIfUnique(),
-            dataSourceProperties
+                this.env,
+                executor,
+                liquibaseDataSource.getIfAvailable(),
+                liquibaseProperties,
+                dataSource.getIfUnique(),
+                dataSourceProperties
         );
         liquibase.setChangeLog("classpath:config/liquibase/master.xml");
         liquibase.setContexts(liquibaseProperties.getContexts());

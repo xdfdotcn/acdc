@@ -27,12 +27,14 @@ import cn.xdf.acdc.connect.hdfs.schema.SinkSchema;
 import cn.xdf.acdc.connect.hdfs.schema.SinkSchemas;
 import cn.xdf.acdc.connect.hdfs.storage.HdfsFileOperator;
 import com.google.common.base.Preconditions;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -69,10 +71,10 @@ public class HiveMetaReader extends AbstractSchemaFileReader {
     private final SchemaProjector schemaProjector;
 
     public HiveMetaReader(
-        final HdfsSinkConfig hdfsSinkConf,
-        final StoreConfig storeConfig,
-        final HdfsFileOperator fileOperator,
-        final HiveMetaStore hiveMetaStore
+            final HdfsSinkConfig hdfsSinkConf,
+            final StoreConfig storeConfig,
+            final HdfsFileOperator fileOperator,
+            final HiveMetaStore hiveMetaStore
     ) {
         super(hdfsSinkConf, storeConfig, fileOperator);
         this.storeConfig = storeConfig;
@@ -83,8 +85,8 @@ public class HiveMetaReader extends AbstractSchemaFileReader {
 
     private Schema readHiveTableSchema() {
         SchemaBuilder schemaBuilder = SchemaBuilder.struct()
-            .name(SCHEMA_NAME)
-            .version(1);
+                .name(SCHEMA_NAME)
+                .version(1);
         return readHiveTableSchema(schemaBuilder);
     }
 
@@ -95,8 +97,8 @@ public class HiveMetaReader extends AbstractSchemaFileReader {
             Category category = objInspector.getCategory();
             if (Category.STRUCT != category) {
                 throw new ConnectException(
-                    "Top level type must be of type STRUCT, but was "
-                        + objInspector.getCategory().name()
+                        "Top level type must be of type STRUCT, but was "
+                                + objInspector.getCategory().name()
                 );
             }
 
@@ -105,24 +107,24 @@ public class HiveMetaReader extends AbstractSchemaFileReader {
             return SinkSchemas.convertToStructSchema(structFieldList, schemaBuilder);
         } catch (HiveMetaStoreException e) {
             throw new ConnectException(String.format("Read schema metastore exception for table %s.%s",
-                storeConfig.database(),
-                storeConfig.table()),
-                e);
+                    storeConfig.database(),
+                    storeConfig.table()),
+                    e);
         } catch (SerDeException e) {
             throw new ConnectException(String.format("Read schema serialize exception for table %s.%s",
-                storeConfig.database(),
-                storeConfig.table()),
-                e);
+                    storeConfig.database(),
+                    storeConfig.table()),
+                    e);
         } catch (DataException e) {
             throw new ConnectException(String.format("Read schema kafka data exception for table %s.%s",
-                storeConfig.database(),
-                storeConfig.table()),
-                e);
+                    storeConfig.database(),
+                    storeConfig.table()),
+                    e);
         } catch (ConnectException e) {
             throw new ConnectException(String.format("Read schema kafka connect exception for table %s.%s",
-                storeConfig.database(),
-                storeConfig.table()),
-                e);
+                    storeConfig.database(),
+                    storeConfig.table()),
+                    e);
         }
     }
 
@@ -132,10 +134,8 @@ public class HiveMetaReader extends AbstractSchemaFileReader {
     }
 
     /**
-     * 1. 以sink端的db的schema为准，进行数据record投影
-     * 2. 相对于sink端db的schema，record中存在字段缺失，默认返回null，后续可以考虑支持默认值
-     * 3. 相对于sink端db的schema，record中的字段在sink端db的schema中存在缺失，则参照sink端schema的声明顺序,在末尾追加缺失字段
-     * 4. 如果设置为不支持schema 变更，则忽略"3"中的处理
+     * 1. 以sink端的db的schema为准，进行数据record投影 2. 相对于sink端db的schema，record中存在字段缺失，默认返回null，后续可以考虑支持默认值 3. 相对于sink端db的schema，record中的字段在sink端db的schema中存在缺失，则参照sink端schema的声明顺序,在末尾追加缺失字段 4. 如果设置为不支持schema
+     * 变更，则忽略"3"中的处理
      */
     private SinkRecord project(final SinkRecord sinkRecord, final Schema targetSchema) {
         return schemaProjector.projectRecord(sinkRecord, null, targetSchema);
@@ -143,11 +143,11 @@ public class HiveMetaReader extends AbstractSchemaFileReader {
 
     private String schemaUniqueKey(final Schema structSchema) {
         return new StringBuilder()
-            .append(structSchema.name()).append(SCHEMA_UNIQUE_KEY_SEPARATOR)
-            .append(structSchema.type()).append(SCHEMA_UNIQUE_KEY_SEPARATOR)
-            .append(structSchema.version()).append(SCHEMA_UNIQUE_KEY_SEPARATOR)
-            .append(structSchema.parameters())
-            .toString();
+                .append(structSchema.name()).append(SCHEMA_UNIQUE_KEY_SEPARATOR)
+                .append(structSchema.type()).append(SCHEMA_UNIQUE_KEY_SEPARATOR)
+                .append(structSchema.version()).append(SCHEMA_UNIQUE_KEY_SEPARATOR)
+                .append(structSchema.parameters())
+                .toString();
     }
 
     private List<Field> searchMissingFieldFromSource(final Schema source, final Schema target) {
@@ -164,8 +164,8 @@ public class HiveMetaReader extends AbstractSchemaFileReader {
 
     private SchemaBuilder createSchemaBuilderFromSource(final Schema source) {
         SchemaBuilder schemaBuilder = SchemaBuilder.struct()
-            .name(source.name())
-            .version(source.version());
+                .name(source.name())
+                .version(source.version());
         Map<String, String> parameters = source.parameters();
         if (null != parameters && !parameters.isEmpty()) {
             schemaBuilder.parameters(source.parameters());
@@ -174,9 +174,9 @@ public class HiveMetaReader extends AbstractSchemaFileReader {
     }
 
     private Schema newSchemaByAppendMissingFields(
-        final SchemaBuilder schemaBuilder,
-        final Schema target,
-        final List<Field> toAppendFields) {
+            final SchemaBuilder schemaBuilder,
+            final Schema target,
+            final List<Field> toAppendFields) {
         toAppendFields.sort(Comparator.comparing((Field field) -> field.name().toUpperCase()));
         List<Field> newFields = new ArrayList<>(toAppendFields.size() + target.fields().size());
         newFields.addAll(target.fields());
@@ -210,31 +210,29 @@ public class HiveMetaReader extends AbstractSchemaFileReader {
             String targetKey = schemaUniqueKey(currentSchema);
             if (Objects.equals(sourceKey, targetKey)) {
                 log.info("Read meta schema from cache, check the schema not change, will keep using cache schema, "
-                    + "source: {}, target: {}, tp: {}", sourceKey, targetKey, topicPartition);
+                        + "source: {}, target: {}, tp: {}", sourceKey, targetKey, topicPartition);
 
-                return ProjectedResult.builder()
-                    .projectedRecord(project(sinkRecord, currentSchema))
-                    .needChangeSchema(false)
-                    .currentSchema(currentSchema)
-                    .build();
+                return new ProjectedResult()
+                        .setProjectedRecord(project(sinkRecord, currentSchema))
+                        .setNeedChangeSchema(false)
+                        .setCurrentSchema(currentSchema);
             }
             if (!Objects.equals(sourceKey, targetKey) && !isSupportSchemaChange) {
                 log.info("Read meta schema from cache, check the schema changed,"
-                    + "but configuration not supported schema change, will keep using cache schema, "
-                    + "source:{}, target:{}, tp: {}", sourceKey, targetKey, topicPartition);
+                        + "but configuration not supported schema change, will keep using cache schema, "
+                        + "source:{}, target:{}, tp: {}", sourceKey, targetKey, topicPartition);
 
                 // 不支持 schema 变更，但是应该校验修改后的数据类型是否兼容
                 schemaProjector.checkCompatibility(sourceSchema, currentSchema);
-                return ProjectedResult.builder()
-                    .projectedRecord(project(sinkRecord, currentSchema))
-                    .needChangeSchema(false)
-                    .currentSchema(currentSchema)
-                    .build();
+                return new ProjectedResult()
+                        .setProjectedRecord(project(sinkRecord, currentSchema))
+                        .setNeedChangeSchema(false)
+                        .setCurrentSchema(currentSchema);
             }
 
             log.info("Read meta schema from cache, check the schema changed, "
-                    + "configuration supported schema change, will read schema from meta, source: {}, target: {}, tp: {}",
-                sourceKey, targetKey, topicPartition
+                            + "configuration supported schema change, will read schema from meta, source: {}, target: {}, tp: {}",
+                    sourceKey, targetKey, topicPartition
             );
         }
 
@@ -245,13 +243,12 @@ public class HiveMetaReader extends AbstractSchemaFileReader {
         // 配置不支持 schema 变更，直接使用 sink 端的 schema
         if (!isSupportSchemaChange) {
             log.info("Read meta schema from metastore, configuration not supported schema change, "
-                + "will keep using hive meta schema, will cache schema tp: {}", topicPartition);
+                    + "will keep using hive meta schema, will cache schema tp: {}", topicPartition);
 
-            return ProjectedResult.builder()
-                .projectedRecord(project(sinkRecord, currentSchema))
-                .needChangeSchema(false)
-                .currentSchema(currentSchema)
-                .build();
+            return new ProjectedResult()
+                    .setProjectedRecord(project(sinkRecord, currentSchema))
+                    .setNeedChangeSchema(false)
+                    .setCurrentSchema(currentSchema);
         }
 
         // 检查是否新增加了字段，如果新增加了字段，执行 schema 变更的逻辑
@@ -262,22 +259,20 @@ public class HiveMetaReader extends AbstractSchemaFileReader {
         if (!shouldChangeSchema) {
             log.info("Read meta schema from metastore, check the schema not change, will cache schema tp: {}.", topicPartition);
 
-            return ProjectedResult.builder()
-                .projectedRecord(project(sinkRecord, currentSchema))
-                .needChangeSchema(false)
-                .currentSchema(currentSchema)
-                .build();
+            return new ProjectedResult()
+                    .setProjectedRecord(project(sinkRecord, currentSchema))
+                    .setNeedChangeSchema(false)
+                    .setCurrentSchema(currentSchema);
         }
 
         // 1. 增加了字段,需要 db 执行 schema 变更
         // 2. 失效缓存中的 schema 信息,目的是让缓存中的 schema 信息与 db 中保持一致，下次重新读取 hive 元数据最新 schema 信息
         SchemaBuilder schemaBuilder = createSchemaBuilderFromSource(sourceSchema);
         Schema newestSchema = newSchemaByAppendMissingFields(schemaBuilder, currentSchema, missingFields);
-        ProjectedResult result = ProjectedResult.builder()
-            .projectedRecord(project(sinkRecord, newestSchema))
-            .needChangeSchema(true)
-            .currentSchema(newestSchema)
-            .build();
+        ProjectedResult result = new ProjectedResult()
+                .setProjectedRecord(project(sinkRecord, newestSchema))
+                .setNeedChangeSchema(true)
+                .setCurrentSchema(newestSchema);
         currentSchema = NULL_SCHEMA;
 
         log.info("Read meta schema from metastore, check the schema changed, will lose efficacy cache's schema, tp: {}.", topicPartition);

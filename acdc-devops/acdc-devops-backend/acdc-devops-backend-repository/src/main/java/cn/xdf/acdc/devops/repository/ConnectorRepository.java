@@ -24,7 +24,7 @@ import java.util.Optional;
 @SuppressWarnings("unused")
 @Repository
 public interface ConnectorRepository extends JpaRepository<ConnectorDO, Long>, JpaSpecificationExecutor<ConnectorDO> {
-
+    
     /**
      * Find connector by data system resource id.
      *
@@ -32,7 +32,7 @@ public interface ConnectorRepository extends JpaRepository<ConnectorDO, Long>, J
      * @return optional of connector dto
      */
     Optional<ConnectorDO> findByDataSystemResourceId(Long dataSystemResourceId);
-
+    
     /**
      * Dynamic condition.
      *
@@ -41,34 +41,34 @@ public interface ConnectorRepository extends JpaRepository<ConnectorDO, Long>, J
      */
     default Specification specificationOf(final ConnectorQuery query) {
         Preconditions.checkNotNull(query);
-
+        
         return (root, criteriaQuery, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-
+            
             if (StringUtils.isNotBlank(query.getName())) {
                 predicates.add(cb.like(root.get("name"), QueryUtil.like("%", query.getName(), "%")));
             }
-
+            
             if (Objects.nonNull(query.getConnectCluster()) && Objects.nonNull(query.getConnectCluster().getId())) {
                 predicates.add(cb.equal(root.get("connectCluster"), query.getConnectCluster()));
             }
-
+            
             if (Objects.nonNull(query.getActualState())) {
                 predicates.add(cb.equal(root.get("actualState"), query.getActualState()));
             }
-
+            
             if (Objects.nonNull(query.getDesiredState())) {
                 predicates.add(cb.equal(root.get("desiredState"), query.getDesiredState()));
             }
-
+            
             if (Objects.nonNull(query.getBeginUpdateTime())) {
                 predicates.add(cb.greaterThanOrEqualTo(root.get("updateTime"), query.getBeginUpdateTime()));
             }
-
+            
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }
-
+    
     /**
      * Query all entity with specific condition.
      *
@@ -78,7 +78,7 @@ public interface ConnectorRepository extends JpaRepository<ConnectorDO, Long>, J
     default List<ConnectorDO> query(ConnectorQuery query) {
         return findAll(specificationOf(query));
     }
-
+    
     /**
      * Paged query with specific condition.
      *

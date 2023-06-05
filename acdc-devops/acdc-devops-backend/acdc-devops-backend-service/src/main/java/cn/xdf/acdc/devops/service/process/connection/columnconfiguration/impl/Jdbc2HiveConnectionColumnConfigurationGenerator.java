@@ -9,12 +9,12 @@ import java.util.Set;
 
 @Service
 public class Jdbc2HiveConnectionColumnConfigurationGenerator implements ConnectionColumnConfigurationGenerator {
-
+    
     @Override
     public Set<DataSystemType> supportedSourceDataSystemTypes() {
         return Sets.immutableEnumSet(DataSystemType.MYSQL, DataSystemType.TIDB);
     }
-
+    
     @Override
     public Set<DataSystemType> supportedSinkDataSystemTypes() {
         return Sets.immutableEnumSet(DataSystemType.HIVE);

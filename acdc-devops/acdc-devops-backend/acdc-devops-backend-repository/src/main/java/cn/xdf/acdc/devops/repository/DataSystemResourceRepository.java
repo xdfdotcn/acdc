@@ -28,23 +28,23 @@ import java.util.Objects;
  */
 @Repository
 public interface DataSystemResourceRepository extends JpaRepository<DataSystemResourceDO, Long>, JpaSpecificationExecutor<DataSystemResourceDO> {
-
+    
     /**
      * Find all resource that has not been logically deleted by parent resource id and resource type.
      *
      * @param parentResourceId parent resource id
-     * @param resourceType     resource type
+     * @param resourceType resource type
      * @return data system resources
      */
     List<DataSystemResourceDO> findByDeletedFalseAndParentResourceIdAndResourceType(Long parentResourceId, DataSystemResourceType resourceType);
-
+    
     /**
      * Find all data system resource that has not been logically deleted and parent resource id is null.
      *
      * @return data system resources
      */
     List<DataSystemResourceDO> findByDeletedFalseAndParentResourceIdIsNull();
-
+    
     /**
      * Convert a query object to specification.
      *
@@ -55,19 +55,19 @@ public interface DataSystemResourceRepository extends JpaRepository<DataSystemRe
         Preconditions.checkNotNull(query);
         return (root, criteriaQuery, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-
+            
             if (Objects.nonNull(query.getParentResourceId())) {
                 predicates.add(cb.equal(root.get("parentResource").get("id"), query.getParentResourceId()));
             }
-
+            
             if (!Strings.isNullOrEmpty(query.getName())) {
                 predicates.add(cb.like(root.get("name"), QueryUtil.like("%", query.getName(), "%")));
             }
-
+            
             if (Objects.nonNull(query.getResourceTypes())) {
                 predicates.add(root.get("resourceType").in(query.getResourceTypes()));
             }
-
+            
             if (!CollectionUtils.isEmpty(query.getResourceConfigurations())) {
                 Join<DataSystemResourceDO, DataSystemResourceConfigurationDO> joinDataSystemResourceConfiguration = root.join("dataSystemResourceConfigurations", JoinType.INNER);
                 query.getResourceConfigurations().forEach((name, value) -> {
@@ -75,20 +75,20 @@ public interface DataSystemResourceRepository extends JpaRepository<DataSystemRe
                     predicates.add(cb.equal(joinDataSystemResourceConfiguration.get("value"), value));
                 });
             }
-
+            
             if (Objects.nonNull(query.getProjectId())) {
                 Join<DataSystemResourceDO, ProjectDO> joinProject = root.join("projects", JoinType.INNER);
                 predicates.add(cb.equal(joinProject.get("id"), query.getProjectId()));
             }
-
+            
             if (Objects.nonNull(query.getDeleted())) {
                 predicates.add(cb.equal(root.get("deleted"), query.getDeleted()));
             }
-
+            
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }
-
+    
     /**
      * Query with specific condition.
      *
@@ -98,7 +98,7 @@ public interface DataSystemResourceRepository extends JpaRepository<DataSystemRe
     default List<DataSystemResourceDO> query(DataSystemResourceQuery query) {
         return findAll(specificationOf(query));
     }
-
+    
     /**
      * Paged query with specific condition.
      *

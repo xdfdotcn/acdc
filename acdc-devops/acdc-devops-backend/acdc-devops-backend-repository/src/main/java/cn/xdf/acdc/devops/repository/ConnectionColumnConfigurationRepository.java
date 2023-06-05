@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import java.util.List;
 
 public interface ConnectionColumnConfigurationRepository extends JpaRepository<ConnectionColumnConfigurationDO, Long>, JpaSpecificationExecutor<ConnectionColumnConfigurationDO> {
-
+    
     /**
      * delete by connection ids.
      *

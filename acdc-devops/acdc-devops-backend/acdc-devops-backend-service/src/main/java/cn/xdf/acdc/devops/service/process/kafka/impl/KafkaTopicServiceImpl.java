@@ -33,34 +33,34 @@ import java.util.stream.Collectors;
 
 @Service
 public class KafkaTopicServiceImpl implements KafkaTopicService {
-
+    
     @Autowired
     private I18nService i18n;
-
+    
     @Autowired
     private KafkaTopicRepository kafkaTopicRepository;
-
+    
     @Autowired
     private KafkaClusterService kafkaClusterService;
-
+    
     @Autowired
     private KafkaHelperService kafkaHelperService;
-
+    
     @Autowired
     private TopicProperties topicProperties;
-
+    
     @PersistenceContext
     private EntityManager entityManager;
-
+    
     @Override
     @Transactional
     public KafkaTopicDetailDTO create(final KafkaTopicDetailDTO kafkaTopic) {
         checkKafkaTopicDetail(kafkaTopic);
-
+        
         KafkaTopicDO kafkaTopicDO = kafkaTopic.toDO();
         return new KafkaTopicDetailDTO(kafkaTopicRepository.save(kafkaTopicDO));
     }
-
+    
     @Override
     @Transactional
     public List<KafkaTopicDetailDTO> batchCreate(final List<KafkaTopicDetailDTO> kafkaTopics) {
@@ -70,57 +70,57 @@ public class KafkaTopicServiceImpl implements KafkaTopicService {
             KafkaTopicDO kafkaTopicDO = detail.toDO();
             toSaveKafkaTopicDOs.add(kafkaTopicDO);
         }
-
+        
         return kafkaTopicRepository.saveAll(toSaveKafkaTopicDOs).stream().map(KafkaTopicDetailDTO::new).collect(Collectors.toList());
     }
-
+    
     @Override
     @Transactional
     public Page<KafkaTopicDTO> pagedQuery(final KafkaTopicQuery query) {
         return kafkaTopicRepository.pagedQuery(query).map(KafkaTopicDTO::new);
     }
-
+    
     @Override
     @Transactional
     public List<KafkaTopicDTO> query(final KafkaTopicQuery query) {
         return kafkaTopicRepository.pagedQuery(query).stream().map(KafkaTopicDTO::new).collect(Collectors.toList());
     }
-
+    
     @Override
     @Transactional
     public KafkaTopicDTO getById(final Long id) {
         return kafkaTopicRepository.findByDeletedFalseAndId(id).map(KafkaTopicDTO::new).orElseThrow(() -> new EntityNotFoundException(i18n.msg(Kafka.TOPIC_NOT_FOUND, id)));
     }
-
+    
     @Override
     @Transactional
     public KafkaTopicDetailDTO createDataCollectionTopicIfAbsent(final Long dataCollectionResourceId, final Long kafkaClusterId, final String topicName) {
         Optional<KafkaTopicDO> kafkaTopicOpt = kafkaTopicRepository.findByDataSystemResourceId(dataCollectionResourceId);
-
+        
         if (kafkaTopicOpt.isPresent()) {
             return new KafkaTopicDetailDTO(kafkaTopicOpt.get());
         }
-
+        
         KafkaTopicDetailDTO kafkaTopicDetailDTO = new KafkaTopicDetailDTO()
                 .setName(topicName)
                 .setKafkaClusterId(kafkaClusterId)
                 .setDataSystemResourceId(dataCollectionResourceId);
-
-        KafkaTopicDetailDTO createdKafkaTopicDTO = create(kafkaTopicDetailDTO);
-
+        
+        final KafkaTopicDetailDTO createdKafkaTopicDTO = create(kafkaTopicDetailDTO);
+        
         createDataCollectionTopicInKafkaClusterIfAbsent(
                 topicName,
                 topicProperties.getDataCollection().getPartitions(),
                 topicProperties.getDataCollection().getReplicationFactor(),
                 topicProperties.getDataCollection().getConfigs(), kafkaClusterId);
-
+        
         // TODO 后续优雅实现
         entityManager.flush();
         entityManager.clear();
-
+        
         return createdKafkaTopicDTO;
     }
-
+    
     private void createDataCollectionTopicInKafkaClusterIfAbsent(
             final String topic,
             final int partitions,
@@ -131,37 +131,37 @@ public class KafkaTopicServiceImpl implements KafkaTopicService {
         Map<String, Object> adminConfig = kafkaClusterService.getDecryptedAdminConfig(kafkaClusterId);
         kafkaHelperService.createTopic(topic, partitions, replicationFactor, topicConfig, adminConfig);
     }
-
+    
     @Override
     @Transactional
     public KafkaTopicDetailDTO createTICDCTopicIfAbsent(final String ticdcTopicName, final Long kafkaClusterId, final Long databaseResourceId) {
         Optional<KafkaTopicDO> kafkaTopicOpt = kafkaTopicRepository.findByDataSystemResourceId(databaseResourceId);
-
+        
         if (kafkaTopicOpt.isPresent()) {
             return new KafkaTopicDetailDTO(kafkaTopicOpt.get());
         }
-
+        
         KafkaTopicDetailDTO kafkaTopicDetailDTO = new KafkaTopicDetailDTO()
                 .setName(ticdcTopicName)
                 .setKafkaClusterId(kafkaClusterId)
                 .setDataSystemResourceId(databaseResourceId);
-
-        KafkaTopicDetailDTO createdKafkaTopicDTO = create(kafkaTopicDetailDTO);
-
+        
+        final KafkaTopicDetailDTO createdKafkaTopicDTO = create(kafkaTopicDetailDTO);
+        
         createAuthorizedTICDCTopicInKafkaClusterIfAbsent(ticdcTopicName, kafkaClusterId);
-
+        
         // TODO 后续优雅实现
         entityManager.flush();
         entityManager.clear();
-
+        
         return createdKafkaTopicDTO;
     }
-
+    
     private void createAuthorizedTICDCTopicInKafkaClusterIfAbsent(final String topic, final Long kafkaClusterId) {
         Map<String, Object> adminConfig = kafkaClusterService.getDecryptedAdminConfig(kafkaClusterId);
-
+        
         kafkaHelperService.createTopic(topic, topicProperties.getTicdc().getPartitions(), topicProperties.getTicdc().getReplicationFactor(), topicProperties.getTicdc().getConfigs(), adminConfig);
-
+        
         // add ACL
         String username = topicProperties.getTicdc().getAcl().getUsername();
         String[] operations = topicProperties.getTicdc().getAcl().getOperations();
@@ -170,7 +170,7 @@ public class KafkaTopicServiceImpl implements KafkaTopicService {
             kafkaHelperService.addAcl(topic, username, aclOperation, adminConfig);
         }
     }
-
+    
     private void checkKafkaTopicDetail(final KafkaTopicDetailDTO kafkaTopic) {
         if (Objects.isNull(kafkaTopic) || Strings.isNullOrEmpty(kafkaTopic.getName()) || Objects.isNull(kafkaTopic.getKafkaClusterId()) || Objects.isNull(kafkaTopic.getDataSystemResourceId())) {
             throw new ClientErrorException(i18n.msg(Client.INVALID_PARAMETER));

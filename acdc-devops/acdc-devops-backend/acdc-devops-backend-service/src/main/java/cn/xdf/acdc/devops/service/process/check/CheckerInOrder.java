@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 public interface CheckerInOrder {
-
+    
     /**
      * Analyze metadata and return message which incomplete or enabled and should be alerted.
      *

@@ -16,12 +16,12 @@ import java.util.Set;
 )
 @Component
 public class SkipAllApprovalEventGenerator extends AbstractApprovalEventGenerator {
-
+    
     private static final Set<ApprovalState> STATE_SET = Sets.immutableEnumSet(ApprovalState.APPROVING);
-
+    
     @Autowired
     private ApprovalStateMachine approvalStateMachine;
-
+    
     @Override
     public ApprovalEvent generateApprovalEvent(final Long id, final ApprovalOperation approvalOperation) {
         ApprovalState currentState = getApprovalStateMachine().currentState(id);
@@ -33,7 +33,7 @@ public class SkipAllApprovalEventGenerator extends AbstractApprovalEventGenerato
                             currentState, approvalOperation, id)
             );
         }
-
+        
         ApprovalEvent event = ApprovalEvent.PASS_AND_SKIP_REMAIN;
         approvalStateMachine.verifyEvent(id, event);
         return event;

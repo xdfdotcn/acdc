@@ -95,6 +95,10 @@ acdc:
       ticdc:
         partitions: 12
         replication-factor: 3
+        configs:
+          cleanup.policy: delete
+          retention.ms: 43200000
+          retention.bytes: -1
         acl:
           username:
           operations:

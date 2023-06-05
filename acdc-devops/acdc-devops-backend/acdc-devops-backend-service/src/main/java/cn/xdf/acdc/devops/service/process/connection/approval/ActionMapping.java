@@ -17,19 +17,19 @@ import java.util.Optional;
  */
 @Getter
 public final class ActionMapping {
-
+    
     // from state
     private final ApprovalState from;
-
+    
     // to state
     private final ApprovalState to;
-
+    
     // trigger event
     private final ApprovalEvent event;
-
+    
     // action
     private final Class<? extends ApprovalAction> actionClass;
-
+    
     private ActionMapping(
             final ApprovalState from,
             final ApprovalState to,
@@ -41,15 +41,15 @@ public final class ActionMapping {
         this.event = event;
         this.actionClass = actionClass;
     }
-
+    
     public static Builder builder() {
         return new Builder();
     }
-
+    
     public static class Builder {
-
+        
         private final Map<ActionMappingKey, ActionMapping> actionMapping = Maps.newHashMap();
-
+        
         public Builder add(
                 final ApprovalState from,
                 final ApprovalState to,
@@ -60,28 +60,28 @@ public final class ActionMapping {
             this.actionMapping.put(key, new ActionMapping(from, to, event, actionClass));
             return this;
         }
-
+        
         public Map<ActionMappingKey, ActionMapping> build() {
             return Optional.of(actionMapping).get();
         }
     }
-
+    
     @Getter
     public final static class ActionMappingKey {
-
+        
         private ApprovalState from;
-
+        
         private ApprovalEvent event;
-
+        
         public ActionMappingKey(final ApprovalState from, final ApprovalEvent event) {
             this.from = from;
             this.event = event;
         }
-
+        
         public static ActionMappingKey of(final ApprovalState from, final ApprovalEvent event) {
             return new ActionMappingKey(from, event);
         }
-
+        
         @Override
         public boolean equals(Object o) {
             if (this == o) {
@@ -93,7 +93,7 @@ public final class ActionMapping {
             ActionMappingKey that = (ActionMappingKey) o;
             return from == that.from && event == that.event;
         }
-
+        
         @Override
         public int hashCode() {
             return Objects.hashCode(from, event);

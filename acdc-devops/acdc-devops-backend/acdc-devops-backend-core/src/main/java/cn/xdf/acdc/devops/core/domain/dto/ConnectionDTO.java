@@ -5,11 +5,10 @@ import cn.xdf.acdc.devops.core.domain.entity.ConnectorDO;
 import cn.xdf.acdc.devops.core.domain.entity.DataSystemResourceDO;
 import cn.xdf.acdc.devops.core.domain.entity.ProjectDO;
 import cn.xdf.acdc.devops.core.domain.entity.UserDO;
+import cn.xdf.acdc.devops.core.domain.entity.enumeration.ConnectionState;
 import cn.xdf.acdc.devops.core.domain.entity.enumeration.DataSystemType;
 import cn.xdf.acdc.devops.core.domain.entity.enumeration.RequisitionState;
-import cn.xdf.acdc.devops.core.domain.enumeration.ConnectionState;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
@@ -21,67 +20,66 @@ import java.util.Objects;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 @Accessors(chain = true)
 public class ConnectionDTO {
-
+    
     private Long id;
-
+    
     private DataSystemType sourceDataSystemType;
-
+    
     private Long sourceProjectId;
-
+    
     private String sourceProjectName;
-
+    
     private Long sourceDataCollectionId;
-
+    
     private String sourceDataCollectionName;
-
+    
     private String sourceDataCollectionTopicName;
-
+    
     private Long sourceConnectorId;
-
+    
     private DataSystemType sinkDataSystemType;
-
+    
     private Long sinkProjectId;
-
+    
     private String sinkProjectName;
-
+    
     private Long sinkInstanceId;
-
+    
     private Long sinkDataCollectionId;
-
+    
     // 用于页面显示 sink data collection 的全路径
     private LinkedList<DataSystemResourceDTO> sinkDataCollectionResourcePath;
-
+    
     private LinkedList<DataSystemResourceDTO> sourceDataCollectionResourcePath;
-
+    
     private String sinkDataCollectionName;
-
+    
     private String specificConfiguration;
-
+    
     private Long sinkConnectorId;
-
+    
     private String sinkConnectorName;
-
+    
     private Integer version;
-
+    
     private RequisitionState requisitionState;
-
+    
     private ConnectionState actualState;
-
+    
     private ConnectionState desiredState;
-
+    
     private Long userId;
-
+    
     private String userEmail;
-
+    
     private boolean deleted;
-
+    
     private Date creationTime;
-
+    
     private Date updateTime;
-
+    
     public ConnectionDTO(final ConnectionDO connection) {
         this.id = connection.getId();
         this.sourceDataSystemType = connection.getSourceDataSystemType();
@@ -97,11 +95,11 @@ public class ConnectionDTO {
         this.sinkProjectId = connection.getSinkProject().getId();
         this.sinkProjectName = connection.getSinkProject().getName();
         this.sinkDataCollectionId = connection.getSinkDataCollection().getId();
-
+        
         // path of  data collection
         sinkDataCollectionResourcePath = generateResourcePathFromDataCollection(connection.getSinkDataCollection());
         sourceDataCollectionResourcePath = generateResourcePathFromDataCollection(connection.getSourceDataCollection());
-
+        
         this.sinkDataCollectionName = connection.getSinkDataCollection().getName();
         this.specificConfiguration = connection.getSpecificConfiguration();
         if (Objects.nonNull(connection.getSinkConnector())) {
@@ -117,22 +115,22 @@ public class ConnectionDTO {
         this.deleted = connection.getDeleted();
         this.creationTime = connection.getCreationTime();
         this.updateTime = connection.getUpdateTime();
-
+        
         if (Objects.nonNull(connection.getSinkInstance())) {
             this.sinkInstanceId = connection.getSinkInstance().getId();
         }
     }
-
+    
     private LinkedList<DataSystemResourceDTO> generateResourcePathFromDataCollection(final DataSystemResourceDO dataCollectionDO) {
         LinkedList<DataSystemResourceDTO> dataCollectionResourcePath = new LinkedList<>();
-
+        
         for (DataSystemResourceDO current = dataCollectionDO; null != current; current = current.getParentResource()) {
             dataCollectionResourcePath.push(new DataSystemResourceDTO(current));
         }
-
+        
         return dataCollectionResourcePath;
     }
-
+    
     /**
      * Convert to DO.
      *
@@ -140,7 +138,7 @@ public class ConnectionDTO {
      */
     public ConnectionDO toDO() {
         ConnectionDO connectionDO = new ConnectionDO();
-
+        
         if (Objects.nonNull(sinkInstanceId)) {
             connectionDO.setSinkInstance(new DataSystemResourceDO(this.sinkInstanceId));
         }
@@ -150,7 +148,7 @@ public class ConnectionDTO {
         if (Objects.nonNull(sinkConnectorId)) {
             connectionDO.setSinkConnector(new ConnectorDO(this.sinkConnectorId));
         }
-
+        
         connectionDO.setCreationTime(this.creationTime);
         connectionDO.setUpdateTime(this.updateTime);
         connectionDO.setDeleted(this.deleted);
@@ -168,7 +166,7 @@ public class ConnectionDTO {
                 .setDesiredState(this.desiredState)
                 .setActualState(this.actualState)
                 .setUser(new UserDO(this.userId));
-
+        
         return connectionDO;
     }
 }

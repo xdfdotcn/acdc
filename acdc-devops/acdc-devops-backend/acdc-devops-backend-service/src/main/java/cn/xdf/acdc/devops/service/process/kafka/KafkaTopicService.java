@@ -8,7 +8,7 @@ import org.springframework.data.domain.Page;
 import java.util.List;
 
 public interface KafkaTopicService {
-
+    
     /**
      * Create kafka topic.
      *
@@ -16,7 +16,7 @@ public interface KafkaTopicService {
      * @return Kafka topic
      */
     KafkaTopicDetailDTO create(KafkaTopicDetailDTO kafkaTopic);
-
+    
     /**
      * Create kafka topic.
      *
@@ -24,7 +24,7 @@ public interface KafkaTopicService {
      * @return created kafka topic list
      */
     List<KafkaTopicDetailDTO> batchCreate(List<KafkaTopicDetailDTO> kafkaTopics);
-
+    
     /**
      * Paged query kafka topic list.
      *
@@ -32,7 +32,7 @@ public interface KafkaTopicService {
      * @return kafka topic page list
      */
     Page<KafkaTopicDTO> pagedQuery(KafkaTopicQuery query);
-
+    
     /**
      * Query kafka topic list.
      *
@@ -40,7 +40,7 @@ public interface KafkaTopicService {
      * @return kafka topic list
      */
     List<KafkaTopicDTO> query(KafkaTopicQuery query);
-
+    
     /**
      * Get kafka topic.
      *
@@ -48,23 +48,23 @@ public interface KafkaTopicService {
      * @return Kafka topic
      */
     KafkaTopicDTO getById(Long id);
-
-
+    
+    
     /**
      * Create kafka topic in ACDC and kafka cluster.
      *
      * @param dataCollectionResourceId data collection resource id
-     * @param kafkaClusterId             kafka cluster id
-     * @param topicName                  topic name
+     * @param kafkaClusterId kafka cluster id
+     * @param topicName topic name
      * @return created kafka topic detail DTO
      */
     KafkaTopicDetailDTO createDataCollectionTopicIfAbsent(Long dataCollectionResourceId, Long kafkaClusterId, String topicName);
-
+    
     /**
      * Create TICDC kafka topic.
      *
-     * @param ticdcTopicName     ticdc topic name
-     * @param kafkaClusterId     kafka cluster id
+     * @param ticdcTopicName ticdc topic name
+     * @param kafkaClusterId kafka cluster id
      * @param databaseResourceId database resource id
      * @return created kafka topic detail DTO
      */

@@ -23,66 +23,68 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @Accessors(chain = true)
 public class DataSystemResourceDetailDTO {
-
+    
     private Long id;
-
+    
     private String name;
-
+    
     private DataSystemType dataSystemType;
-
+    
     private DataSystemResourceType resourceType;
-
+    
     private String description;
-
-    private Long parentResourceId;
-
-    private String parentResourceName;
-
-    private DataSystemResourceType parentResourceType;
-
+    
+    private DataSystemResourceDetailDTO parentResource;
+    
     private Long kafkaTopicId;
-
+    
     private String kafkaTopicName;
-
+    
     private Boolean deleted = Boolean.FALSE;
-
+    
     private Date creationTime;
-
+    
     private Date updateTIme;
-
-    private Map<String, DataSystemResourceConfigurationDTO> dataSystemResourceConfigurations = new HashMap();
-
-    private List<ProjectDTO> projects = new ArrayList();
-
+    
+    private Map<String, DataSystemResourceConfigurationDTO> dataSystemResourceConfigurations = new HashMap<>();
+    
+    private List<ProjectDTO> projects = new ArrayList<>();
+    
     public DataSystemResourceDetailDTO(final DataSystemResourceDO dataSystemResource) {
-        this.getDataSystemResourceConfigurations();
         this.id = dataSystemResource.getId();
         this.name = dataSystemResource.getName();
         this.dataSystemType = dataSystemResource.getDataSystemType();
         this.resourceType = dataSystemResource.getResourceType();
         this.description = dataSystemResource.getDescription();
-
+        
         if (Objects.nonNull(dataSystemResource.getParentResource())) {
-            this.parentResourceId = dataSystemResource.getParentResource().getId();
-            this.parentResourceName = dataSystemResource.getParentResource().getName();
-            this.parentResourceType = dataSystemResource.getParentResource().getResourceType();
+            this.parentResource = new DataSystemResourceDetailDTO(dataSystemResource.getParentResource());
         }
-
+        
         if (Objects.nonNull(dataSystemResource.getKafkaTopic())) {
             this.kafkaTopicId = dataSystemResource.getKafkaTopic().getId();
             this.kafkaTopicName = dataSystemResource.getKafkaTopic().getName();
         }
-
+        
         this.deleted = dataSystemResource.getDeleted();
         this.creationTime = dataSystemResource.getCreationTime();
         this.updateTIme = dataSystemResource.getUpdateTime();
-
+        
         dataSystemResource.getDataSystemResourceConfigurations().forEach(each ->
                 dataSystemResourceConfigurations.put(each.getName(), new DataSystemResourceConfigurationDTO(each)));
-
+        
         dataSystemResource.getProjects().forEach(each -> projects.add(new ProjectDTO(each)));
     }
-
+    
+    /**
+     * Only use for deliver the relation of parent when saving data system resource.
+     *
+     * @param id id of resource
+     */
+    public DataSystemResourceDetailDTO(final Long id) {
+        this.id = id;
+    }
+    
     /**
      * Convert to DO.
      *
@@ -90,44 +92,38 @@ public class DataSystemResourceDetailDTO {
      */
     public DataSystemResourceDO toDO() {
         DataSystemResourceDO parent = null;
-        if (Objects.nonNull(parentResourceId)) {
-            parent = DataSystemResourceDO.builder()
-                    .id(parentResourceId)
-                    .name(parentResourceName)
-                    .resourceType(parentResourceType)
-                    .build();
+        if (Objects.nonNull(parentResource)) {
+            parent = parentResource.toDO();
         }
-
+        
         KafkaTopicDO kafkaTopic = null;
         if (Objects.nonNull(kafkaTopicId)) {
-            kafkaTopic = KafkaTopicDO.builder()
-                    .id(kafkaTopicId)
-                    .name(kafkaTopicName)
-                    .build();
+            kafkaTopic = new KafkaTopicDO()
+                    .setId(kafkaTopicId)
+                    .setName(kafkaTopicName);
         }
-
+        
         Set<ProjectDO> projects = this.projects.stream().map(ProjectDTO::toDO).collect(Collectors.toSet());
-
+        
         Set<DataSystemResourceConfigurationDO> dataSystemResourceConfigurations = this.dataSystemResourceConfigurations.values()
                 .stream()
                 .map(DataSystemResourceConfigurationDTO::toDO)
                 .collect(Collectors.toSet());
-
-        DataSystemResourceDO dataSystemResource = DataSystemResourceDO.builder()
-                .id(id)
-                .name(name)
-                .dataSystemType(dataSystemType)
-                .resourceType(resourceType)
-                .description(description)
-                .parentResource(parent)
-                .kafkaTopic(kafkaTopic)
-                .projects(projects)
-                .dataSystemResourceConfigurations(dataSystemResourceConfigurations)
-                .deleted(deleted)
-                .creationTime(this.creationTime)
-                .updateTime(this.updateTIme)
-                .build();
-
+        
+        DataSystemResourceDO dataSystemResource = new DataSystemResourceDO();
+        dataSystemResource.setId(id);
+        dataSystemResource.setName(name);
+        dataSystemResource.setDataSystemType(dataSystemType);
+        dataSystemResource.setResourceType(resourceType);
+        dataSystemResource.setDescription(description);
+        dataSystemResource.setParentResource(parent);
+        dataSystemResource.setKafkaTopic(kafkaTopic);
+        dataSystemResource.setProjects(projects);
+        dataSystemResource.setDataSystemResourceConfigurations(dataSystemResourceConfigurations);
+        dataSystemResource.setDeleted(deleted);
+        dataSystemResource.setCreationTime(this.creationTime);
+        dataSystemResource.setUpdateTime(this.updateTIme);
+        
         // for cascade save
         dataSystemResourceConfigurations.forEach(each -> each.setDataSystemResource(dataSystemResource));
         return dataSystemResource;

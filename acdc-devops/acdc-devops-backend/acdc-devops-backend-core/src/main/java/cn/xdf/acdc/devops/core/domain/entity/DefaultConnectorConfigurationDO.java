@@ -7,7 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
-import lombok.experimental.SuperBuilder;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -25,27 +24,26 @@ import java.io.Serializable;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@SuperBuilder
 @Accessors(chain = true)
 public class DefaultConnectorConfigurationDO extends BaseDO implements Serializable {
-
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    
     @ApiModelProperty(value = "配置项名称", required = true)
     @Column(name = "name", length = 128, nullable = false)
     private String name;
-
+    
     @ApiModelProperty(value = "配置项值", required = true)
     @Column(name = "value", length = 1024, nullable = false)
     private String value;
-
+    
     @ApiModelProperty("connector实现类")
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnoreProperties(value = {"defaultConnectorConfigurations", "connectorType", "dimServiceType"}, allowSetters = true)
     private ConnectorClassDO connectorClass;
-
+    
     @Override
     public boolean equals(final Object o) {
         if (this == o) {
@@ -56,13 +54,13 @@ public class DefaultConnectorConfigurationDO extends BaseDO implements Serializa
         }
         return id != null && id.equals(((DefaultConnectorConfigurationDO) o).id);
     }
-
+    
     @Override
     public int hashCode() {
         // see https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
         return getClass().hashCode();
     }
-
+    
     // prettier-ignore
     @Override
     public String toString() {

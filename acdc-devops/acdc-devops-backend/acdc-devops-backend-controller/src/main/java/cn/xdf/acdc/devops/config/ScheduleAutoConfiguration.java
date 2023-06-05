@@ -10,9 +10,10 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 @Configuration
 @EnableScheduling
 public class ScheduleAutoConfiguration {
-
+    
     /**
      * Config task scheduler.
+     *
      * @return task scheduler
      */
     @Bean
@@ -20,5 +21,5 @@ public class ScheduleAutoConfiguration {
     public TaskScheduler taskScheduler() {
         return new ThreadPoolTaskScheduler();
     }
-
+    
 }

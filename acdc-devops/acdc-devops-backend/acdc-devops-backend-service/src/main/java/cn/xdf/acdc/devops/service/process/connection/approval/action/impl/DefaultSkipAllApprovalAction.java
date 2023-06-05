@@ -11,10 +11,10 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class DefaultSkipAllApprovalAction implements SkipAllApprovalAction {
-
+    
     @Autowired
     private ConnectionRequisitionService connectionRequisitionService;
-
+    
     @Override
     public void action(
             final ApprovalState from,
@@ -22,7 +22,7 @@ public class DefaultSkipAllApprovalAction implements SkipAllApprovalAction {
             final ApprovalEvent event,
             final ApprovalContext context,
             final ApprovalStateMachine machine) {
-
+        
         Long id = context.getId();
         connectionRequisitionService.updateApproveState(id, to);
         connectionRequisitionService.approveRequisitionConnections(id);

@@ -26,7 +26,7 @@ import java.util.Objects;
 @SuppressWarnings("unused")
 @Repository
 public interface ConnectionRepository extends JpaRepository<ConnectionDO, Long>, JpaSpecificationExecutor<ConnectionDO> {
-
+    
     /**
      * Paged query with specific condition.
      *
@@ -36,7 +36,7 @@ public interface ConnectionRepository extends JpaRepository<ConnectionDO, Long>,
     default Page<ConnectionDO> pagedQuery(final ConnectionQuery query) {
         return findAll(specificationOf(query), PagedQuery.pageOf(query));
     }
-
+    
     /**
      * Query with specific condition.
      *
@@ -46,7 +46,7 @@ public interface ConnectionRepository extends JpaRepository<ConnectionDO, Long>,
     default List<ConnectionDO> query(ConnectionQuery query) {
         return findAll(specificationOf(query));
     }
-
+    
     /**
      * Convert a query object to specification.
      *
@@ -57,7 +57,7 @@ public interface ConnectionRepository extends JpaRepository<ConnectionDO, Long>,
         Preconditions.checkNotNull(connectionQuery);
         return (root, criteriaQuery, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-
+            
             if (!CollectionUtils.isEmpty(connectionQuery.getConnectionIds())) {
                 CriteriaBuilder.In in = cb.in(root.get("id"));
                 for (Long id : connectionQuery.getConnectionIds()) {
@@ -65,15 +65,15 @@ public interface ConnectionRepository extends JpaRepository<ConnectionDO, Long>,
                 }
                 predicates.add(in);
             }
-
+            
             if (!Strings.isNullOrEmpty(connectionQuery.getSinkDataCollectionName())) {
                 predicates.add(cb.like(root.get("sinkDataCollection").get("name"), QueryUtil.like("%", connectionQuery.getSinkDataCollectionName(), "%")));
             }
-
+            
             if (!Strings.isNullOrEmpty(connectionQuery.getSourceDataCollectionName())) {
                 predicates.add(cb.like(root.get("sourceDataCollection").get("name"), QueryUtil.like("%", connectionQuery.getSourceDataCollectionName(), "%")));
             }
-
+            
             if (!CollectionUtils.isEmpty(connectionQuery.getSinkDataCollectionIds())) {
                 CriteriaBuilder.In in = cb.in(root.get("sinkDataCollection").get("id"));
                 for (Long id : connectionQuery.getSinkDataCollectionIds()) {
@@ -81,41 +81,41 @@ public interface ConnectionRepository extends JpaRepository<ConnectionDO, Long>,
                 }
                 predicates.add(in);
             }
-
+            
             if (Objects.nonNull(connectionQuery.getRequisitionState())) {
                 predicates.add(cb.equal(root.get("requisitionState"), connectionQuery.getRequisitionState()));
             }
-
+            
             if (Objects.nonNull(connectionQuery.getSourceConnectorId())) {
                 predicates.add(cb.equal(root.get("sourceConnector").get("id"), connectionQuery.getSourceConnectorId()));
             }
-
+            
             if (Objects.nonNull(connectionQuery.getSourceDataCollectionId())) {
                 predicates.add(cb.equal(root.get("sourceDataCollection").get("id"), connectionQuery.getSourceDataCollectionId()));
             }
-
+            
             if (Objects.nonNull(connectionQuery.getSinkConnectorId())) {
                 predicates.add(cb.equal(root.get("sinkConnector").get("id"), connectionQuery.getSinkConnectorId()));
             }
-
+            
             if (Objects.nonNull(connectionQuery.getSinkDataSystemType())) {
                 predicates.add(cb.equal(root.get("sinkDataCollection").get("dataSystemType"), connectionQuery.getSinkDataSystemType()));
             }
-
+            
             if (Objects.nonNull(connectionQuery.getActualState())) {
                 predicates.add(cb.equal(root.get("actualState"), connectionQuery.getActualState()));
             }
             if (Objects.nonNull(connectionQuery.getDeleted())) {
                 predicates.add(cb.equal(root.get("deleted"), connectionQuery.getDeleted()));
             }
-
+            
             if (!Strings.isNullOrEmpty(connectionQuery.getDomainAccount())) {
                 Join<ConnectionDO, ProjectDO> sinkProjectJoin = root.join("sinkProject", JoinType.INNER);
                 Join<ProjectDO, UserDO> userJoin = sinkProjectJoin.join("users", JoinType.INNER);
-
+                
                 predicates.add(cb.equal(userJoin.get("domainAccount"), connectionQuery.getDomainAccount()));
             }
-
+            
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }

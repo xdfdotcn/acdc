@@ -20,12 +20,12 @@ import java.util.Objects;
  */
 @Component
 public class CommandInvoker implements ApplicationContextAware {
-
+    
     @Autowired
     private I18nService i18n;
-
+    
     private ApplicationContext applicationContext;
-
+    
     /**
      * Execute a command.
      *
@@ -36,7 +36,7 @@ public class CommandInvoker implements ApplicationContextAware {
         Map result = getCommandInstance(getCommandBeanId(commandEntity), Command.class).execute(commandEntity);
         return result;
     }
-
+    
     /**
      * Injection a applicationContext.
      *
@@ -46,11 +46,11 @@ public class CommandInvoker implements ApplicationContextAware {
     public void setApplicationContext(final ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
     }
-
+    
     private Command getCommandInstance(final String beanId, final Class<? extends Command> commandClass) {
         return applicationContext.getBean(beanId, commandClass);
     }
-
+    
     private String getCommandBeanId(final Object commandEntity) {
         if (Objects.isNull(commandEntity)) {
             throw new ClientErrorException(i18n.msg(I18nKey.Command.EXECUTION_FAILED));

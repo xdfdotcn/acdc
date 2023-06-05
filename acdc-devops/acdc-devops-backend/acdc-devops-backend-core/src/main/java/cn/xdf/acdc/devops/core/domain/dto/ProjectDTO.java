@@ -14,7 +14,7 @@ import java.util.Objects;
 @Data
 @NoArgsConstructor
 @Accessors(chain = true)
-public class ProjectDTO extends PageDTO {
+public class ProjectDTO {
 
     private Long id;
 

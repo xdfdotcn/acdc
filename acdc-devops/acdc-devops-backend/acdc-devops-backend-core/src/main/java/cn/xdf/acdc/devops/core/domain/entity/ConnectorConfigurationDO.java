@@ -6,7 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
-import lombok.experimental.SuperBuilder;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -24,23 +23,22 @@ import java.io.Serializable;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@SuperBuilder
 @Accessors(chain = true)
 public class ConnectorConfigurationDO extends BaseDO implements Serializable {
-
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    
     @ApiModelProperty(value = "配置项名称", required = true)
     @Column(name = "name", length = 200, nullable = false)
     private String name;
-
+    
     @ApiModelProperty(value = "配置项值", required = true)
     @Lob
     @Column(name = "value", nullable = false)
     private String value;
-
+    
     @ApiModelProperty("所属connector")
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnoreProperties(
@@ -49,7 +47,7 @@ public class ConnectorConfigurationDO extends BaseDO implements Serializable {
             allowSetters = true
     )
     private ConnectorDO connector;
-
+    
     @Override
     public boolean equals(final Object o) {
         if (this == o) {
@@ -60,13 +58,13 @@ public class ConnectorConfigurationDO extends BaseDO implements Serializable {
         }
         return id != null && id.equals(((ConnectorConfigurationDO) o).id);
     }
-
+    
     @Override
     public int hashCode() {
         // see https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
         return getClass().hashCode();
     }
-
+    
     // prettier-ignore
     @Override
     public String toString() {

@@ -27,7 +27,7 @@ import java.util.Optional;
 @SuppressWarnings("unused")
 @Repository
 public interface KafkaClusterRepository extends JpaRepository<KafkaClusterDO, Long>, JpaSpecificationExecutor<KafkaClusterDO> {
-
+    
     /**
      * 根据集群类型查询.
      *
@@ -35,16 +35,16 @@ public interface KafkaClusterRepository extends JpaRepository<KafkaClusterDO, Lo
      * @return KafkaCluster
      */
     Optional<KafkaClusterDO> findByClusterType(KafkaClusterType clusterType);
-
+    
     /**
      * Find by cluster type and bootstrapServers.
      *
-     * @param clusterType      clusterType
+     * @param clusterType clusterType
      * @param bootstrapServers bootstrapServers
      * @return kafka cluster
      */
     Optional<KafkaClusterDO> findByClusterTypeOrBootstrapServers(KafkaClusterType clusterType, String bootstrapServers);
-
+    
     /**
      * Find by  bootstrapServers.
      *
@@ -52,7 +52,7 @@ public interface KafkaClusterRepository extends JpaRepository<KafkaClusterDO, Lo
      * @return kafka cluster
      */
     Optional<KafkaClusterDO> findByBootstrapServers(String bootstrapServers);
-
+    
     /**
      * 查询 KafkaCluster 集合.
      *
@@ -62,18 +62,18 @@ public interface KafkaClusterRepository extends JpaRepository<KafkaClusterDO, Lo
     default List<KafkaClusterDO> queryAll(final KafkaClusterQuery query) {
         return findAll(specificationOf(query));
     }
-
+    
     /**
      * 分页查询kafka集群列表.
      *
-     * @param query    查询条件
+     * @param query 查询条件
      * @param pageable 分页信息
      * @return kafka集群列表
      */
     default Page<KafkaClusterDO> queryAll(final KafkaClusterQuery query, Pageable pageable) {
         return findAll(specificationOf(query), pageable);
     }
-
+    
     /**
      * Convert query object to specification.
      *
@@ -82,10 +82,10 @@ public interface KafkaClusterRepository extends JpaRepository<KafkaClusterDO, Lo
      */
     default Specification specificationOf(final KafkaClusterQuery query) {
         Preconditions.checkNotNull(query);
-
+        
         return (root, criteriaQuery, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-
+            
             if (!CollectionUtils.isEmpty(query.getKafkaClusterIds())) {
                 CriteriaBuilder.In in = cb.in(root.get("id"));
                 for (Long id : query.getKafkaClusterIds()) {
@@ -93,19 +93,19 @@ public interface KafkaClusterRepository extends JpaRepository<KafkaClusterDO, Lo
                 }
                 predicates.add(in);
             }
-
+            
             if (StringUtils.isNotBlank(query.getBootstrapServers())) {
                 predicates.add(cb.like(root.get("bootstrapServers"), QueryUtil.like("%", query.getBootstrapServers(), "%")));
             }
-
+            
             if (StringUtils.isNotBlank(query.getName())) {
                 predicates.add(cb.like(root.get("name"), QueryUtil.like("%", query.getName(), "%")));
             }
-
+            
             if (Objects.nonNull(query.getClusterType())) {
                 predicates.add(cb.equal(root.get("clusterType"), query.getClusterType()));
             }
-
+            
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }

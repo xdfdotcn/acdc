@@ -4,6 +4,8 @@ import java.util.Map;
 
 /**
  * Role (Receiver, Command).
+ *
+ * @param <T> entity type
  */
 public interface Command<T> {
     /**

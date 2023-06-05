@@ -22,19 +22,19 @@ import java.util.stream.Collectors;
 @Transactional
 @Slf4j
 public class DataSystemCheckService implements CheckerInOrder {
-
+    
     private static final String CLUSTER_LABEL = "集群id: %d, 集群名称: %s ";
-
+    
     private final DataSystemResourceService dataSystemResourceService;
-
+    
     private final Map<DataSystemType, DataSystemMetadataService> dataSystemTypeServiceMap;
-
+    
     public DataSystemCheckService(final List<DataSystemMetadataService> dataSystemMetadataServices, final DataSystemResourceService dataSystemResourceService) {
         dataSystemTypeServiceMap = dataSystemMetadataServices.stream().collect(
                 Collectors.toMap(DataSystemMetadataService::getDataSystemType, service -> service));
         this.dataSystemResourceService = dataSystemResourceService;
     }
-
+    
     @Override
     public Map<String, List<String>> checkMetadataAndReturnErrorMessage() {
         Map<String, List<String>> result = new LinkedHashMap<>();
@@ -50,7 +50,7 @@ public class DataSystemCheckService implements CheckerInOrder {
         });
         return result;
     }
-
+    
     private String getSignature(final DataSystemResourceDTO cluster) {
         return String.format(CLUSTER_LABEL, cluster.getId(), cluster.getName());
     }

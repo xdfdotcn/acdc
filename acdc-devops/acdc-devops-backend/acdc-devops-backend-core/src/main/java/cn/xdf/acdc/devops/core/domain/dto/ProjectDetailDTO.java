@@ -16,38 +16,38 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @Accessors(chain = true)
 public class ProjectDetailDTO {
-
+    
     private Long id;
-
+    
     private String name;
-
+    
     private String description;
-
+    
     private Long ownerId;
-
+    
     private MetadataSourceType source;
-
+    
     private Long originalId;
-
+    
     private Set<Long> userIds = new HashSet<>();
-
+    
     public ProjectDetailDTO(final ProjectDO project) {
         this.id = project.getId();
         this.name = project.getName();
         this.description = project.getDescription();
-
+        
         if (Objects.nonNull(project.getOwner())) {
             this.ownerId = project.getOwner().getId();
         }
-
+        
         this.source = project.getSource();
         this.originalId = project.getOriginalId();
-
+        
         if (Objects.nonNull(project.getUsers())) {
             this.userIds = project.getUsers().stream().map(UserDO::getId).collect(Collectors.toSet());
         }
     }
-
+    
     /**
      * Convert to DO.
      *

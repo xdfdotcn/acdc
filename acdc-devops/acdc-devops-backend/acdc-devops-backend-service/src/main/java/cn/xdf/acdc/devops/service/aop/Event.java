@@ -11,35 +11,35 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Event {
-
+    
     /**
      * Connector id.
      *
      * @return connector id
      */
     String connectorId();
-
+    
     /**
      * Event reason.
      *
      * @return event reason
      */
     EventReason reason();
-
+    
     /**
      * Event source.
      *
      * @return event source
      */
     EventSource source();
-
+    
     /**
      * Event level, eg. INFO, TRACE, ERROR.
      *
      * @return event level
      */
     String level() default "'INFO'";
-
+    
     /**
      * Event message.
      *

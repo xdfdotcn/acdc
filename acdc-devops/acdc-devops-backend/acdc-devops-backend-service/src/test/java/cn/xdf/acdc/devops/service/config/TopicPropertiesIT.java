@@ -12,20 +12,20 @@ import org.springframework.transaction.annotation.Transactional;
 @SpringBootTest
 @Transactional
 public class TopicPropertiesIT {
-
+    
     @Autowired
     private TopicProperties topicProperties;
-
+    
     @Test
     public void testTICDCConfig() {
         // topic create
         Assertions.assertThat(topicProperties.getTicdc().getPartitions()).isEqualTo(12);
         Assertions.assertThat(topicProperties.getTicdc().getReplicationFactor()).isEqualTo((short) 6);
         Assertions.assertThat(topicProperties.getTicdc().getConfigs()).isEmpty();
-
+        
         // topic acl
         String[] expectACLOperations = new String[]{"READ", "WRITE"};
-
+        
         Assertions.assertThat(topicProperties.getTicdc().getAcl().getUsername()).isEqualTo("acdc");
         Assertions.assertThat(topicProperties.getTicdc().getAcl().getOperations()).isEqualTo(expectACLOperations);
     }

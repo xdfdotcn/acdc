@@ -11,47 +11,49 @@ import java.util.Set;
  */
 
 public interface KafkaHelperService {
-
+    
     /**
      * Create topic.
      *
-     * @param topicName         topic name
-     * @param numPartitions     partition number
+     * @param topicName topic name
+     * @param numPartitions partition number
      * @param replicationFactor replication factor
-     * @param topicConfig       topic config
-     * @param adminConfig       kafka admin config
+     * @param topicConfig topic config
+     * @param adminConfig kafka admin config
      */
     void createTopic(String topicName, int numPartitions, short replicationFactor, Map<String, String> topicConfig, Map<String, Object> adminConfig);
-
+    
     /**
      * Delete topics.
      *
      * @param adminConfig kafka admin config
-     * @param topics      topic names
+     * @param topics topic names
      */
     void deleteTopics(List<String> topics, Map<String, Object> adminConfig);
-
+    
     /**
      * Add topic acl for user.
      *
-     * <p>support for idempotent calls.
+     * <p>
+     * support for idempotent calls.
+     * </p>
      *
-     * @param topic        topic name
-     * @param userName     user name
+     * @param topic topic name
+     * @param userName user name
      * @param aclOperation AclOperation.WRITE, AclOperation.READ, AclOperation.CREATE, AclOperation.DELETE etc.
-     * @param adminConfig  kafka admin config
+     * @param adminConfig kafka admin config
      */
     void addAcl(String topic, String userName, AclOperation aclOperation, Map<String, Object> adminConfig);
-
+    
     /**
      * Delete topic acl for user.
      *
      * @param adminConfig kafka admin config
-     * @param topic       topic name
-     * @param userName    user name
+     * @param topic topic name
+     * @param userName user name
      */
     void deleteAcl(String topic, String userName, Map<String, Object> adminConfig);
-
+    
     /**
      * query all kafka topic.
      *
@@ -60,7 +62,7 @@ public interface KafkaHelperService {
      * @date 2022/9/2 5:41 下午
      */
     Set<String> listTopics(Map<String, Object> adminConfig);
-
+    
     /**
      * check admin client config.
      *

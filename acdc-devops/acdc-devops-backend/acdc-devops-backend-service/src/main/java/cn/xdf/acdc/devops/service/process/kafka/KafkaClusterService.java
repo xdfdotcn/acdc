@@ -6,16 +6,16 @@ import java.util.Map;
 import java.util.Optional;
 
 public interface KafkaClusterService {
-
+    
     /**
      * Create a kafka cluster.
      *
      * @param kafkaClusterDTO kafkaClusterDTO
-     * @param securityConfig  security config
+     * @param securityConfig security config
      * @return kafka cluster DTO
      */
     KafkaClusterDTO create(KafkaClusterDTO kafkaClusterDTO, Map<String, Object> securityConfig);
-
+    
     /**
      * Get kafka cluster.
      *
@@ -23,7 +23,7 @@ public interface KafkaClusterService {
      * @return kafka cluster DTO
      */
     KafkaClusterDTO getById(Long id);
-
+    
     /**
      * Get a kafka cluster by bootstrap server urls.
      *
@@ -31,21 +31,21 @@ public interface KafkaClusterService {
      * @return optional kafka cluster DTO
      */
     Optional<KafkaClusterDTO> getByBootstrapServers(String bootstrapServers);
-
+    
     /**
      * Get ACDC kafka cluster.
      *
      * @return ACDC kafka cluster
      */
     KafkaClusterDTO getACDCKafkaCluster();
-
+    
     /**
      * Get ticdc kafka cluster.
      *
      * @return ACDC kafka cluster
      */
     KafkaClusterDTO getTICDCKafkaCluster();
-
+    
     /**
      * Get kafka admin config, all sensitive configs are decrypted.
      *
@@ -53,7 +53,7 @@ public interface KafkaClusterService {
      * @return kafka admin config
      */
     Map<String, Object> getDecryptedAdminConfig(Long id);
-
+    
     /**
      * Logical delete a kafka cluster of target id.
      *

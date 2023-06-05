@@ -20,13 +20,13 @@ import java.util.stream.Collectors;
 
 @Service
 public class UserAuthorityServiceImpl implements UserAuthorityService {
-
+    
     @Autowired
     private UserAuthorityRepository userAuthorityRepository;
-
+    
     @Autowired
     private I18nService i18n;
-
+    
     @Override
     @Transactional
     public List<UserAuthorityDTO> queryAll(final UserAuthorityQuery query) {
@@ -34,13 +34,13 @@ public class UserAuthorityServiceImpl implements UserAuthorityService {
                 .map(UserAuthorityDTO::new)
                 .collect(Collectors.toList());
     }
-
+    
     @Override
     public void addRole(final Long userId, final Set<AuthorityRoleType> roleSet) {
         if (CollectionUtils.isEmpty(roleSet)) {
             throw new ClientErrorException(i18n.msg(User.ERROR_ROLE, roleSet));
         }
-
+        
         roleSet.add(AuthorityRoleType.ROLE_USER);
         Set<UserAuthorityDO> authoritySet = roleSet.stream()
                 .map(it -> new UserAuthorityDO(userId, it))
@@ -48,12 +48,12 @@ public class UserAuthorityServiceImpl implements UserAuthorityService {
         List<UserAuthorityDO> authorityList = authoritySet.stream().collect(Collectors.toList());
         userAuthorityRepository.saveAll(authorityList);
     }
-
+    
     @Override
     public void deleteRoleByUserId(final Long userId) {
         userAuthorityRepository.deleteRoleByUserId(userId);
     }
-
+    
     @Override
     public void resetRole(final Long userId, final Set<AuthorityRoleType> roleSet) {
         deleteRoleByUserId(userId);

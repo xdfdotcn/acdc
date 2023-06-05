@@ -4,13 +4,10 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-
 import org.assertj.core.api.Assertions;
-
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
 import org.hamcrest.TypeSafeMatcher;
-
 import org.springframework.format.datetime.standard.DateTimeFormatterRegistrar;
 import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.format.support.FormattingConversionService;
@@ -30,12 +27,12 @@ import java.util.List;
  * Utility class for testing REST controllers.
  */
 public final class TestUtil {
-
+    
     private static final ObjectMapper MAPPER = createObjectMapper();
-
+    
     private TestUtil() {
     }
-
+    
     private static ObjectMapper createObjectMapper() {
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS, false);
@@ -43,7 +40,7 @@ public final class TestUtil {
         mapper.registerModule(new JavaTimeModule());
         return mapper;
     }
-
+    
     /**
      * Convert an object to JSON byte array.
      *
@@ -54,7 +51,7 @@ public final class TestUtil {
     public static byte[] convertObjectToJsonBytes(final Object object) throws IOException {
         return MAPPER.writeValueAsBytes(object);
     }
-
+    
     /**
      * Create a byte array with a specific size filled with specified data.
      *
@@ -69,8 +66,7 @@ public final class TestUtil {
         }
         return byteArray;
     }
-
-
+    
     /**
      * Creates a matcher that matches when the examined string represents the same instant as the reference datetime.
      *
@@ -80,7 +76,7 @@ public final class TestUtil {
     public static ZonedDateTimeMatcher sameInstant(final ZonedDateTime date) {
         return new ZonedDateTimeMatcher(date);
     }
-
+    
     /**
      * Creates a matcher that matches when the examined number represents the same value as the reference BigDecimal.
      *
@@ -90,10 +86,11 @@ public final class TestUtil {
     public static NumberMatcher sameNumber(final BigDecimal number) {
         return new NumberMatcher(number);
     }
-
+    
     /**
      * Verifies the equals/hashcode contract on the domain object.
-     * @param  clazz clazz
+     *
+     * @param clazz clazz
      * @param <T> T
      * @throws Exception exception
      */
@@ -112,9 +109,10 @@ public final class TestUtil {
         // HashCodes are equals because the objects are not persisted yet
         Assertions.assertThat(domainObject1).hasSameHashCodeAs(domainObject2);
     }
-
+    
     /**
      * Create a {@link FormattingConversionService} which use ISO date format, instead of the localized one.
+     *
      * @return the {@link FormattingConversionService}.
      */
     public static FormattingConversionService createFormattingConversionService() {
@@ -124,9 +122,10 @@ public final class TestUtil {
         registrar.registerFormatters(dfcs);
         return dfcs;
     }
-
+    
     /**
      * Makes a an executes a query to the EntityManager finding all stored objects.
+     *
      * @param <T> The type of objects to be searched
      * @param em The instance of the EntityManager
      * @param clss The class type to be searched
@@ -140,19 +139,18 @@ public final class TestUtil {
         TypedQuery<T> allQuery = em.createQuery(all);
         return allQuery.getResultList();
     }
-
-
+    
     /**
      * A matcher that tests that the examined string represents the same instant as the reference datetime.
      */
     public static class ZonedDateTimeMatcher extends TypeSafeDiagnosingMatcher<String> {
-
+        
         private final ZonedDateTime date;
-
+        
         public ZonedDateTimeMatcher(final ZonedDateTime date) {
             this.date = date;
         }
-
+        
         @Override
         protected boolean matchesSafely(final String item, final Description mismatchDescription) {
             try {
@@ -166,35 +164,35 @@ public final class TestUtil {
                 return false;
             }
         }
-
+        
         @Override
         public void describeTo(final Description description) {
             description.appendText("a String representing the same Instant as ").appendValue(date);
         }
     }
-
+    
     /**
      * A matcher that tests that the examined number represents the same value - it can be Long, Double, etc - as the reference BigDecimal.
      */
     public static class NumberMatcher extends TypeSafeMatcher<Number> {
-
+        
         private final BigDecimal value;
-
+        
         public NumberMatcher(final BigDecimal value) {
             this.value = value;
         }
-
+        
         @Override
         public void describeTo(final Description description) {
             description.appendText("a numeric value is ").appendValue(value);
         }
-
+        
         @Override
         protected boolean matchesSafely(final Number item) {
             BigDecimal bigDecimal = asDecimal(item);
             return bigDecimal != null && value.compareTo(bigDecimal) == 0;
         }
-
+        
         private static BigDecimal asDecimal(final Number item) {
             if (item == null) {
                 return null;

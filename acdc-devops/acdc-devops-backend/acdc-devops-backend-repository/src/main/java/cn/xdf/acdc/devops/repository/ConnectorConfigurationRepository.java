@@ -13,14 +13,14 @@ import java.util.List;
 @SuppressWarnings("unused")
 @Repository
 public interface ConnectorConfigurationRepository extends JpaRepository<ConnectorConfigurationDO, Long>, JpaSpecificationExecutor<ConnectorConfigurationDO> {
-
+    
     /**
      * 根据 connector ID 删除.
      *
      * @param connectorId connectorId
      */
     void deleteByConnectorId(Long connectorId);
-
+    
     /**
      * 根据 connector ID 查找.
      *
@@ -28,5 +28,5 @@ public interface ConnectorConfigurationRepository extends JpaRepository<Connecto
      * @return List
      */
     List<ConnectorConfigurationDO> findByConnectorId(Long connectorId);
-
+    
 }

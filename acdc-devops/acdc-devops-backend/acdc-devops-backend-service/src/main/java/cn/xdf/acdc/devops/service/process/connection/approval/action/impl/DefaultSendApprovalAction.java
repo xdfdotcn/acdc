@@ -18,13 +18,13 @@ import java.util.List;
 
 @Component
 public class DefaultSendApprovalAction implements SendApprovalAction {
-
+    
     @Autowired
     private ConnectionRequisitionService connectionRequisitionService;
-
+    
     @Autowired
     private ApproveEmailSender emailSender;
-
+    
     @Override
     public void action(
             final ApprovalState from,
@@ -35,14 +35,14 @@ public class DefaultSendApprovalAction implements SendApprovalAction {
         // 1. transform
         Long id = context.getId();
         connectionRequisitionService.updateApproveState(id, to);
-
+        
         // 2. send email
         List<DomainUser> sourceOwners = machine.getSourceOwners(id);
         DomainUser proposer = machine.getProposer(id);
-
+        
         List<DomainUser> cc = new ArrayList<>();
         cc.addAll(Lists.newArrayList(proposer));
-
+        
         emailSender.sendApproveEmail(
                 id,
                 sourceOwners,

@@ -36,16 +36,16 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class ProjectServiceImpl implements ProjectService {
-
+    
     @Autowired
     private I18nService i18n;
-
+    
     @Autowired
     private ProjectRepository projectRepository;
-
+    
     @Autowired
     private UserService userService;
-
+    
     @Transactional
     @Override
     public ProjectDTO create(final ProjectDTO project) {
@@ -53,7 +53,7 @@ public class ProjectServiceImpl implements ProjectService {
         if (StringUtils.isBlank(ownerEmail)) {
             throw new ClientErrorException("param: ownerEmail is required.");
         }
-
+        
         Long ownerId = null;
         try {
             ownerId = userService.getByEmail(ownerEmail).getId();
@@ -61,13 +61,13 @@ public class ProjectServiceImpl implements ProjectService {
             log.warn("can not find a user by email {}, creating", ownerEmail);
             ownerId = userService.create(generateUser(ownerEmail)).getId();
         }
-
+        
         project.setOwnerId(ownerId);
         ProjectDO projectDO = project.toDO();
         projectDO.addUser(new UserDO(project.getOwnerId()));
         return new ProjectDTO(projectRepository.save(projectDO));
     }
-
+    
     private UserDetailDTO generateUser(final String ownerEmail) {
         return new UserDetailDTO()
                 .setEmail(ownerEmail)
@@ -75,7 +75,7 @@ public class ProjectServiceImpl implements ProjectService {
                 .setName(UserUtil.convertEmailToDomainAccount(ownerEmail))
                 .setAuthoritySet(Sets.newHashSet(AuthorityRoleType.ROLE_USER));
     }
-
+    
     @Override
     public void update(final ProjectDTO projectDTO) {
         ProjectDO projectDO = projectRepository.findById(projectDTO.getId())
@@ -103,25 +103,25 @@ public class ProjectServiceImpl implements ProjectService {
         }
         projectRepository.save(projectDO);
     }
-
+    
     @Transactional
     @Override
     public List<ProjectDTO> batchCreate(final List<ProjectDTO> projects) {
         List<ProjectDO> projectDOs = projects.stream()
                 .map(ProjectDTO::toDO)
                 .collect(Collectors.toList());
-
+        
         return projectRepository.saveAll(projectDOs).stream()
                 .map(ProjectDTO::new)
                 .collect(Collectors.toList());
     }
-
+    
     @Transactional
     @Override
     public Page<ProjectDTO> pagedQuery(final ProjectQuery projectQuery) {
         return projectRepository.pagedQuery(projectQuery).map(ProjectDTO::new);
     }
-
+    
     @Transactional
     @Override
     public ProjectDTO getById(final Long id) {
@@ -129,7 +129,7 @@ public class ProjectServiceImpl implements ProjectService {
                 .map(ProjectDTO::new)
                 .orElseThrow(() -> new EntityNotFoundException(i18n.msg(Project.NOT_FOUND, id)));
     }
-
+    
     @Override
     public List<ProjectDTO> getByIds(final List<Long> ids) {
         return projectRepository.findAllById(ids)
@@ -137,7 +137,7 @@ public class ProjectServiceImpl implements ProjectService {
                 .map(ProjectDTO::new)
                 .collect(Collectors.toList());
     }
-
+    
     @Transactional
     @Override
     public List<ProjectDTO> query(final ProjectQuery projectQuery) {
@@ -145,7 +145,7 @@ public class ProjectServiceImpl implements ProjectService {
                 .map(ProjectDTO::new)
                 .collect(Collectors.toList());
     }
-
+    
     @Transactional
     @Override
     public void createProjectUsers(final Long id, final List<UserDTO> users) {
@@ -154,7 +154,7 @@ public class ProjectServiceImpl implements ProjectService {
         }
         // 查询项目信息
         ProjectDO projectDO = getById(id).toDO();
-
+        
         // 重新保存用户关系
         List<UserDO> userDOList = Lists.newArrayList();
         users.forEach(userDTO -> {
@@ -164,7 +164,7 @@ public class ProjectServiceImpl implements ProjectService {
         projectDO.setUsers(Sets.newHashSet(userDOList));
         projectRepository.save(projectDO);
     }
-
+    
     @Transactional
     @Override
     public void deleteProjectUsers(final Long id, final List<Long> userIds) {
@@ -183,12 +183,12 @@ public class ProjectServiceImpl implements ProjectService {
         projectDO.setUsers(Sets.newHashSet(remainUsers));
         projectRepository.save(projectDO);
     }
-
+    
     @Override
     public List<ProjectDTO> mergeAllProjectsOnOriginalId(final Set<ProjectDetailDTO> projectsDetails) {
         Map<Long, ProjectDO> existOriginalIdEntityMap = projectRepository.findBySource(MetadataSourceType.FROM_PANDORA)
                 .stream().collect(Collectors.toMap(ProjectDO::getOriginalId, projectDO -> projectDO));
-
+        
         Map<Long, ProjectDO> newOriginalIdEntityMap = projectsDetails.stream().map(projectsDetail -> {
             ProjectDO projectDO = existOriginalIdEntityMap.get(projectsDetail.getOriginalId());
             if (Objects.isNull(projectDO)) {
@@ -197,20 +197,20 @@ public class ProjectServiceImpl implements ProjectService {
             filledProjectDOWithDetailDTOProperties(projectDO, projectsDetail);
             return projectDO;
         }).collect(Collectors.toMap(ProjectDO::getOriginalId, projectDO -> projectDO));
-
+        
         // insert or update for each row
         List<ProjectDO> projectSaveResult = projectRepository.saveAll(newOriginalIdEntityMap.values());
-
+        
         // logical delete
         List<ProjectDO> logicalDeleteProjects = existOriginalIdEntityMap.values().stream()
                 .filter(projectDO -> !newOriginalIdEntityMap.containsKey(projectDO.getOriginalId()))
                 .peek(projectDO -> projectDO.setDeleted(Boolean.TRUE))
                 .collect(Collectors.toList());
         projectRepository.saveAll(logicalDeleteProjects);
-
+        
         return projectSaveResult.stream().map(ProjectDTO::new).collect(Collectors.toList());
     }
-
+    
     private void filledProjectDOWithDetailDTOProperties(final ProjectDO projectDO, final ProjectDetailDTO projectsDetail) {
         projectDO.setName(projectsDetail.getName());
         projectDO.setDescription(projectsDetail.getDescription());

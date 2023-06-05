@@ -1,8 +1,8 @@
 package cn.xdf.acdc.devops.statemachine;
 
-import cn.xdf.acdc.devops.dto.Connector;
+import cn.xdf.acdc.devops.core.domain.entity.enumeration.ConnectorState;
 import cn.xdf.acdc.devops.core.domain.enumeration.ConnectorEvent;
-import cn.xdf.acdc.devops.core.domain.enumeration.ConnectorState;
+import cn.xdf.acdc.devops.dto.Connector;
 import cn.xdf.acdc.devops.statemachine.actions.CreatingConnectorAction;
 import cn.xdf.acdc.devops.statemachine.actions.RestartingConnectorAction;
 import cn.xdf.acdc.devops.statemachine.actions.StoppingConnectorAction;
@@ -21,19 +21,19 @@ import java.util.Arrays;
 
 @Configuration
 public class ConnectorStateMachineBuilder implements ApplicationContextAware {
-
+    
     private ApplicationContext applicationContext;
-
+    
     private final UpdateStateToDbAction updateStateToDbAction;
-
+    
     private final CreatingConnectorAction creatingConnectorAction;
-
+    
     private final RestartingConnectorAction restartingConnectorAction;
-
+    
     private final UpdatingConnectorAction updatingConnectorAction;
-
+    
     private final StoppingConnectorAction stoppingConnectorAction;
-
+    
     /**
      * Construct a instance with all args.
      *
@@ -52,7 +52,7 @@ public class ConnectorStateMachineBuilder implements ApplicationContextAware {
         this.updatingConnectorAction = updatingConnectorAction;
         this.stoppingConnectorAction = stoppingConnectorAction;
     }
-
+    
     /**
      * Define a state machine builder according to real state transition.
      * refer to: https://github.com/hekailiang/squirrel
@@ -63,28 +63,28 @@ public class ConnectorStateMachineBuilder implements ApplicationContextAware {
     public StateMachineBuilder<ConnectorStateMachine, ConnectorState, ConnectorEvent, Connector> getStateMachineBuilder() {
         StateMachineBuilder<ConnectorStateMachine, ConnectorState, ConnectorEvent, Connector> builder = StateMachineBuilderFactory
                 .create(ConnectorStateMachine.class, ConnectorState.class, ConnectorEvent.class, Connector.class);
-
+        
         Arrays.stream(ConnectorStateTransitionTable.values()).forEach(table ->
-            builder.externalTransition().from(table.getFrom()).to(table.getTo()).on(table.getEvent()).perform(getActionByClass(table.getActionClass())));
-
+                builder.externalTransition().from(table.getFrom()).to(table.getTo()).on(table.getEvent()).perform(getActionByClass(table.getActionClass())));
+        
         return builder;
     }
-
+    
     private Action<ConnectorStateMachine, ConnectorState, ConnectorEvent, Connector> getActionByClass(final Class actionClass) {
         String className = actionClass.getSimpleName();
         String beanName = classNameToBeanName(className);
         return (Action<ConnectorStateMachine, ConnectorState, ConnectorEvent, Connector>) applicationContext.getBean(beanName);
     }
-
+    
     private String classNameToBeanName(final String className) {
         String firstChar = className.substring(0, 1).toLowerCase();
         return firstChar + className.substring(1);
     }
-
+    
     private <T> boolean checkIsInstanceOf(final T action, final Class actionClass) {
         return action.getClass().getName().startsWith(actionClass.getName());
     }
-
+    
     @Override
     public void setApplicationContext(final ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;

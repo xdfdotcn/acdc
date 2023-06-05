@@ -43,6 +43,18 @@
     component: './connection/ConnectionApply',
   },
 
+  /**
+  =================================
+  链路申请beta
+  =================================
+  */
+  {
+    path: '/connction-requisition',
+    name: 'connction-requisition',
+    icon: 'smile',
+    component: './ConnectionRequisition',
+  },
+
 
   /**
   =================================

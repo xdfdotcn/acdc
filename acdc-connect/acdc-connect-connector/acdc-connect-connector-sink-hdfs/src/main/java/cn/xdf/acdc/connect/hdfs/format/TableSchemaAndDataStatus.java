@@ -15,14 +15,16 @@
 
 package cn.xdf.acdc.connect.hdfs.format;
 
-import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 import org.apache.kafka.connect.data.Schema;
 
 import java.util.List;
 
-@Builder
 @Getter
+@Setter
+@Accessors(chain = true)
 public class TableSchemaAndDataStatus {
 
     private boolean existData;

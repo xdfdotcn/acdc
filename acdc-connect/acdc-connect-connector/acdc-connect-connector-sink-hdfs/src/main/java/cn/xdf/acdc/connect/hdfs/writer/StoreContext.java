@@ -45,15 +45,15 @@ import com.google.common.base.Preconditions;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.Accessors;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.kafka.common.config.ConfigException;
 
-@Builder
 @Getter
 @Setter
+@Accessors(chain = true)
 public class StoreContext {
 
     private static final int THREAD_POOL_CORE_SIZE = 1;
@@ -143,24 +143,23 @@ public class StoreContext {
             partitioner
         );
 
-        return StoreContext.builder()
-            .hiveIntegrationMode(
+        return new StoreContext()
+            .setHiveIntegrationMode(
                 HiveIntegrationMode
                     .valueOf(hdfsSinkConf.getString(HdfsSinkConfig.HIVE_INTEGRATION_MODE))
             )
-            .storageMode(
+            .setStorageMode(
                 StorageMode.valueOf(hdfsSinkConf.getString(HdfsSinkConfig.STORAGE_MODE))
             )
-            .hiveMetaStore(hiveMetaStore)
-            .storeConfig(storeConf)
-            .partitioner(partitioner)
-            .fileOperator(fileOperator)
-            .schemaReader(schemaReader)
-            .recordWriterProvider(writerProvider)
-            .rotationPolicy(rotationPolicy)
-            .hiveMetaRestorer(hiveMetaRestorer)
-            .hdfsSinkConfig(hdfsSinkConf)
-            .build();
+            .setHiveMetaStore(hiveMetaStore)
+            .setStoreConfig(storeConf)
+            .setPartitioner(partitioner)
+            .setFileOperator(fileOperator)
+            .setSchemaReader(schemaReader)
+            .setRecordWriterProvider(writerProvider)
+            .setRotationPolicy(rotationPolicy)
+            .setHiveMetaRestorer(hiveMetaRestorer)
+            .setHdfsSinkConfig(hdfsSinkConf);
     }
 
     private static Partitioner createPartitioner(final HdfsSinkConfig config) {

@@ -28,22 +28,22 @@ import java.util.stream.Collectors;
 @Slf4j
 @Component
 public class ConnectionColumnConfigurationGeneratorManager {
-
+    
     private static final HashBasedTable<DataSystemType, DataSystemType, ConnectionColumnConfigurationGenerator> FIELD_MAPPING_SERVICE_MAP = HashBasedTable.create();
-
+    
     @Autowired
     private ConnectionService connectionService;
-
+    
     @Autowired
     private DataSystemResourceService dataSystemResourceService;
-
+    
     @Autowired
     private DataSystemServiceManager dataSystemServiceManager;
-
+    
     public ConnectionColumnConfigurationGeneratorManager(final List<ConnectionColumnConfigurationGenerator> generators) {
         generators.forEach(it -> initGenerators(it.supportedSourceDataSystemTypes(), it.supportedSinkDataSystemTypes(), it));
     }
-
+    
     private void initGenerators(
             final Set<DataSystemType> supportSrcDataSystemTypes,
             final Set<DataSystemType> supportSinkDataSystemTypes,
@@ -56,11 +56,11 @@ public class ConnectionColumnConfigurationGeneratorManager {
             }
         }
     }
-
+    
     /**
      * Get column configuration generator.
      *
-     * @param sinkDataSystemType   sink data system type
+     * @param sinkDataSystemType sink data system type
      * @param sourceDataSystemType source data system type
      * @return column configuration generator
      */
@@ -72,7 +72,7 @@ public class ConnectionColumnConfigurationGeneratorManager {
                 .get(sourceDataSystemType, sinkDataSystemType);
         return generator;
     }
-
+    
     /**
      * Get the connection column configuration.
      *
@@ -83,7 +83,7 @@ public class ConnectionColumnConfigurationGeneratorManager {
         ConnectionDetailDTO connectionDetailDTO = connectionService.getDetailById(connectionId);
         return generateConnectionColumnConfiguration(connectionDetailDTO);
     }
-
+    
     /**
      * 根据已经保存的字段映射配置，按照数据库中查询的最新的表结构重新生成字段映射关系.
      *
@@ -92,31 +92,31 @@ public class ConnectionColumnConfigurationGeneratorManager {
      */
     public List<ConnectionColumnConfigurationDTO> generateConnectionColumnConfiguration(final Long connectionId) {
         ConnectionDTO connection = connectionService.getById(connectionId);
-
+        
         Long sourceDataCollectionId = connection.getSourceDataCollectionId();
         Long sinkDataCollectionId = connection.getSinkDataCollectionId();
-
+        
         DataSystemType sourceDataSystemType = dataSystemResourceService.getDataSystemType(sourceDataCollectionId);
         DataSystemType sinkDataSystemType = dataSystemResourceService.getDataSystemType(sinkDataCollectionId);
-
+        
         DataCollectionDefinition sourceDataCollectionDefinition = dataSystemServiceManager.getDataSystemMetadataService(sourceDataSystemType)
                 .getDataCollectionDefinition(sourceDataCollectionId);
-
+        
         DataCollectionDefinition sinkDataCollectionDefinition = dataSystemServiceManager.getDataSystemMetadataService(sinkDataSystemType)
                 .getDataCollectionDefinition(sinkDataCollectionId);
-
+        
         List<ConnectionColumnConfigurationDTO> connectionColumnConfigurations =
                 connectionService.getDetailById(connectionId).getConnectionColumnConfigurations();
-
+        
         return FIELD_MAPPING_SERVICE_MAP.get(sourceDataSystemType, sinkDataSystemType)
                 .generateColumnConfiguration(sourceDataCollectionDefinition, sinkDataCollectionDefinition, connectionColumnConfigurations);
     }
-
+    
     /**
      * Generate column configuration.
      *
      * @param sourceResourceId srcResourceId
-     * @param sinkResourceId   sinkResourceId
+     * @param sinkResourceId sinkResourceId
      * @return List
      */
     public List<ConnectionColumnConfigurationDTO> generateConnectionColumnConfiguration(
@@ -125,18 +125,18 @@ public class ConnectionColumnConfigurationGeneratorManager {
     ) {
         DataSystemType sourceDataSystemType = dataSystemResourceService.getDataSystemType(sourceResourceId);
         DataSystemType sinkDataSystemType = dataSystemResourceService.getDataSystemType(sinkResourceId);
-
+        
         DataCollectionDefinition sourceDataCollectionDefinition = dataSystemServiceManager.getDataSystemMetadataService(sourceDataSystemType)
                 .getDataCollectionDefinition(sourceResourceId);
-
+        
         DataCollectionDefinition sinkDataCollectionDefinition = dataSystemServiceManager.getDataSystemMetadataService(sinkDataSystemType)
                 .getDataCollectionDefinition(sinkResourceId);
-
+        
         // 2. diffing and sort
         return FIELD_MAPPING_SERVICE_MAP.get(sourceDataSystemType, sinkDataSystemType)
                 .generateColumnConfiguration(sourceDataCollectionDefinition, sinkDataCollectionDefinition);
     }
-
+    
     /**
      * Generate column configuration.
      *
@@ -149,14 +149,14 @@ public class ConnectionColumnConfigurationGeneratorManager {
                 || CollectionUtils.isEmpty(connectionDetailDTO.getConnectionColumnConfigurations())) {
             return Collections.EMPTY_LIST;
         }
-
+        
         DataSystemType sourceDataSystemType = connectionDetailDTO.getSourceDataSystemType();
         DataSystemType sinkDataSystemType = connectionDetailDTO.getSinkDataSystemType();
-
+        
         List<ConnectionColumnConfigurationDTO> connectionColumnConfigurations = connectionDetailDTO.getConnectionColumnConfigurations();
-
+        
         List<ConnectionColumnConfigurationDTO> newConnectionColumnConfigurations = Lists.newArrayListWithCapacity(connectionColumnConfigurations.size());
-
+        
         for (ConnectionColumnConfigurationDTO configurationDTO : connectionColumnConfigurations) {
             newConnectionColumnConfigurations.add(new ConnectionColumnConfigurationDTO()
                     .setId(configurationDTO.getId())
@@ -174,11 +174,11 @@ public class ConnectionColumnConfigurationGeneratorManager {
                     .setUpdateTime(configurationDTO.getUpdateTime())
             );
         }
-
+        
         ConnectionColumnConfigurationGenerator generator = FIELD_MAPPING_SERVICE_MAP.get(sourceDataSystemType, sinkDataSystemType);
         // append rowId
         generator.appendIdForConnectionColumnConfigurations(newConnectionColumnConfigurations, () -> 1);
-
+        
         // sort
         return newConnectionColumnConfigurations
                 .stream()

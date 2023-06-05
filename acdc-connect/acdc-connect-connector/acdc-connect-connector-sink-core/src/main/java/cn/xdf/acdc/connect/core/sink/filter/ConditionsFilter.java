@@ -24,28 +24,28 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class ConditionsFilter implements Filter {
-
+    
     private static final String EXPRESS_TEMPLATE = "return %s";
-
+    
     private String express;
-
+    
     private String condition;
-
+    
     private ExpressRunner expressRunner = new ExpressRunner();
-
+    
     private Set<Field> fieldSet = new HashSet<>();
-
+    
     private String destination;
-
+    
     private TimeZone timeZone;
-
+    
     public ConditionsFilter(final DestinationConfig destinationConfig, final TimeZone timeZone) {
         this.destination = destinationConfig.getName();
         this.timeZone = timeZone;
         this.condition = destinationConfig.getRowFilterExpress();
         this.express = String.format(EXPRESS_TEMPLATE, condition);
     }
-
+    
     @SneakyThrows
     @Override
     public boolean filter(final SinkRecord sinkRecord) {
@@ -62,7 +62,7 @@ public class ConditionsFilter implements Filter {
         }
         return (boolean) expressRunner.execute(express, context, null, true, true);
     }
-
+    
     private Object getComparableFieldValue(final String fieldSchemaName, final Object originFieldValue) {
         if (fieldSchemaName != null) {
             switch (fieldSchemaName) {
@@ -78,21 +78,21 @@ public class ConditionsFilter implements Filter {
         }
         return originFieldValue;
     }
-
+    
     private void initFieldNameIndexMap(final SinkRecord sinkRecord) {
         List<Field> fields = sinkRecord.valueSchema().fields();
         if (fields != null && fields.size() > 0) {
             fieldSet = fields.stream()
                     .filter(field -> Pattern.matches(getPattern(field.name()), condition))
                     .collect(Collectors.toSet());
-
-            if ((!Strings.isNullOrEmpty(condition)) && fieldSet.isEmpty()) {
+            
+            if (!Strings.isNullOrEmpty(condition) && fieldSet.isEmpty()) {
                 throw new ConnectException(String.format("{} should include field name and field name should be space before and after: eg. (field_name_1 > 1)&&(field_name_2 > 2)",
                         SinkConfig.DESTINATIONS_CONFIG_PREFIX + destination + SinkConfig.DESTINATIONS_CONFIG_ROW_FILTER));
             }
         }
     }
-
+    
     private String getPattern(final String key) {
         return "(.*(\\(|\\s)" + key + "(\\)|\\s).*|^" + key + "\\s.*|.*\\s" + key + "$)";
     }

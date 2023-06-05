@@ -31,11 +31,11 @@ import java.util.Optional;
  */
 @Repository
 public interface UserRepository extends JpaRepository<UserDO, Long>, JpaSpecificationExecutor<UserDO> {
-
+    
     String USERS_BY_LOGIN_CACHE = "usersByLogin";
-
+    
     String USERS_BY_EMAIL_CACHE = "usersByEmail";
-
+    
     /**
      * Generate dynamic condition.
      *
@@ -46,7 +46,7 @@ public interface UserRepository extends JpaRepository<UserDO, Long>, JpaSpecific
         Preconditions.checkNotNull(query);
         return (root, criteriaQuery, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-
+            
             if (!CollectionUtils.isEmpty(query.getUserIds())) {
                 CriteriaBuilder.In in = cb.in(root.get("id"));
                 for (Long id : query.getUserIds()) {
@@ -54,20 +54,20 @@ public interface UserRepository extends JpaRepository<UserDO, Long>, JpaSpecific
                 }
                 predicates.add(in);
             }
-
+            
             if (!Strings.isNullOrEmpty(query.getDomainAccount())) {
                 predicates.add(cb.like(root.get("domainAccount"), QueryUtil.like("%", query.getDomainAccount(), "%")));
             }
-
+            
             if (Objects.nonNull(query.getProjectId())) {
                 Join<UserDO, ProjectDO> projectRoot = root.join("projects", JoinType.INNER);
                 predicates.add(cb.equal(projectRoot.get("id"), query.getProjectId()));
             }
-
+            
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }
-
+    
     /**
      * 根据邮箱查询.
      *
@@ -75,7 +75,7 @@ public interface UserRepository extends JpaRepository<UserDO, Long>, JpaSpecific
      * @return User
      */
     Optional<UserDO> findOneByEmailIgnoreCase(String email);
-
+    
     /**
      * 根据域账号查询.
      *
@@ -83,7 +83,7 @@ public interface UserRepository extends JpaRepository<UserDO, Long>, JpaSpecific
      * @return User
      */
     Optional<UserDO> findOneByDomainAccountIgnoreCase(String domainAccount);
-
+    
     /**
      * 根据邮箱和角色查询.
      *
@@ -93,7 +93,7 @@ public interface UserRepository extends JpaRepository<UserDO, Long>, JpaSpecific
     @EntityGraph(attributePaths = "authorities")
     @Cacheable(cacheNames = USERS_BY_EMAIL_CACHE)
     Optional<UserDO> findOneWithAuthoritiesByEmailIgnoreCase(String email);
-
+    
     /**
      * Common query.
      *
@@ -103,7 +103,7 @@ public interface UserRepository extends JpaRepository<UserDO, Long>, JpaSpecific
     default List<UserDO> query(UserQuery query) {
         return findAll(specificationOf(query));
     }
-
+    
     /**
      * Paged query.
      *

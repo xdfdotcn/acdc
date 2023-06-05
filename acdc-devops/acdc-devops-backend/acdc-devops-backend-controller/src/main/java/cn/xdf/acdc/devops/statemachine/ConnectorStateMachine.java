@@ -1,9 +1,9 @@
 package cn.xdf.acdc.devops.statemachine;
 
-import cn.xdf.acdc.devops.dto.Connector;
+import cn.xdf.acdc.devops.core.domain.entity.enumeration.ConnectorState;
 import cn.xdf.acdc.devops.core.domain.enumeration.ConnectorEvent;
-import cn.xdf.acdc.devops.core.domain.enumeration.ConnectorState;
 import cn.xdf.acdc.devops.core.util.SpringUtils;
+import cn.xdf.acdc.devops.dto.Connector;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
@@ -17,19 +17,19 @@ import java.util.Map;
 
 @Slf4j
 public class ConnectorStateMachine extends AbstractStateMachine<ConnectorStateMachine, ConnectorState, ConnectorEvent, Connector> {
-
+    
     private static final String RESOURCE_ACCESS_EXCEPTION_COUNTER_METRICS = "scheduler.statemachine.exception.connect.cluster.access";
-
+    
     private static final String REQUEST_EXCEPTION_COUNTER_METRICS = "scheduler.statemachine.exception.connect.cluster.request";
-
+    
     private static final String UNEXPECT_EXCEPTION_COUNTER_METRICS = "scheduler.statemachine.exception.unexpect";
-
+    
     private static final String METRICS_LABEL_KEY_CONNECT_CLUSTER = "connect.cluster";
-
+    
     private static final String DOT = ".";
-
+    
     private static final Map<String, Counter> COUNTERS = new HashMap<>();
-
+    
     @Override
     protected void afterTransitionCausedException(final ConnectorState from, final ConnectorState to, final ConnectorEvent event, final Connector connector) {
         Throwable exception = getLastException().getTargetException();
@@ -45,7 +45,7 @@ public class ConnectorStateMachine extends AbstractStateMachine<ConnectorStateMa
         }
         setStatus(StateMachineStatus.IDLE);
     }
-
+    
     private void counterMetrics(final String counterMetrics, final Connector connector) {
         String counterCacheKey = counterMetrics + DOT + connector.getConnectClusterUrl();
         if (!COUNTERS.containsKey(counterCacheKey)) {

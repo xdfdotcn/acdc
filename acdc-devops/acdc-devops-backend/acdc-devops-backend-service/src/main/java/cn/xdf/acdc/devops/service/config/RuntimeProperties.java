@@ -12,14 +12,14 @@ import java.util.Set;
 @Getter
 @Setter
 public class RuntimeProperties {
-
+    
     private final Host host = new Host();
-
+    
     @Getter
     @Setter
     public static class Host {
         private Set<String> ranges;
-
+        
         private Set<String> ips;
     }
 }

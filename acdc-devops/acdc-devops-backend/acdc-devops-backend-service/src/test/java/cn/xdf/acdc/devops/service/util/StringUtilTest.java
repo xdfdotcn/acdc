@@ -10,11 +10,11 @@ import java.util.Map;
 
 @RunWith(MockitoJUnitRunner.class)
 public class StringUtilTest {
-
+    
     @Test
     public void testConvertJsonToMapShouldPassWhenStringIsJsonFormat() {
         Map<String, String> result = StringUtil.convertJsonStringToMap("{\"a\":\"a\", \"b\":\"b\"}");
-
+        
         Assertions.assertThat(result.size()).isEqualTo(2);
         Assertions.assertThat(result.get("a")).isEqualTo("a");
         Assertions.assertThat(result.get("b")).isEqualTo("b");

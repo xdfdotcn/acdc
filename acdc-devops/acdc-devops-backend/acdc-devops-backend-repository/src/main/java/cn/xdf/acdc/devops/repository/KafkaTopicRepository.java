@@ -20,16 +20,16 @@ import java.util.Optional;
 @SuppressWarnings("unused")
 @Repository
 public interface KafkaTopicRepository extends JpaRepository<KafkaTopicDO, Long>, JpaSpecificationExecutor<KafkaTopicDO> {
-
+    
     /**
      * Get a kafka topic by kafka cluster id and topic name.
      *
      * @param kafkaClusterId kafka cluster id
-     * @param name           topic name
+     * @param name topic name
      * @return optinal of kafka topic do
      */
     Optional<KafkaTopicDO> findByKafkaClusterIdAndName(Long kafkaClusterId, String name);
-
+    
     /**
      * Get a none logical deleted kafka topic by id.
      *
@@ -37,17 +37,17 @@ public interface KafkaTopicRepository extends JpaRepository<KafkaTopicDO, Long>,
      * @return optinal of kafka topic do
      */
     Optional<KafkaTopicDO> findByDeletedFalseAndId(Long id);
-
+    
     /**
      * Get a kafka topic by resource id
-     *
-     * <p>findByDataSystemResourceId: select * from KafkaTopicDO where KafkaTopicDO.dataSystemResource.id=?
+     * <p/>
+     * findByDataSystemResourceId: select * from KafkaTopicDO where KafkaTopicDO.dataSystemResource.id=?
      *
      * @param resourceId resource id
      * @return returns Optional if Optional and DO if DO
      */
     Optional<KafkaTopicDO> findByDataSystemResourceId(long resourceId);
-
+    
     /**
      * Dynamic condition.
      *
@@ -55,27 +55,25 @@ public interface KafkaTopicRepository extends JpaRepository<KafkaTopicDO, Long>,
      * @return condition
      */
     default Specification specificationOf(final KafkaTopicQuery query) {
-
         return (root, criteriaQuery, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-
-            if (Objects.nonNull(query.getKafkaClusterId())
-            ) {
+            
+            if (Objects.nonNull(query.getKafkaClusterId())) {
                 predicates.add(cb.equal(root.get("kafkaCluster").get("id"), query.getKafkaClusterId()));
             }
-
+            
             if (!Strings.isNullOrEmpty(query.getName())) {
                 predicates.add(cb.like(root.get("name"), QueryUtil.like("%", query.getName(), "%")));
             }
-
+            
             if (Objects.nonNull(query.getDeleted())) {
                 predicates.add(cb.equal(root.get("deleted"), query.getDeleted()));
             }
-
+            
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }
-
+    
     /**
      * Common query.
      *
@@ -85,7 +83,7 @@ public interface KafkaTopicRepository extends JpaRepository<KafkaTopicDO, Long>,
     default List<KafkaTopicDO> query(final KafkaTopicQuery query) {
         return findAll(specificationOf(query));
     }
-
+    
     /**
      * Paged query.
      *

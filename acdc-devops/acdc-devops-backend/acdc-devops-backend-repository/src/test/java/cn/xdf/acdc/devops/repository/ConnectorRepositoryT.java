@@ -20,13 +20,13 @@ import java.util.Set;
 @SpringBootTest
 @Transactional
 public class ConnectorRepositoryT {
-
+    
     @Autowired
     private ConnectorRepository connectorRepository;
-
+    
     @PersistenceContext
     private EntityManager entityManager;
-
+    
     @Test
     public void testCascadeUpdate() {
         ConnectorDO connectorDO = new ConnectorDO();
@@ -39,7 +39,7 @@ public class ConnectorRepositoryT {
         configs.add(connectorConfigurationDO);
         connectorDO.setConnectorConfigurations(configs);
         connectorRepository.save(connectorDO);
-
+        
         entityManager.flush();
         entityManager.clear();
         ConnectorDO updatedConnector = connectorRepository.findAll().get(0);

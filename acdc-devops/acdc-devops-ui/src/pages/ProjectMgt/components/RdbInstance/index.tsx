@@ -1,6 +1,4 @@
-import {
-  pagedQueryDataSystemResource,
-  updateChildDataSystemResources} from '@/services/a-cdc/api';
+import {pagedQueryDataSystemResource, updateChildDataSystemResources} from '@/services/a-cdc/api';
 import {EditOutlined} from '@ant-design/icons';
 import ProForm from '@ant-design/pro-form';
 import {EditableFormInstance, EditableProTable, ProColumns} from '@ant-design/pro-table';
@@ -118,10 +116,14 @@ const RdbInstance: React.FC = () => {
               "port": passwordConfiguration
             };
 
+            const parentResource: API.DataSystemResource = {
+              id: rdbInstanceModel.resourceId
+            }
+
             const dataSystemResource: API.DataSystemResource = {
               name: newHost + ":" + port,
               dataSystemType: rdbInstanceModel.dataSystemType,
-              parentResourceId: rdbInstanceModel.resourceId,
+              parentResource: parentResource,
               dataSystemResourceConfigurations: dataSystemResourceConfigurations,
             }
 

@@ -38,45 +38,45 @@ import java.util.stream.Collectors;
 @SpringBootTest
 @Transactional
 public class TidbDataSystemSinkConnectorServiceImplTest {
-
+    
     @Autowired
     @Qualifier("tidbDataSystemSinkConnectorServiceImpl")
     private DataSystemSinkConnectorService dataSystemSinkConnectorService;
-
+    
     @MockBean
     private ConnectorClassService connectorClassService;
-
+    
     @MockBean
     private DataSystemResourceService dataSystemResourceService;
-
+    
     @MockBean
     private ConnectionService connectionService;
-
+    
     @Before
     public void setUp() throws Exception {
-
+    
     }
-
+    
     @Test
     public void testGetConnectorDefaultConfigurationShouldAsExpect() {
         Mockito.when(connectorClassService.getDetailByDataSystemTypeAndConnectorType(
                         ArgumentMatchers.eq(DataSystemType.TIDB), ArgumentMatchers.eq(ConnectorType.SINK)))
                 .thenReturn(fakeConnectorClassDetailDTO());
-
+        
         Map<String, String> expected = fakeConnectorClassDetailDTO().getDefaultConnectorConfigurations().stream()
                 .collect(Collectors.toMap(DefaultConnectorConfigurationDTO::getName, DefaultConnectorConfigurationDTO::getValue));
-
+        
         Assertions.assertThat(dataSystemSinkConnectorService.getConnectorDefaultConfiguration())
                 .isEqualTo(expected);
     }
-
+    
     private ConnectorClassDetailDTO fakeConnectorClassDetailDTO() {
         Set<DefaultConnectorConfigurationDTO> configs = new HashSet<>();
-        configs.add(DefaultConnectorConfigurationDTO.builder().name("config_1").value("value_1").build());
-        configs.add(DefaultConnectorConfigurationDTO.builder().name("config_2").value("value_2").build());
-        return ConnectorClassDetailDTO.builder().defaultConnectorConfigurations(configs).build();
+        configs.add(new DefaultConnectorConfigurationDTO().setName("config_1").setValue("value_1"));
+        configs.add(new DefaultConnectorConfigurationDTO().setName("config_2").setValue("value_2"));
+        return new ConnectorClassDetailDTO().setDefaultConnectorConfigurations(configs);
     }
-
+    
     @Test
     public void testGenerateConnectorCustomConfigurationShouldAsExpect() {
         // mock resource
@@ -96,7 +96,7 @@ public class TidbDataSystemSinkConnectorServiceImplTest {
                 .thenReturn(fakeSinkDatabase());
         Mockito.when(dataSystemResourceService.getDetailById(ArgumentMatchers.eq(connectionDetailDTO.getSinkInstanceId())))
                 .thenReturn(fakeSinkInstance());
-
+        
         Map<String, String> customConfig = dataSystemSinkConnectorService.generateConnectorCustomConfiguration(connectionId);
         Assertions.assertThat(customConfig.get("topics")).isEqualTo("source-topic-name");
         Assertions.assertThat(customConfig.get("destinations")).isEqualTo("sink-table");
@@ -104,7 +104,7 @@ public class TidbDataSystemSinkConnectorServiceImplTest {
         Assertions.assertThat(customConfig.get("connection.user")).isEqualTo("userName_1");
         Assertions.assertThat(customConfig.get("connection.password")).isEqualTo("password_1");
     }
-
+    
     private DataSystemResourceDetailDTO fakeSinkInstance() {
         Map<String, DataSystemResourceConfigurationDTO> sinkInstanceConfig = new HashMap<>();
         DataSystemResourceConfigurationDTO hostConfig = new DataSystemResourceConfigurationDTO()
@@ -118,82 +118,70 @@ public class TidbDataSystemSinkConnectorServiceImplTest {
         return new DataSystemResourceDetailDTO()
                 .setDataSystemResourceConfigurations(sinkInstanceConfig);
     }
-
+    
     private DataSystemResourceDTO fakeSinkDatabase() {
-        return DataSystemResourceDTO.builder()
-                .name("sink-database")
-                .build();
+        return new DataSystemResourceDTO().setName("sink-database");
     }
-
+    
     private DataSystemResourceDetailDTO fakeSinkClusterDetail() {
         Map<String, DataSystemResourceConfigurationDTO> dataSystemResourceConfigurations = new HashMap<>();
-        DataSystemResourceConfigurationDTO userName = DataSystemResourceConfigurationDTO.builder()
-                .name(TidbDataSystemResourceConfigurationDefinition.Cluster.USERNAME.getName())
-                .value("userName_1")
-                .build();
-        DataSystemResourceConfigurationDTO password = DataSystemResourceConfigurationDTO.builder()
-                .name(TidbDataSystemResourceConfigurationDefinition.Cluster.PASSWORD.getName())
-                .value("password_1")
-                .build();
+        DataSystemResourceConfigurationDTO userName = new DataSystemResourceConfigurationDTO()
+                .setName(TidbDataSystemResourceConfigurationDefinition.Cluster.USERNAME.getName())
+                .setValue("userName_1");
+        DataSystemResourceConfigurationDTO password = new DataSystemResourceConfigurationDTO()
+                .setName(TidbDataSystemResourceConfigurationDefinition.Cluster.PASSWORD.getName())
+                .setValue("password_1");
         dataSystemResourceConfigurations.put(userName.getName(), userName);
         dataSystemResourceConfigurations.put(password.getName(), password);
-
+        
         return new DataSystemResourceDetailDTO()
                 .setDataSystemResourceConfigurations(dataSystemResourceConfigurations);
     }
-
+    
     private DataSystemResourceDTO fakeSinkTable() {
-        return DataSystemResourceDTO.builder()
-                .name("sink-table")
-                .build();
+        return new DataSystemResourceDTO().setName("sink-table");
     }
-
+    
     private DataSystemResourceDTO fakeSourceDataCollection() {
-        return DataSystemResourceDTO.builder()
-                .kafkaTopicName("source-topic-name")
-                .build();
+        return new DataSystemResourceDTO().setKafkaTopicName("source-topic-name");
     }
-
+    
     private ConnectionDetailDTO fakeConnectionDetailDTO() {
-        return ConnectionDetailDTO.builder()
-                .sourceDataCollectionId(11L)
-                .sinkDataCollectionId(21L)
-                .connectionColumnConfigurations(new ArrayList<>())
-                .build();
+        return new ConnectionDetailDTO()
+                .setSourceDataCollectionId(11L)
+                .setSinkDataCollectionId(21L)
+                .setConnectionColumnConfigurations(new ArrayList<>());
     }
-
+    
     private DataSystemResourceDTO fakeTable() {
-        return DataSystemResourceDTO.builder()
-                .id(1L)
-                .name("table-1")
-                .build();
+        return new DataSystemResourceDTO()
+                .setId(1L)
+                .setName("table-1");
     }
-
+    
     private DataSystemResourceDTO fakeDatabase() {
-        return DataSystemResourceDTO.builder()
-                .id(1L)
-                .name("database-1")
-                .build();
+        return new DataSystemResourceDTO()
+                .setId(1L)
+                .setName("database-1");
     }
-
+    
     private DataSystemResourceDTO fakeCluster() {
-        return DataSystemResourceDTO.builder()
-                .id(1L)
-                .name("tidb-cluster-1")
-                .build();
+        return new DataSystemResourceDTO()
+                .setId(1L)
+                .setName("tidb-cluster-1");
     }
-
+    
     @Test
     public void testGetConnectorSpecificConfigurationDefinitionsShouldReturnEmptyList() {
         Assertions.assertThat(dataSystemSinkConnectorService.getConnectorSpecificConfigurationDefinitions()).isEmpty();
     }
-
+    
     @Test
     public void testGetSensitiveConfigurationNamesShouldAsExcept() {
         Assertions.assertThat(dataSystemSinkConnectorService.getSensitiveConfigurationNames())
                 .containsExactlyElementsOf(TidbDataSystemConstant.Connector.Sink.Configuration.SENSITIVE_CONFIGURATION_NAMES);
     }
-
+    
     @Test
     public void testGetDataSystemTypeShouldReturnTidb() {
         Assertions.assertThat(dataSystemSinkConnectorService.getDataSystemType()).isEqualTo(DataSystemType.TIDB);

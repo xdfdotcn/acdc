@@ -42,13 +42,13 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class KafkaHelperServiceImpl implements KafkaHelperService {
-
+    
     private static final String USER_PRINCIPAL_PREFIX = "User:";
-
+    
     private static final String PATTERN_ANY = "*";
-
+    
     private static final long ADMIN_CLIENT_TTL_MINUTES = 10;
-
+    
     private final LoadingCache<Map<String, Object>, AdminClient> adminClientCache = CacheBuilder.newBuilder()
             .expireAfterWrite(ADMIN_CLIENT_TTL_MINUTES, TimeUnit.MINUTES)
             .removalListener((RemovalListener<Map<String, Object>, AdminClient>) notification -> {
@@ -62,7 +62,7 @@ public class KafkaHelperServiceImpl implements KafkaHelperService {
                     return AdminClient.create(config);
                 }
             });
-
+    
     /**
      * Close admin client.
      */
@@ -74,7 +74,7 @@ public class KafkaHelperServiceImpl implements KafkaHelperService {
             adminClients.forEach(AdminClient::close);
         }
     }
-
+    
     @Override
     public void createTopic(
             final String topicName,
@@ -87,7 +87,7 @@ public class KafkaHelperServiceImpl implements KafkaHelperService {
         if (topicConfig != null && !topicConfig.isEmpty()) {
             newTopic.configs(topicConfig);
         }
-
+        
         CreateTopicsResult result = getAdminClient(adminConfig).createTopics(Lists.newArrayList(newTopic));
         try {
             result.all().get();
@@ -100,7 +100,7 @@ public class KafkaHelperServiceImpl implements KafkaHelperService {
             }
         }
     }
-
+    
     @Override
     public void deleteTopics(final List<String> topics, final Map<String, Object> adminConfig) {
         DeleteTopicsResult deleteTopicsResult = getAdminClient(adminConfig).deleteTopics(topics);
@@ -115,7 +115,7 @@ public class KafkaHelperServiceImpl implements KafkaHelperService {
             }
         }
     }
-
+    
     @Override
     public void addAcl(final String topic, final String userName, final AclOperation aclOperation, final Map<String, Object> adminConfig) {
         ResourcePattern resourcePattern = new ResourcePattern(ResourceType.TOPIC, topic, PatternType.LITERAL);
@@ -128,7 +128,7 @@ public class KafkaHelperServiceImpl implements KafkaHelperService {
             throw new ServerErrorException(e);
         }
     }
-
+    
     @Override
     public void deleteAcl(final String topic, final String userName, final Map<String, Object> adminConfig) {
         ResourcePatternFilter resourcePatternFilter = new ResourcePatternFilter(ResourceType.TOPIC, topic, PatternType.ANY);
@@ -141,7 +141,7 @@ public class KafkaHelperServiceImpl implements KafkaHelperService {
             throw new ServerErrorException(e);
         }
     }
-
+    
     @Override
     public Set<String> listTopics(final Map<String, Object> adminConfig) {
         Set<String> topics;
@@ -152,16 +152,16 @@ public class KafkaHelperServiceImpl implements KafkaHelperService {
         }
         return topics.stream().filter(topic -> !topic.startsWith("_")).collect(Collectors.toSet());
     }
-
+    
     @Override
     public void checkAdminClientConfig(final Map<String, Object> adminConfig) {
         this.listTopics(adminConfig);
     }
-
+    
     private String userPrincipal(final String userName) {
         return USER_PRINCIPAL_PREFIX + userName;
     }
-
+    
     private AdminClient getAdminClient(final Map<String, Object> adminConfig) {
         AdminClient adminClient;
         try {

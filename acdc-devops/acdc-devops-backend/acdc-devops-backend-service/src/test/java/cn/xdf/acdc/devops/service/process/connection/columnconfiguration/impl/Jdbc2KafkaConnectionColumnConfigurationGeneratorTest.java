@@ -12,20 +12,20 @@ import java.util.Set;
 
 @RunWith(MockitoJUnitRunner.class)
 public class Jdbc2KafkaConnectionColumnConfigurationGeneratorTest {
-
+    
     private ConnectionColumnConfigurationGenerator connectionColumnConfigurationGenerator;
-
+    
     @Before
     public void setup() {
         connectionColumnConfigurationGenerator = new Jdbc2KafkaConnectionColumnConfigurationGenerator();
     }
-
+    
     @Test
     public void testSupportSrcAppTypes() {
         Set<DataSystemType> dataSystemTypes = connectionColumnConfigurationGenerator.supportedSourceDataSystemTypes();
         Assertions.assertThat(dataSystemTypes).contains(DataSystemType.MYSQL, DataSystemType.TIDB);
     }
-
+    
     @Test
     public void testSupportSinkAppTypes() {
         Set<DataSystemType> dataSystemTypes = connectionColumnConfigurationGenerator.supportedSinkDataSystemTypes();

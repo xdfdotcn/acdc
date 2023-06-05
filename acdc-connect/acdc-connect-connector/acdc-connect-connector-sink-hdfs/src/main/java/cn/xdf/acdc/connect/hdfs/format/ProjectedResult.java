@@ -15,13 +15,15 @@
 
 package cn.xdf.acdc.connect.hdfs.format;
 
-import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.sink.SinkRecord;
 
-@Builder
 @Getter
+@Setter
+@Accessors(chain = true)
 public class ProjectedResult {
 
     private SinkRecord projectedRecord;

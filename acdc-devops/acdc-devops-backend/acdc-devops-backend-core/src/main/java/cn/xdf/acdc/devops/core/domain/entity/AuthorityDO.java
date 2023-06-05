@@ -6,7 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
-import lombok.experimental.SuperBuilder;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -20,14 +19,13 @@ import java.util.Objects;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@SuperBuilder
 @Accessors(chain = true)
 public class AuthorityDO implements Serializable {
-
+    
     @Id
     @Column(length = 50)
     private String name;
-
+    
     @Override
     public boolean equals(final Object o) {
         if (this == o) {
@@ -38,12 +36,12 @@ public class AuthorityDO implements Serializable {
         }
         return Objects.equals(name, ((AuthorityDO) o).name);
     }
-
+    
     @Override
     public int hashCode() {
         return Objects.hashCode(name);
     }
-
+    
     // prettier-ignore
     @Override
     public String toString() {

@@ -14,17 +14,17 @@ import java.util.stream.Collectors;
 
 @Service
 public class Jdbc2KafkaConnectionColumnConfigurationGenerator implements ConnectionColumnConfigurationGenerator {
-
+    
     @Override
     public Set<DataSystemType> supportedSourceDataSystemTypes() {
         return Sets.immutableEnumSet(DataSystemType.MYSQL, DataSystemType.TIDB);
     }
-
+    
     @Override
     public Set<DataSystemType> supportedSinkDataSystemTypes() {
         return Sets.immutableEnumSet(DataSystemType.KAFKA);
     }
-
+    
     @Override
     public List<ConnectionColumnConfigurationDTO> generateColumnConfiguration(
             final DataCollectionDefinition sourceDataCollectionDefinition,
@@ -43,10 +43,10 @@ public class Jdbc2KafkaConnectionColumnConfigurationGenerator implements Connect
                 // 优先展示匹配到的字段，主键字排前面
                 .sorted(Comparator.comparing(this::generateSequenceWhenNew))
                 .collect(Collectors.toList());
-
+        
         // react 前端组件需要存在id作为 unique key
         appendIdForConnectionColumnConfigurations(connectionColumnConfigurations, () -> 1);
-
+        
         return connectionColumnConfigurations;
     }
 }

@@ -22,24 +22,24 @@ import java.io.Serializable;
 @NoArgsConstructor
 @Accessors(chain = true)
 public class ConnectionRequisitionConnectionMappingDO extends BaseDO implements Serializable {
-
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    
     @ManyToOne(fetch = FetchType.LAZY)
     private ConnectionRequisitionDO connectionRequisition;
-
+    
     @ManyToOne(fetch = FetchType.LAZY)
     private ConnectionDO connection;
-
+    
     @Column(name = "connection_version", nullable = false)
     private Integer connectionVersion;
-
+    
     public ConnectionRequisitionConnectionMappingDO(final Long id) {
         this.id = id;
     }
-
+    
     @Override
     public boolean equals(final Object o) {
         if (this == o) {
@@ -50,7 +50,7 @@ public class ConnectionRequisitionConnectionMappingDO extends BaseDO implements 
         }
         return id != null && id.equals(((ConnectionRequisitionConnectionMappingDO) o).id);
     }
-
+    
     @Override
     public int hashCode() {
         // see https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/

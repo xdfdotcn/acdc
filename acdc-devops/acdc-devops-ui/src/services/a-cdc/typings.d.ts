@@ -2,8 +2,6 @@
 /* eslint-disable */
 
 declare namespace API {
-
-
   /**
    -----------------------
    用户
@@ -13,13 +11,13 @@ declare namespace API {
     id?: number;
     login?: string;
     email?: string;
-  }
+  };
 
   type LoginGuider = {
     url?: string;
     token?: string;
     user?: CurrentUser;
-  }
+  };
 
   type CurrentUser = {
     userid?: string;
@@ -31,14 +29,14 @@ declare namespace API {
 
   type Authority = {
     authority?: string;
-  }
+  };
 
   type LoginParams = {
     username?: string;
     password?: string;
     loginUrl?: string;
     loginSuccessUrl?: string;
-  }
+  };
 
   /**
    -----------------------
@@ -59,7 +57,7 @@ declare namespace API {
     showEdit?: boolean;
     // 强制刷新使用
     refreshVersion?: number = 0;
-  }
+  };
 
   type ConnectionModel = {
     connectionId?: number;
@@ -70,7 +68,7 @@ declare namespace API {
     showEdit?: boolean;
     // 强制刷新使用
     refreshVersion?: number = 0;
-  }
+  };
 
   type ConnectionApplyModel = {
     // source
@@ -120,7 +118,7 @@ declare namespace API {
     specificConfiguration?: string;
     // field mapping
     columnConfList?: ConnectionColumnConf[];
-  }
+  };
 
   type ConnectionColumnConfModel = {
     // 来源 'Detail', 'apply', 'edit'
@@ -150,43 +148,43 @@ declare namespace API {
     canEdit: boolean;
 
     canDelete: boolean;
-  }
+  };
 
   // project
   type ProjectEditingModel = {
     showDrawer?: boolean;
     projectId?: number;
     from?: string;
-  }
+  };
 
   type ProjectConfigModel = {
     showDrawer?: boolean;
-  }
+  };
 
   type ProjectDetailModel = {
     projectId?: number;
     name?: string;
     description?: string;
     ownerEmail?: string;
-  }
+  };
 
   type ProjectUserModel = {
     projectId?: number;
     ownerEmail?: string;
-  }
+  };
 
   type RdbClusterConfigModel = {
     resourceId?: number;
     dataSystemType?: string;
     showDrawer?: boolean;
-  }
+  };
 
   type RdbClusterEditingModel = {
-    showDrawer?: boolean
+    showDrawer?: boolean;
     from?: string;
     resourceId?: number;
     projectId?: number;
-  }
+  };
 
   type RdbClusterDetailModel = {
     resourceId?: number;
@@ -194,46 +192,46 @@ declare namespace API {
     description?: string;
     username?: string;
     dataSystemType?: string;
-  }
+  };
 
   type RdbClusterMgtModel = {
     projectId?: number;
-  }
+  };
 
   type RdbInstanceModel = {
     resourceId?: number;
     dataSystemType?: string;
-  }
+  };
 
   type RdbDatasetModel = {
     clusterResourceId?: number;
     databaseResourceId?: number;
     dataSystemType?: string;
-  }
+  };
 
   type KafkaClusterMgtModel = {
-    projectId?: number
-  }
+    projectId?: number;
+  };
 
   type KafkaClusterEditingModel = {
-    showModal?: boolean
+    showModal?: boolean;
     from?: string;
     kafkaClusterId?: number;
     projectId?: number;
-  }
+  };
 
   type KafkaClusterConfigModel = {
     kafkaClusterId?: number;
     showDrawer?: boolean;
-  }
+  };
 
   type KafkaClusterDetailModel = {
     kafkaClusterId?: number;
-  }
+  };
 
   type KafkaDatasetModel = {
-    kafkaClusterId?: number
-  }
+    kafkaClusterId?: number;
+  };
 
   /**
    -----------------------
@@ -247,7 +245,7 @@ declare namespace API {
     ownerEmail?: string;
     ownerName?: string;
     projectSourceType?: string;
-  }
+  };
 
   type ProjectPageList = {
     data?: Project[];
@@ -256,7 +254,7 @@ declare namespace API {
   };
 
   type ProjectQuery = {
-    name?: string
+    name?: string;
     queryRange?: string;
     current?: number;
     pageSize?: number;
@@ -273,7 +271,7 @@ declare namespace API {
     id?: number;
     name?: string;
     convert?: string;
-  }
+  };
 
   type KafkaCluster = {
     id?: number;
@@ -287,7 +285,7 @@ declare namespace API {
     saslPassword?: string;
     clusterType?: string;
     projectId?: number;
-  }
+  };
 
   /**
    -----------------------
@@ -305,7 +303,7 @@ declare namespace API {
     sinkColumnUniqueIndexNames?: string[];
     filterOperator?: string;
     filterValue?: string;
-  }
+  };
 
   type ConnectionColumnConfList = {
     data?: ConnectionColumnConf[];
@@ -321,11 +319,11 @@ declare namespace API {
 
     sinkDataSetId?: number;
     sinkDataSystemType?: string;
-  }
+  };
 
   /**
    -----------------------
-   conenctor 
+   conenctor
    -----------------------
    */
   type ConnectorListItem = {
@@ -333,12 +331,12 @@ declare namespace API {
     name?: string;
     creator?: string;
     creationTime?: string;
-    updateTime?: string
+    updateTime?: string;
     desiredState?: string;
     actualState?: string;
     connectorType?: string;
     dataSystemType?: string;
-  }
+  };
 
   type ConnectorList = {
     data?: ConnectorListItem[];
@@ -348,7 +346,7 @@ declare namespace API {
 
   type ConnectorQuery = {
     refreshVersion?: number;
-    name?: string
+    name?: string;
     current?: number;
     pageSize?: number;
   };
@@ -356,7 +354,7 @@ declare namespace API {
   type ConnectorEditInfo = {
     connectorId?: number;
     fieldMappings?: ConnectionColumnConf[];
-  }
+  };
 
   /**
    -----------------------
@@ -381,7 +379,7 @@ declare namespace API {
 
     updateTime?: string;
 
-    userEmail?:string;
+    userEmail?: string;
 
     // id info
     sourceProjectId?: number;
@@ -390,28 +388,22 @@ declare namespace API {
     sourceDataCollectionId?: number;
     sourceDataCollectionName?: string;
     sinkDataCollectionId?: number;
-
-    sinkDatasetInstanceId?: number;
+    sinkDataCollectionName?: string;
 
     // name info
     sourceProjectName?: string;
     sinkProjectName?: string;
 
     // data collection resource path
-    sourceDataCollectionResourcePath?:DataSystemResource[];
+    sourceDataCollectionResourcePath?: DataSystemResource[];
     sinkDataCollectionResourcePath?: DataSystemResource[];
-    
-    sourceDataCollectionName?: string;
-    sinkDataCollectionName?: string;
-
-    sinkDatasetInstanceName?: string;
 
     sourceConnectorId?: number;
     sinkConnectorId?: number;
     sinkConnectorName?: string;
 
     sourceDataCollectionTopicName: number;
-  }
+  };
 
   type ConnectionList = {
     data?: Connection[];
@@ -474,7 +466,7 @@ declare namespace API {
     sinkInstancePort?: number;
 
     connectionColumnConfigurations?: ConnectionColumnConf[];
-  }
+  };
 
   type ConnectionQuery = {
     sinkDataSystemType?: string;
@@ -482,8 +474,8 @@ declare namespace API {
     actualState?: string;
     sinkDataCollectionName?: string;
     sinkConnectorId?: number;
-    sourceConnectorId?: number
-  }
+    sourceConnectorId?: number;
+  };
 
   /**
    -----------------------
@@ -507,7 +499,7 @@ declare namespace API {
     dbaApproverEmail?: string;
     updateTimeFormat?: string;
     creationTimeFormat?: string;
-  }
+  };
 
   /**
    -----------------------
@@ -515,17 +507,17 @@ declare namespace API {
    -----------------------
    */
   type KafkaTopic = {
-    name?: string
-  }
+    name?: string;
+  };
 
   type Connector = {
     id?: number;
-    name?: string,
-    creationTime?: string,
-    updateTime?: string,
-    desiredState?: string,
-    actualState?: string,
-  }
+    name?: string;
+    creationTime?: string;
+    updateTime?: string;
+    desiredState?: string;
+    actualState?: string;
+  };
 
   /**
    -----------------------
@@ -544,14 +536,14 @@ declare namespace API {
     projectId?: number;
     username?: string;
     password?: string;
-  }
+  };
 
   type RdbInstance = {
     id?: number;
     host?: string;
     port?: number;
     roleType?: string;
-  }
+  };
 
   type ConnectorDetail = {
     id?: number;
@@ -561,13 +553,13 @@ declare namespace API {
     dataSystemClusterName?: string;
     dataSystemResourceName?: string;
     connectorConfigurations?: ConnectorConfiguration[];
-  }
+  };
 
   type ConnectorConfiguration = {
     id: number;
     name: string;
     value: string;
-  }
+  };
 
   type ConnectorMgtEventList = {
     data?: ConnectorMgtEventItem[];
@@ -580,26 +572,26 @@ declare namespace API {
     message?: string;
     creationTime?: string;
     updateTime?: string;
-    source: number;//0: 用户操作, 1: scheduler
-    level: number;//0: normal, 1: trace, 2: warning, 3: error, 4: critical
-  }
+    source: number; //0: 用户操作, 1: scheduler
+    level: number; //0: normal, 1: trace, 2: warning, 3: error, 4: critical
+  };
   type EventListQueryparams = {
     current?: number;
     pageSize?: number;
-    reason?: string
-    beginTime?: string
-    endTime?: string
+    reason?: string;
+    beginTime?: string;
+    endTime?: string;
     level?: number;
     source?: number;
     connectorId?: number;
-  }
+  };
 
   /**
    -----------------------
    审批相关
    -----------------------
    */
-  type ConnectionRequisition = {}
+  type ConnectionRequisition = {};
 
   type ConnectionRequisitionDetail = {
     id?: number;
@@ -610,7 +602,7 @@ declare namespace API {
     state?: string;
     description?: string;
     connections?: ConnectionDetail[];
-  }
+  };
 
   /**
    -----------------------
@@ -628,7 +620,7 @@ declare namespace API {
     value?: string;
     creationTime?: string;
     updateTIme?: string;
-  }
+  };
 
   type DataSystemResource = {
     id?: number;
@@ -636,13 +628,13 @@ declare namespace API {
     resourceType?: string;
     description?: string;
     dataSystemType?: string;
-    parentResourceId?: number;
+    parentResource?: DataSystemResource;
     projects?: Project[];
-    dataSystemResourceConfigurations?: { [key: string]: DataSystemResourceConfiguration }
-  }
+    dataSystemResourceConfigurations?: { [key: string]: DataSystemResourceConfiguration };
+  };
 
   type DataSystemResourceQuery = {
-    resourceConfigurations?: { [key: string]: any }
+    resourceConfigurations?: { [key: string]: any };
     parentResourceId?: number;
     name?: string;
     resourceTypes?: string[];
@@ -650,7 +642,8 @@ declare namespace API {
     current?: number;
     pageSize?: number;
     deleted?: boolean;
-  }
+    from?: string;
+  };
 
   type DataSystemResourcePageList = {
     data?: DataSystemResource[];
@@ -661,18 +654,24 @@ declare namespace API {
   type DataFieldDefinition = {
     name?: string;
     type?: string;
-    uniqueIndexNames?: string[]
-    displayName?: string
-  }
+    uniqueIndexNames?: string[];
+    displayName?: string;
+  };
 
   type DataCollectionDefinition = {
-    lowerCaseNameToDataFieldDefinitions?: { [key: string]: DataFieldDefinition }
-    uniqueIndexNameToFieldDefinitions?: { [key: string]: DataFieldDefinition[] }
-  }
+    lowerCaseNameToDataFieldDefinitions?: { [key: string]: DataFieldDefinition };
+    uniqueIndexNameToFieldDefinitions?: { [key: string]: DataFieldDefinition[] };
+  };
 
   type ConnectionRequisitionDetail = {
     connections: Connection[];
     description: string;
-  }
-}
+  };
 
+  type DataSystemResourceDefinition = {
+    type: string;
+    hasDataCollectionChild: boolean;
+    dataCollection: boolean;
+    children: { [key: string]: DataSystemResourceDefinition };
+  };
+}

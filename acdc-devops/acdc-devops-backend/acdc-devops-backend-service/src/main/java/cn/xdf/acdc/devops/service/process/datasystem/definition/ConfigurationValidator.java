@@ -2,7 +2,7 @@ package cn.xdf.acdc.devops.service.process.datasystem.definition;
 
 @FunctionalInterface
 public interface ConfigurationValidator {
-
+    
     /**
      * Validate input value.
      *

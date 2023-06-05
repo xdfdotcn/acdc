@@ -4,7 +4,7 @@ import io.micrometer.core.annotation.Timed;
 
 @FunctionalInterface
 public interface EventHandleConsumer {
-
+    
     /**
      * Performs this operation on the given argument.
      *
@@ -13,5 +13,5 @@ public interface EventHandleConsumer {
      */
     @Timed(description = "user trigger event")
     void accept(Long clusterId, UserTriggerConnectorEvent userTriggerConnectorEvent);
-
+    
 }

@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Set;
 
 public interface UserAuthorityService {
-
+    
     /**
      * Query user authority.
      *
@@ -16,26 +16,26 @@ public interface UserAuthorityService {
      * @return list
      */
     List<UserAuthorityDTO> queryAll(UserAuthorityQuery query);
-
+    
     /**
      * Add role.
      *
      * @param roleSet role set
-     * @param userId  userId
+     * @param userId userId
      */
     void addRole(Long userId, Set<AuthorityRoleType> roleSet);
-
+    
     /**
      * Delete role by user id.
      *
      * @param userId userId
      */
     void deleteRoleByUserId(Long userId);
-
+    
     /**
      * Rest role .
      *
-     * @param userId  userId
+     * @param userId userId
      * @param roleSet roleSet
      */
     void resetRole(Long userId, Set<AuthorityRoleType> roleSet);

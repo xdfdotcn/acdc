@@ -13,7 +13,7 @@ import java.util.List;
 @SuppressWarnings("unused")
 @Repository
 public interface ConnectorEventRepository extends JpaRepository<ConnectorEventDO, Long>, JpaSpecificationExecutor<ConnectorEventDO> {
-
+    
     /**
      * Find events by connector id.
      *

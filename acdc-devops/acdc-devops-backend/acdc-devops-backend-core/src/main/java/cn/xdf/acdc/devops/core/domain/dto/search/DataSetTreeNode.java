@@ -2,25 +2,25 @@ package cn.xdf.acdc.devops.core.domain.dto.search;
 
 import cn.xdf.acdc.devops.core.domain.dto.enumeration.DataSetTreeNodeType;
 import cn.xdf.acdc.devops.core.domain.entity.enumeration.DataSystemType;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
 
 @Data
 @NoArgsConstructor
-@Builder
+@Accessors(chain = true)
 public class DataSetTreeNode {
-
+    
     private Long id;
-
+    
     private String name;
-
+    
     private int isLeaf;
-
+    
     private DataSetTreeNodeType nodeType;
-
+    
     private DataSystemType dataSystemType;
-
+    
     public DataSetTreeNode(
             final Long id,
             final String name,
@@ -33,7 +33,7 @@ public class DataSetTreeNode {
         this.nodeType = nodeType;
         this.dataSystemType = dataSystemType;
     }
-
+    
     public DataSetTreeNode(
             final Long id,
             final String name,

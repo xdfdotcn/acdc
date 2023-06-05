@@ -6,7 +6,7 @@ import java.util.List;
  * Inner email sender.
  */
 public interface EmailSender {
-
+    
     /**
      * Send email for inner warning purpose.
      *
@@ -14,7 +14,7 @@ public interface EmailSender {
      * @param content content
      */
     void sendInnerWarningEmail(EmailTemplate template, Object content);
-
+    
     /**
      * Send message.
      *
@@ -23,12 +23,12 @@ public interface EmailSender {
      * @param content content
      */
     default void sendEmail(
-        List<DomainUser> to,
-        EmailTemplate template,
-        Object content) {
+            List<DomainUser> to,
+            EmailTemplate template,
+            Object content) {
         throw new UnsupportedOperationException();
     }
-
+    
     /**
      * Send message.
      *
@@ -38,8 +38,8 @@ public interface EmailSender {
      * @param content content
      */
     void sendEmail(
-        List<DomainUser> to,
-        List<DomainUser> cc,
-        EmailTemplate template,
-        Object content);
+            List<DomainUser> to,
+            List<DomainUser> cc,
+            EmailTemplate template,
+            Object content);
 }

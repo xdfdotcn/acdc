@@ -16,7 +16,7 @@ import java.util.Optional;
 @Repository
 public interface ConnectorClassRepository extends JpaRepository<ConnectorClassDO, Long>,
         JpaSpecificationExecutor<ConnectorClassDO> {
-
+    
     /**
      * 根据名称查询.
      *
@@ -24,21 +24,21 @@ public interface ConnectorClassRepository extends JpaRepository<ConnectorClassDO
      * @return ConnectorClass
      */
     Optional<ConnectorClassDO> findOneByName(String name);
-
+    
     /**
      * 根据名称查询.
      *
-     * @param className      className
+     * @param className className
      * @param dataSystemType dataSystemType
      * @return ConnectorClass
      */
     Optional<ConnectorClassDO> findOneByNameAndDataSystemType(String className, DataSystemType dataSystemType);
-
+    
     /**
      * find connector class by data system type and connector type.
      *
      * @param dataSystemType data system type
-     * @param connectorType  connector type
+     * @param connectorType connector type
      * @return connector class do
      */
     Optional<ConnectorClassDO> findOneByDataSystemTypeAndConnectorType(DataSystemType dataSystemType, ConnectorType connectorType);

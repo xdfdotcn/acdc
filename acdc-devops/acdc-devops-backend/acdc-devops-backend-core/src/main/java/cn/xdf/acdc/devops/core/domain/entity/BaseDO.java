@@ -4,7 +4,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
+import lombok.experimental.Accessors;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -17,14 +17,14 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-@SuperBuilder
+@Accessors(chain = true)
 public abstract class BaseDO implements Serializable {
-
+    
     @ApiModelProperty(value = "创建时间", required = true)
     @Column(name = "creation_time", updatable = false, nullable = false)
     @CreationTimestamp
     private Date creationTime;
-
+    
     @ApiModelProperty(value = "更新时间", required = true)
     @Column(name = "update_time", nullable = false)
     @UpdateTimestamp

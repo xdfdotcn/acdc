@@ -6,14 +6,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 public final class UIError {
-
+    
     private UIError() {
     }
-
+    
     /**
      * 返回给 UI 错误消息体.
      *
-     * @param status   http status
+     * @param status http status
      * @param errorMsg error message
      * @return map
      */
@@ -25,11 +25,11 @@ public final class UIError {
         map.put("showType", 4);
         return map;
     }
-
+    
     /**
      * 生成简化版的错误信息 (简化,不带有错误提示类型).
      *
-     * @param status   http status
+     * @param status http status
      * @param errorMsg error message
      * @return map
      */

@@ -25,7 +25,7 @@ public class JwtLogoutSuccessHandler implements LogoutSuccessHandler {
     public void onLogoutSuccess(final HttpServletRequest request, final HttpServletResponse response, final Authentication authentication) throws IOException, ServletException {
 
         String logoutSuccessUrl = SecurityUtil.obtainLogoutSuccessUrl(request);
-        String content = objectMapper.writeValueAsString(LoginGuider.builder().url(logoutSuccessUrl).build());
+        String content = objectMapper.writeValueAsString(new LoginGuider().setUrl(logoutSuccessUrl));
         ResponseWriter.write(response, content, HttpStatus.UNAUTHORIZED);
 
         log.info("Logout success, logout success url is: {}", logoutSuccessUrl);

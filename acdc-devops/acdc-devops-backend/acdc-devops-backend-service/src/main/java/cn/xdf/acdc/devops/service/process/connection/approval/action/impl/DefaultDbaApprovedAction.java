@@ -18,13 +18,13 @@ import java.util.List;
 
 @Component
 public class DefaultDbaApprovedAction implements DbaApprovedAction {
-
+    
     @Autowired
     private ConnectionRequisitionService connectionRequisitionService;
-
+    
     @Autowired
     private ApproveEmailSender emailSender;
-
+    
     @Override
     public void action(
             final ApprovalState from,
@@ -39,12 +39,12 @@ public class DefaultDbaApprovedAction implements DbaApprovedAction {
         String approveResult = context.getDescription();
         connectionRequisitionService.updateApproveStateByDBA(id, to, approveResult, domainAccount);
         connectionRequisitionService.approveRequisitionConnections(id);
-
+        
         // 2. send email
         DomainUser proposer = machine.getProposer(id);
-
+        
         List<DomainUser> cc = new ArrayList<>();
-
+        
         emailSender.sendApproveEmail(
                 id,
                 Lists.newArrayList(proposer),

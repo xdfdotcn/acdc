@@ -7,28 +7,28 @@ import java.util.Map;
 import java.util.Set;
 
 public interface DataSystemSinkConnectorService extends DataSystemService {
-
+    
     /**
      * Verify resource.
      *
      * @param dataCollectionId resource id for data collection
      */
     void verifyDataSystemMetadata(Long dataCollectionId);
-
+    
     /**
      * Execute before connector create.
      *
      * @param dataCollectionId resource id for data collection
      */
     void beforeConnectorCreation(Long dataCollectionId);
-
+    
     /**
      * Get the connector default configuration.
      *
      * @return default configurations for connector
      */
     Map<String, String> getConnectorDefaultConfiguration();
-
+    
     /**
      * Generate the connector custom configuration.
      *
@@ -36,7 +36,7 @@ public interface DataSystemSinkConnectorService extends DataSystemService {
      * @return custom configuration
      */
     Map<String, String> generateConnectorCustomConfiguration(Long connectionId);
-
+    
     /**
      * Generate connector name for target data collection.
      *
@@ -44,21 +44,21 @@ public interface DataSystemSinkConnectorService extends DataSystemService {
      * @return connector name
      */
     String generateConnectorName(Long connectionId);
-
+    
     /**
      * Get  connector specific configuration definitions.
      *
      * @return configuration definitions
      */
     Set<ConfigurationDefinition> getConnectorSpecificConfigurationDefinitions();
-
+    
     /**
      * Get sensitive configuration keys.
      *
      * @return sensitive configuration keys
      */
     Set<String> getSensitiveConfigurationNames();
-
+    
     /**
      * Get connector detail class DTO.
      *
