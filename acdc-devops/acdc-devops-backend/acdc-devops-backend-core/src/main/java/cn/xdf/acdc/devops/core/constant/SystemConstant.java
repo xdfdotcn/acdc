@@ -37,6 +37,8 @@ public class SystemConstant {
         public static final String BLANK = " ";
         
         public static final String EQUIVALENCE = "=";
-        
+
+        public static final String MULTIPLY = "*";
+
     }
 }

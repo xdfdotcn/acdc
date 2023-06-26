@@ -36,7 +36,7 @@ public class SchemalessJsonConverter extends JsonConverter {
     }
 
     @Override
-    public void configure(final Map<String, ?> configs, boolean isKey) {
+    public void configure(final Map<String, ?> configs, final boolean isKey) {
         Map<String, Object> conf = defaultSchemalessConfig(configs);
         super.configure(conf, isKey);
     }

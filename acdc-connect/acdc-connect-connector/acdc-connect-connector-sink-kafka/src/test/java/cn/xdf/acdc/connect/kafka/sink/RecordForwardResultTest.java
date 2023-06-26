@@ -155,7 +155,7 @@ public class RecordForwardResultTest {
         Assert.assertEquals(0, exceptions.size());
     }
 
-    private List<RecordForwardResult> getRecordForwardResults(int taskNum) {
+    private List<RecordForwardResult> getRecordForwardResults(final int taskNum) {
         AtomicLong i = new AtomicLong(0);
 
         return Arrays.stream(new RecordForwardResult[taskNum])

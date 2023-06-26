@@ -23,27 +23,25 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <executions>
                     <execution>
-                        <id>copy-connector-and-smt</id>
+                        <id>copy-self-build-plugins</id>
                         <phase>install</phase>
                         <goals>
                             <goal>exec</goal>
                         </goals>
+                        <configuration>
+                            <executable>src/main/resources/shell/package-jar.sh</executable>
+                            <arguments>
+                                <argument>${package.profile}</argument>
+                                <argument>${basedir}/../acdc-connect-connector/acdc-connect-connector-sink-jdbc</argument>
+                                <argument>${basedir}/../acdc-connect-connector/acdc-connect-connector-source-tidb</argument>
+                                <argument>${basedir}/../acdc-connect-connector/acdc-connect-connector-sink-hdfs</argument>
+                                <argument>${basedir}/../acdc-connect-connector/acdc-connect-connector-sink-kafka</argument>
+                                <argument>${basedir}/../acdc-connect-plugins/acdc-connect-plugins-converter-schemaless-json</argument>
+                                <argument>${basedir}/../acdc-connect-transforms</argument>
+                            </arguments>
+                        </configuration>
                     </execution>
                 </executions>
-                <configuration>
-                    <executable>src/main/resources/shell/package-jar.sh</executable>
-                    <arguments>
-                        <argument>${package.profile}</argument>
-                        <argument>${basedir}/../acdc-connect-connector/acdc-connect-connector-sink-jdbc</argument>
-                        <argument>${basedir}/../acdc-connect-connector/acdc-connect-connector-source-tidb</argument>
-                        <argument>${basedir}/../acdc-connect-connector/acdc-connect-connector-sink-hdfs</argument>
-                        <argument>${basedir}/../acdc-connect-connector/acdc-connect-connector-sink-kafka</argument>
-                        <argument>${basedir}/../acdc-connect-plugins/acdc-connect-plugins-converter-schemaless-json</argument>
-                        <argument>${basedir}/../acdc-connect-transforms/acdc-connect-transforms-format</argument>
-                        <argument>${basedir}/../acdc-connect-transforms/acdc-connect-transforms-value-mapper</argument>
-                        <argument>${basedir}/../../acdc-internal/acdc-internal-connect-plugins-converter-xdf</argument>
-                    </arguments>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>com.spotify</groupId>

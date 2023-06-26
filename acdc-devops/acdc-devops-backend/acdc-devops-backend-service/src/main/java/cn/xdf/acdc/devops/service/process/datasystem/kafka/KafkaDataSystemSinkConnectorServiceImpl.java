@@ -101,7 +101,7 @@ public class KafkaDataSystemSinkConnectorServiceImpl extends AbstractDataSystemS
     }
     
     @Override
-    public Set<ConfigurationDefinition> getConnectorSpecificConfigurationDefinitions() {
+    public Set<ConfigurationDefinition<?>> getConnectorSpecificConfigurationDefinitions() {
         return KafkaSinkConnectorSpecificConfigurationDefinition.Sink.SPECIFIC_CONFIGURATION_DEFINITIONS;
     }
     

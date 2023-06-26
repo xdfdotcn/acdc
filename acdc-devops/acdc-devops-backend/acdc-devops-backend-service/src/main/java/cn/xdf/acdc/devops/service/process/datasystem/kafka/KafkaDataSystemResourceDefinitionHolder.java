@@ -29,10 +29,10 @@ public final class KafkaDataSystemResourceDefinitionHolder {
     private static DataSystemResourceDefinition generateKafkaTopicDataSystemResourceDefinition() {
         return new DataSystemResourceDefinition(DataSystemResourceType.KAFKA_TOPIC, true, false, true);
     }
-    
-    private static Map<String, ConfigurationDefinition> generateClusterConfiguration() {
-        Map<String, ConfigurationDefinition> configuration = new HashMap<>();
-        
+
+    private static Map<String, ConfigurationDefinition<?>> generateClusterConfiguration() {
+        Map<String, ConfigurationDefinition<?>> configuration = new HashMap<>();
+
         configuration.put(Cluster.BOOTSTRAP_SERVERS.getName(), Cluster.BOOTSTRAP_SERVERS);
         configuration.put(Cluster.SASL_MECHANISM.getName(), Cluster.SASL_MECHANISM);
         configuration.put(Cluster.SECURITY_PROTOCOL_CONFIG.getName(), Cluster.SECURITY_PROTOCOL_CONFIG);

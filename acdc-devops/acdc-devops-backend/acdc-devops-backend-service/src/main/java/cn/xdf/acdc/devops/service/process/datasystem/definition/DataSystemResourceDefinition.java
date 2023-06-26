@@ -1,13 +1,12 @@
 package cn.xdf.acdc.devops.service.process.datasystem.definition;
 
-import cn.xdf.acdc.devops.core.domain.entity.enumeration.DataSystemResourceType;
-import lombok.Getter;
-import lombok.Setter;
-
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+
+import cn.xdf.acdc.devops.core.domain.entity.enumeration.DataSystemResourceType;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Definition of a data system resource.
@@ -15,9 +14,9 @@ import java.util.Objects;
 @Getter
 @Setter
 public class DataSystemResourceDefinition {
-    
-    private Map<String, ConfigurationDefinition> configurationDefinitions = new HashMap<>();
-    
+
+    private Map<String, ConfigurationDefinition<?>> configurationDefinitions = new HashMap<>();
+
     private DataSystemResourceType type;
     
     /**
@@ -36,16 +35,16 @@ public class DataSystemResourceDefinition {
             final boolean dynamic,
             final boolean hasDataCollectionChild,
             final boolean dataCollection) {
-        this(Collections.EMPTY_MAP, type, dynamic, hasDataCollectionChild, dataCollection, Collections.EMPTY_MAP);
+        this(new HashMap<>(), type, dynamic, hasDataCollectionChild, dataCollection, new HashMap<>());
     }
     
     public DataSystemResourceDefinition(
-            final Map<String, ConfigurationDefinition> configurationDefinitions,
+            final Map<String, ConfigurationDefinition<?>> configurationDefinitions,
             final DataSystemResourceType type,
             final boolean dynamic,
             final boolean hasDataCollectionChild,
             final boolean dataCollection) {
-        this(configurationDefinitions, type, dynamic, hasDataCollectionChild, dataCollection, Collections.EMPTY_MAP);
+        this(configurationDefinitions, type, dynamic, hasDataCollectionChild, dataCollection, new HashMap<>());
     }
     
     public DataSystemResourceDefinition(
@@ -54,11 +53,11 @@ public class DataSystemResourceDefinition {
             final boolean hasDataCollectionChild,
             final boolean dataCollection,
             final Map<DataSystemResourceType, DataSystemResourceDefinition> children) {
-        this(Collections.EMPTY_MAP, type, dynamic, hasDataCollectionChild, dataCollection, children);
+        this(new HashMap<>(), type, dynamic, hasDataCollectionChild, dataCollection, children);
     }
     
     public DataSystemResourceDefinition(
-            final Map<String, ConfigurationDefinition> configurationDefinitions,
+            final Map<String, ConfigurationDefinition<?>> configurationDefinitions,
             final DataSystemResourceType type,
             final boolean dynamic,
             final boolean hasDataCollectionChild,

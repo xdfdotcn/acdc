@@ -18,8 +18,8 @@ COPY target/connector-package/acdc-connect-connector-source-tidb /kafka/connect/
 COPY target/connector-package/acdc-connect-connector-sink-hdfs /kafka/connect/acdc-connect-connector-sink-hdfs
 COPY target/connector-package/acdc-connect-connector-sink-kafka /kafka/connect/acdc-connect-connector-sink-kafka
 
+COPY src/main/resources/plugins/es-sink-connector /kafka/connect/acdc-connect-connector-sink-es
+
 # smt
 COPY target/connector-package/acdc-connect-plugins-converter-schemaless-json /kafka/connect/acdc-connect-plugins-converter-schemaless-json
-COPY target/connector-package/acdc-connect-transforms-format /kafka/connect/acdc-connect-transforms-format
-COPY target/connector-package/acdc-connect-transforms-value-mapper /kafka/connect/acdc-connect-transforms-value-mapper
-COPY target/connector-package/acdc-internal-connect-plugins-converter-xdf /kafka/connect/acdc-internal-connect-plugins-converter-xdf
+COPY target/connector-package/acdc-connect-transforms /kafka/connect/acdc-connect-transforms

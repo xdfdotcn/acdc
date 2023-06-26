@@ -9,11 +9,11 @@ public class CommonDataSystemResourceConfigurationDefinition {
         
         public static final String USERNAME_NAME = "username";
         
-        public static final String USERNAME_DESC = "数据库用户名";
+        public static final String USERNAME_DESC = "用户名";
         
         public static final String PASSWORD_NAME = "password";
         
-        public static final String PASSWORD_DESC = "数据库密码";
+        public static final String PASSWORD_DESC = "密码";
         
         public static final ConfigurationDefinition<String> USERNAME = new ConfigurationDefinition(
                 false,

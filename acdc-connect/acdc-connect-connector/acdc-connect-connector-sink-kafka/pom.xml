@@ -32,7 +32,7 @@
         </dependency>
         <dependency>
             <groupId>cn.xdf.acdc</groupId>
-            <artifactId>acdc-connect-transforms-format</artifactId>
+            <artifactId>acdc-connect-transforms</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>

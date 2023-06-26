@@ -9,6 +9,7 @@ import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -18,6 +19,7 @@ import java.util.Map;
 @Component
 @Aspect
 @Slf4j
+@Profile("prod")
 public class SchedulerExceptionAlertAspect {
     
     private static final String SCHEDULER_EXCEPTION_TITLE = "元数据同步定时任务执行异常";

@@ -7,6 +7,7 @@ import KafkaClusterMgt from '../KafkaClusterMgt';
 import ProjectDetail from '../ProjectDetail';
 import ProjectUser from '../ProjectUser';
 import RdbClusterMgt from '../RdbClusterMgt';
+import EsClusterMgt from '../EsClusterMgt';
 const ProjectConfig: React.FC = () => {
 	const [tab, setTab] = useState('tab0');
 	// 项目详情数据流
@@ -65,6 +66,10 @@ const ProjectConfig: React.FC = () => {
 				<ProCard.TabPane key="tab4" tab="HIVE">
 					HIVE
 				</ProCard.TabPane>
+
+        <ProCard.TabPane key="tab5" tab="ES">
+          <EsClusterMgt />
+        </ProCard.TabPane>
 
 			</ProCard>
 			</Drawer>

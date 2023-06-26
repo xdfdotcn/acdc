@@ -81,7 +81,14 @@ public class TidbValueConvertersTest {
     private TidbConnectorConfig config = TidbConnectorConfigTest.getTidbConnectorConfig("", "", "", 1);
 
     private TidbValueConverters tidbValueConverters = TidbValueConverters.getValueConverters(config);
-
+    
+    @Test
+    public void testBigDecimalShouldValueScaleMatchesSchemaScale() {
+        Schema decimalSchema = SpecialValueDecimal.builder(config.getDecimalMode(), DECIMAL_COLUMN.length(), DECIMAL_COLUMN.scale().get()).build();
+        Assert.assertEquals("0.000",
+                tidbValueConverters.converter(DECIMAL_COLUMN, new Field("DECIMAL_FIELD", 0, decimalSchema)).convert("0").toString());
+    }
+    
     @Test
     public void testSchemaBuilderShouldGetSchemaAsExpect() {
         Assert.assertEquals(SchemaBuilder.int16().build(), tidbValueConverters.schemaBuilder(BOOL_OR_TINYINT_COLUMN).build());
