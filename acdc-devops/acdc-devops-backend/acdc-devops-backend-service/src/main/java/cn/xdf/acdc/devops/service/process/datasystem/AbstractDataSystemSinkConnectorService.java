@@ -178,7 +178,7 @@ public abstract class AbstractDataSystemSinkConnectorService implements DataSyst
      * @param connectionColumnConfigurations connection column configuration list
      * @return source column whitelist configuration value
      */
-    private String generateColumnWhitelistConfigurationValue(final List<ConnectionColumnConfigurationDTO> connectionColumnConfigurations) {
+    protected String generateColumnWhitelistConfigurationValue(final List<ConnectionColumnConfigurationDTO> connectionColumnConfigurations) {
         List<String> sourceFields = connectionColumnConfigurations.stream()
                 .filter(it -> !ConnectionColumnConfigurationConstant.META_FIELD_SET.contains(it.getSourceColumnName()))
                 .filter(it -> !isNone(it.getSourceColumnName()))
@@ -195,7 +195,7 @@ public abstract class AbstractDataSystemSinkConnectorService implements DataSyst
      * @param connectionColumnConfigurations connection column configuration list
      * @return column mapping configuration value
      */
-    private String generateColumnMappingConfigurationValue(final List<ConnectionColumnConfigurationDTO> connectionColumnConfigurations) {
+    protected String generateColumnMappingConfigurationValue(final List<ConnectionColumnConfigurationDTO> connectionColumnConfigurations) {
         List<String> mappings = connectionColumnConfigurations.stream()
                 .filter(it -> !isNone(it.getSourceColumnName()))
                 .filter(it -> !ConnectionColumnConfigurationConstant.META_FIELD_FILTER_SET.contains(it.getSourceColumnName()))

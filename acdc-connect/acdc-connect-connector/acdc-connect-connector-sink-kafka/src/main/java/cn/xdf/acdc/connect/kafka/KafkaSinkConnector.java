@@ -43,7 +43,7 @@ public class KafkaSinkConnector extends SinkConnector {
     }
 
     @Override
-    public List<Map<String, String>> taskConfigs(int maxTasks) {
+    public List<Map<String, String>> taskConfigs(final int maxTasks) {
         log.info("Setting task configurations for {} workers.", maxTasks);
         final List<Map<String, String>> configs = new ArrayList<>(maxTasks);
         for (int i = 0; i < maxTasks; ++i) {

@@ -32,10 +32,10 @@ public final class TidbDataSystemResourceDefinitionHolder {
     private static DataSystemResourceDefinition generateInstanceDataSystemResourceDefinition() {
         return new DataSystemResourceDefinition(generateServerConfiguration(), DataSystemResourceType.TIDB_SERVER, false, false, false);
     }
-    
-    private static Map<String, ConfigurationDefinition> generateServerConfiguration() {
-        Map<String, ConfigurationDefinition> configuration = new HashMap<>();
-        
+
+    private static Map<String, ConfigurationDefinition<?>> generateServerConfiguration() {
+        Map<String, ConfigurationDefinition<?>> configuration = new HashMap<>();
+
         configuration.put(Server.HOST.getName(), Server.HOST);
         configuration.put(Server.PORT.getName(), Server.PORT);
         
@@ -53,10 +53,10 @@ public final class TidbDataSystemResourceDefinitionHolder {
     private static DataSystemResourceDefinition generateTableDataSystemResourceDefinition() {
         return new DataSystemResourceDefinition(DataSystemResourceType.TIDB_TABLE, true, false, true);
     }
-    
-    private static Map<String, ConfigurationDefinition> generateClusterConfiguration() {
-        Map<String, ConfigurationDefinition> configuration = new HashMap<>();
-        
+
+    private static Map<String, ConfigurationDefinition<?>> generateClusterConfiguration() {
+        Map<String, ConfigurationDefinition<?>> configuration = new HashMap<>();
+
         configuration.put(Cluster.USERNAME.getName(), Cluster.USERNAME);
         configuration.put(Cluster.PASSWORD.getName(), Cluster.PASSWORD);
         configuration.put(Cluster.SOURCE.getName(), Cluster.SOURCE);

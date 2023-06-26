@@ -32,9 +32,9 @@ public final class MysqlDataSystemResourceDefinitionHolder {
     private static DataSystemResourceDefinition generateInstanceDataSystemResourceDefinition() {
         return new DataSystemResourceDefinition(generateInstanceConfigurations(), DataSystemResourceType.MYSQL_INSTANCE, false, false, false);
     }
-    
-    private static Map<String, ConfigurationDefinition> generateInstanceConfigurations() {
-        Map<String, ConfigurationDefinition> configurationDefinitions = new HashMap();
+
+    private static Map<String, ConfigurationDefinition<?>> generateInstanceConfigurations() {
+        Map<String, ConfigurationDefinition<?>> configurationDefinitions = new HashMap<>();
         configurationDefinitions.put(Instance.HOST.getName(), Instance.HOST);
         configurationDefinitions.put(Instance.PORT.getName(), Instance.PORT);
         configurationDefinitions.put(Instance.ROLE_TYPE.getName(), Instance.ROLE_TYPE);
@@ -51,9 +51,9 @@ public final class MysqlDataSystemResourceDefinitionHolder {
     private static DataSystemResourceDefinition generateTableDataSystemResourceDefinition() {
         return new DataSystemResourceDefinition(DataSystemResourceType.MYSQL_TABLE, true, false, true);
     }
-    
-    private static Map<String, ConfigurationDefinition> generateClusterConfigurations() {
-        Map<String, ConfigurationDefinition> configurationDefinitions = new HashMap();
+
+    private static Map<String, ConfigurationDefinition<?>> generateClusterConfigurations() {
+        Map<String, ConfigurationDefinition<?>> configurationDefinitions = new HashMap<>();
         configurationDefinitions.put(Cluster.USERNAME.getName(), Cluster.USERNAME);
         configurationDefinitions.put(Cluster.PASSWORD.getName(), Cluster.PASSWORD);
         configurationDefinitions.put(Cluster.SOURCE.getName(), Cluster.SOURCE);

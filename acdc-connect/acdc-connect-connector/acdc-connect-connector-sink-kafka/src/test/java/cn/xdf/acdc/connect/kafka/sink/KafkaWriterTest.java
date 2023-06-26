@@ -125,7 +125,7 @@ public class KafkaWriterTest {
         });
     }
 
-    private List<SinkRecord> fakeSinkRecords(int num, int partition, int beginOffset) {
+    private List<SinkRecord> fakeSinkRecords(final int num, final int partition, final int beginOffset) {
         List<SinkRecord> result = new ArrayList<>();
         Schema keySchema = SchemaBuilder.struct()
                 .field("id", Schema.INT64_SCHEMA)

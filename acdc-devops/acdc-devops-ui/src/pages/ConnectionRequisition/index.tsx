@@ -837,12 +837,14 @@ const ConnctoinRequisition: React.FC = () => {
                 DataSystemTypeConstant.MYSQL,
                 DataSystemTypeConstant.HIVE,
                 DataSystemTypeConstant.KAFKA,
+                DataSystemTypeConstant.ELASTIC_SEARCH,
               ]}
               rootResourceTypes={[
                 DataSystemResourceTypeConstant.MYSQL_CLUSTER,
                 DataSystemResourceTypeConstant.TIDB_CLUSTER,
                 DataSystemResourceTypeConstant.KAFKA_CLUSTER,
                 DataSystemResourceTypeConstant.HIVE,
+                DataSystemResourceTypeConstant.ELASTIC_SEARCH_CLUSTER,
               ]}
               onSelect={(dcList) => {
                 setSinkSrListSt(dcList);
@@ -909,7 +911,7 @@ const ConnctoinRequisition: React.FC = () => {
                   onSelect={(item) => setKafkaDataFormatSt(item)}
                   virtual={true}
                 >
-                  {['CDCV1', 'JSON', 'SCHEMA_LESS_JSON'].map((item) => (
+                  {['CDC_V1', 'JSON', 'SCHEMA_LESS_JSON'].map((item) => (
                     <Option value={item} key={item}>
                       {item}
                     </Option>

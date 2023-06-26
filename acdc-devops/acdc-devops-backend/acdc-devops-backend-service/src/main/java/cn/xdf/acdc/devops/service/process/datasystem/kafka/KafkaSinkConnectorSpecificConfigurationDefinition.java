@@ -24,6 +24,6 @@ public class KafkaSinkConnectorSpecificConfigurationDefinition {
                 ConfigurationValueType.values(), value -> true
         );
         
-        public static final Set<ConfigurationDefinition> SPECIFIC_CONFIGURATION_DEFINITIONS = Sets.newHashSet(DATA_FORMAT_TYPE);
+        public static final Set<ConfigurationDefinition<?>> SPECIFIC_CONFIGURATION_DEFINITIONS = Sets.newHashSet(DATA_FORMAT_TYPE);
     }
 }

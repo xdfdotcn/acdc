@@ -233,6 +233,31 @@ declare namespace API {
     kafkaClusterId?: number;
   };
 
+  // es models
+  type EsClusterMgtModel = {
+    projectId?: number;
+  };
+
+  type EsClusterEditingModel = {
+    showModal?: boolean;
+    from?: string;
+    esClusterId?: number;
+    projectId?: number;
+  };
+
+  type EsClusterConfigModel = {
+    esClusterId?: number;
+    showDrawer?: boolean;
+  };
+
+  type EsClusterDetailModel = {
+    esClusterId?: number;
+  };
+
+  type EsDatasetModel = {
+    esClusterId?: number;
+  };
+
   /**
    -----------------------
    项目
@@ -283,6 +308,18 @@ declare namespace API {
     saslMechanism?: string;
     saslUsername?: string;
     saslPassword?: string;
+    clusterType?: string;
+    projectId?: number;
+  };
+
+  type EsCluster = {
+    id?: number;
+    name?: string;
+    version?: string;
+    nodes?: string;
+    description?: string;
+    username?: string;
+    password?: string;
     clusterType?: string;
     projectId?: number;
   };

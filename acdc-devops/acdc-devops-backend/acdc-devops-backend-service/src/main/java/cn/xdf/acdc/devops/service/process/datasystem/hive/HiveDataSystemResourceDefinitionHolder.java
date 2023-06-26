@@ -33,8 +33,8 @@ public final class HiveDataSystemResourceDefinitionHolder {
         return new DataSystemResourceDefinition(DataSystemResourceType.HIVE_TABLE, true, false, true);
     }
     
-    private static Map<String, ConfigurationDefinition> generateHiveConfiguration() {
-        Map<String, ConfigurationDefinition> configuration = new HashMap<>();
+    private static Map<String, ConfigurationDefinition<?>> generateHiveConfiguration() {
+        Map<String, ConfigurationDefinition<?>> configuration = new HashMap<>();
         
         configuration.put(Hive.HIVE_METASTORE_URIS.getName(), Hive.HIVE_METASTORE_URIS);
         configuration.put(Hive.HDFS_NAME_SERVICES.getName(), Hive.HDFS_NAME_SERVICES);

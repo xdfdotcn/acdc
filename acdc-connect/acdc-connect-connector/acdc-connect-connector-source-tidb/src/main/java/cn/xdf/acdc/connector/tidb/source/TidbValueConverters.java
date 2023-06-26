@@ -24,6 +24,7 @@ import org.apache.kafka.connect.data.SchemaBuilder;
 import org.apache.kafka.connect.errors.ConnectException;
 import org.apache.kafka.connect.source.SourceRecord;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -33,22 +34,22 @@ import java.time.temporal.ChronoField;
 import java.util.Base64;
 
 public class TidbValueConverters extends JdbcValueConverters {
-
+    
     public static final String DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
-
+    
     public static final String TIME_FORMAT = "HH:mm:ss";
-
+    
     public static final String DECIMAL_PLACEHOLDER = "S";
-
+    
     public static final String DOT = ".";
-
+    
     public static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
+    
     public TidbValueConverters(final JdbcValueConverters.DecimalMode decimalMode, final TemporalPrecisionMode temporalPrecisionMode,
                                final JdbcValueConverters.BigIntUnsignedMode bigIntUnsignedMode, final CommonConnectorConfig.BinaryHandlingMode binaryMode) {
         super(decimalMode, temporalPrecisionMode, ZoneOffset.UTC, null, bigIntUnsignedMode, binaryMode);
     }
-
+    
     @Override
     public SchemaBuilder schemaBuilder(final Column column) {
         switch (column.nativeType()) {
@@ -108,7 +109,7 @@ public class TidbValueConverters extends JdbcValueConverters {
             case Types.YEAR:
                 return Year.builder();
             // StringEscapeUtils.unescapeJava(s);
-
+    
             case Types.VARCHAR_OR_VARBINARY_V1:
             case Types.VARCHAR_OR_VARBINARY_V2:
             case Types.CHAR_OR_BINARY:
@@ -127,7 +128,7 @@ public class TidbValueConverters extends JdbcValueConverters {
                 throw new ConnectException("Unsupported tidb type: " + column.nativeType());
         }
     }
-
+    
     @Override
     public ValueConverter converter(final Column column, final Field fieldDefn) {
         // Handle a few MySQL-specific types based upon how they are handled by the MySQL binlog client ...
@@ -192,25 +193,25 @@ public class TidbValueConverters extends JdbcValueConverters {
             case Types.JSON:
                 return data -> convertJson(column, fieldDefn, data);
             case Types.DECIMAL:
-                return data -> convertDecimal(column, fieldDefn, data);
+                return data -> convertDecimalWithScaleAdjustedIfNeeded(column, fieldDefn, data);
             case Types.GEOMETRY:
             default:
                 throw new ConnectException("Unsupport tidb type: " + column.nativeType());
         }
     }
-
+    
     private Object getLocalDateTime(final Object data) {
         return data == null ? null : LocalDateTime.parse(data.toString(), DateTimeFormatter.ofPattern(DATE_TIME_FORMAT + getDecimalPlaceHolder(data)));
     }
-
+    
     private Object getLocalDate(final Object data) {
         return data == null ? null : LocalDate.parse(data.toString(), DATE_FORMATTER);
     }
-
+    
     private Object getLocalTime(final Object data) {
         return data == null ? null : LocalTime.parse(data.toString(), DateTimeFormatter.ofPattern(TIME_FORMAT + getDecimalPlaceHolder(data)));
     }
-
+    
     private StringBuilder getDecimalPlaceHolder(final Object data) {
         String dateTimeString = data.toString();
         int decimalPointIndex = dateTimeString.indexOf(DOT);
@@ -223,13 +224,13 @@ public class TidbValueConverters extends JdbcValueConverters {
         }
         return decimalPlaceHolder;
     }
-
+    
     /**
      * Convert the {@link String} value to a string value used in a {@link SourceRecord}.
      *
-     * @param column    the column in which the value appears
+     * @param column the column in which the value appears
      * @param fieldDefn the field definition for the {@link SourceRecord}'s {@link Schema}; never null
-     * @param data      the data; may be null
+     * @param data the data; may be null
      * @return the converted value, or null if the conversion could not be made and the column allows nulls
      * @throws IllegalArgumentException if the value could not be converted but the column does not allow nulls
      */
@@ -241,14 +242,14 @@ public class TidbValueConverters extends JdbcValueConverters {
             }
         });
     }
-
+    
     /**
      * Converts a value object for a MySQL {@code YEAR}, which appear in the binlog as an integer though returns from
      * the MySQL JDBC driver as either a short or a {@link java.sql.Date}.
      *
-     * @param column    the column definition describing the {@code data} value; never null
+     * @param column the column definition describing the {@code data} value; never null
      * @param fieldDefn the field definition; never null
-     * @param data      the data object to be converted into a year literal integer value; never null
+     * @param data the data object to be converted into a year literal integer value; never null
      * @return the converted value, or null if the conversion could not be made and the column allows nulls
      * @throws IllegalArgumentException if the value could not be converted but the column does not allow nulls
      */
@@ -261,7 +262,25 @@ public class TidbValueConverters extends JdbcValueConverters {
             }
         });
     }
-
+    
+    /**
+     * Convert decimal with adjusted scale if needed.
+     * Same decimal column in one update event may have unique scale, so we need to adjusted it.
+     *
+     * @param column the column definition describing the {@code data} value; never null
+     * @param fieldDefn the field definition; never null
+     * @param data the data object to be converted into a corresponding type determined by decimal mode configuration; never null
+     * @return
+     */
+    protected Object convertDecimalWithScaleAdjustedIfNeeded(final Column column, final Field fieldDefn, final Object data) {
+        Object decimal = toBigDecimal(column, fieldDefn, data);
+        if (decimal instanceof BigDecimal) {
+            decimal = withScaleAdjustedIfNeeded(column, (BigDecimal) decimal);
+            return SpecialValueDecimal.fromLogical(new SpecialValueDecimal((BigDecimal) decimal), decimalMode, column.name());
+        }
+        return decimal;
+    }
+    
     /**
      * Get tidb value converter.
      *
@@ -269,18 +288,18 @@ public class TidbValueConverters extends JdbcValueConverters {
      * @return tidb value converter
      */
     public static TidbValueConverters getValueConverters(final TidbConnectorConfig configuration) {
-
+        
         // Use MySQL-specific converters and schemas for values ...
         TemporalPrecisionMode timePrecisionMode = configuration.getTemporalPrecisionMode();
-
+        
         JdbcValueConverters.DecimalMode decimalMode = configuration.getDecimalMode();
-
+        
         String bigIntUnsignedHandlingModeStr = configuration.getConfig().getString(TidbConnectorConfig.BIGINT_UNSIGNED_HANDLING_MODE);
         BigIntUnsignedHandlingMode bigIntUnsignedHandlingMode = BigIntUnsignedHandlingMode.parse(bigIntUnsignedHandlingModeStr);
         JdbcValueConverters.BigIntUnsignedMode bigIntUnsignedMode = bigIntUnsignedHandlingMode.asBigIntUnsignedMode();
-
+        
         return new TidbValueConverters(decimalMode, timePrecisionMode, bigIntUnsignedMode,
                 configuration.binaryHandlingMode());
     }
-
+    
 }

@@ -108,7 +108,7 @@ public class MysqlDataSystemSinkConnectorServiceImpl extends AbstractDataSystemS
     }
     
     @Override
-    public Set<ConfigurationDefinition> getConnectorSpecificConfigurationDefinitions() {
+    public Set<ConfigurationDefinition<?>> getConnectorSpecificConfigurationDefinitions() {
         return Collections.emptySet();
     }
     

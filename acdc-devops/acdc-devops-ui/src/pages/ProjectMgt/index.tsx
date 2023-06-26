@@ -27,6 +27,9 @@ const ProjectList: React.FC = () => {
 	// Kafka集群管理页
 	const {kafkaClusterMgtModel, setKafkaClusterMgtModel} = useModel('KafkaClusterMgtModel')
 
+  // es集群管理页面
+  const {esClusterMgtModel, setEsClusterMgtModel} = useModel('EsClusterMgtModel')
+
   const ref = useRef<ActionType>();
 
 	const projectColumns: ProColumns<API.Project>[] = [
@@ -95,6 +98,10 @@ const ProjectList: React.FC = () => {
 							...kafkaClusterMgtModel,
 							projectId: record.id
 						})
+            setEsClusterMgtModel({
+              ...esClusterMgtModel,
+              projectId: record.id
+            })
 					}}
 				>
 					<EditOutlined />

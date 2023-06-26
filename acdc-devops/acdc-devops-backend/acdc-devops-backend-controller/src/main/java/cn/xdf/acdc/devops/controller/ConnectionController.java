@@ -110,7 +110,8 @@ public class ConnectionController extends Controller {
         if (Objects.isNull(connectionIds)) {
             return;
         }
-        
+    
+        log.info("Connector(id :{}) state changed update related connections(ids: {}).", connectorDto.getId(), connectionIds);
         connectionIds.forEach(connectionId -> {
             ConnectionDTO connectionDTO = waitForNonNull(() -> connectionInformer.get(connectionId));
             
@@ -123,7 +124,7 @@ public class ConnectionController extends Controller {
                 sourceConnectorDto = connectorInformer.get(connectionDTO.getSourceConnectorId());
                 sinkConnectorDto = connectorDto;
             }
-            
+            log.info("The connection(id :{}) is with source connector: {}, sink connector: {}.", connectionId, sourceConnectorDto, sinkConnectorDto);
             if (Objects.nonNull(sourceConnectorDto) && Objects.nonNull(sinkConnectorDto)) {
                 Optional<ConnectionState> connectionState = generateConnectionState(sourceConnectorDto.getDesiredState(), sourceConnectorDto.getActualState(),
                         sinkConnectorDto.getDesiredState(), sinkConnectorDto.getActualState());
@@ -230,8 +231,10 @@ public class ConnectionController extends Controller {
         
         if (ConnectionState.RUNNING.equals(connectionDTO.getDesiredState())) {
             refreshAndUpdateConnectionActualState(connectionDTO, ConnectionState.STARTING);
-            
+            log.info("Begin to apply connection to connector for connection id: {}.", connectionDTO.getId());
             ConnectionDTO appliedConnection = connectionService.applyConnectionToConnector(connectionDTO.getId());
+            log.info("End apply connection to connector for connection id: {}.", connectionDTO.getId());
+            
             // refresh connectionDto in memory
             connectionDTO.setSinkConnectorId(appliedConnection.getSinkConnectorId());
             connectionDTO.setSourceConnectorId(appliedConnection.getSourceConnectorId());

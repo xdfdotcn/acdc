@@ -157,6 +157,7 @@ public class ConnectionDetailDTO {
                 }
                 break;
             case KAFKA:
+            case ELASTIC_SEARCH:
                 if (Objects.nonNull(connection.getSinkDataCollection().getParentResource())) {
                     this.sinkDataSystemClusterName = connection.getSinkDataCollection().getParentResource().getName();
                 }

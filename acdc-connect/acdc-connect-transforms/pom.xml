@@ -14,10 +14,39 @@
 
     <artifactId>acdc-connect-transforms</artifactId>
     <name>${project.artifactId}</name>
-    <packaging>pom</packaging>
-
-    <modules>
-        <module>acdc-connect-transforms-value-mapper</module>
-        <module>acdc-connect-transforms-format</module>
-    </modules>
+    <packaging>jar</packaging>
+    
+    <description>
+        The custom record value mapping transformations for acdc.
+    </description>
+    
+    <dependencies>
+        <!-- acdc -->
+        <dependency>
+            <groupId>cn.xdf.acdc</groupId>
+            <artifactId>acdc-connect-connector-sink-core</artifactId>
+        </dependency>
+        <!-- Kafka Connect -->
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>connect-transforms</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>connect-runtime</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <!-- Utilities -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
+        <!-- Test -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 </project>

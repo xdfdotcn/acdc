@@ -50,7 +50,7 @@ public interface DataSystemSinkConnectorService extends DataSystemService {
      *
      * @return configuration definitions
      */
-    Set<ConfigurationDefinition> getConnectorSpecificConfigurationDefinitions();
+    Set<ConfigurationDefinition<?>> getConnectorSpecificConfigurationDefinitions();
     
     /**
      * Get sensitive configuration keys.

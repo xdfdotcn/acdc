@@ -35,13 +35,13 @@ import java.util.Set;
 @Slf4j
 @Service
 public class HiveDataSystemSinkConnectorServiceImpl extends AbstractDataSystemSinkConnectorService {
-    
+
     @Autowired
     private ConnectorClassService connectorClassService;
-    
+
     @Autowired
     private DataSystemResourceService dataSystemResourceService;
-    
+
     @Autowired
     private ConnectionService connectionService;
     
@@ -135,9 +135,8 @@ public class HiveDataSystemSinkConnectorServiceImpl extends AbstractDataSystemSi
                 Configuration.HDFS_HA_NAMENODES + Symbol.DOT + hdfsNameServices,
                 Joiner.on(SystemConstant.Symbol.COMMA).join(hdfsHaNameNodeNameAndRpcAddressMapping.keySet())
         );
-        hdfsHaNameNodeNameAndRpcAddressMapping.forEach((k, v) ->
-                configurations.put(Configuration.HDFS_NAME_NODE_RPC + CommonConstant.DOT + hdfsNameServices + CommonConstant.DOT + k, v));
-        
+        hdfsHaNameNodeNameAndRpcAddressMapping.forEach((k, v) -> configurations.put(Configuration.HDFS_NAME_NODE_RPC + CommonConstant.DOT + hdfsNameServices + CommonConstant.DOT + k, v));
+
         // hive
         configurations.put(Configuration.HIVE_METASTORE_URIS, hiveMetastoreUris);
         
@@ -183,7 +182,7 @@ public class HiveDataSystemSinkConnectorServiceImpl extends AbstractDataSystemSi
     }
     
     @Override
-    public Set<ConfigurationDefinition> getConnectorSpecificConfigurationDefinitions() {
+    public Set<ConfigurationDefinition<?>> getConnectorSpecificConfigurationDefinitions() {
         return Collections.emptySet();
     }
     

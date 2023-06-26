@@ -17,7 +17,8 @@ public class ConnectionColumnConfigurationGeneratorManagerTest {
                 Lists.newArrayList(
                         new Jdbc2HiveConnectionColumnConfigurationGenerator(),
                         new Jdbc2JdbcConnectionColumnConfigurationGenerator(),
-                        new Jdbc2KafkaConnectionColumnConfigurationGenerator())
+                        new Jdbc2KafkaConnectionColumnConfigurationGenerator(),
+                        new Jdbc2EsConnectionColumnConfigurationGenerator())
         );
     }
     
