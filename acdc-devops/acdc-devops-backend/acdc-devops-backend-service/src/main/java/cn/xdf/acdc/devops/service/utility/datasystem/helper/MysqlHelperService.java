@@ -1,5 +1,6 @@
 package cn.xdf.acdc.devops.service.utility.datasystem.helper;
 
+import cn.xdf.acdc.devops.core.constant.SystemConstant;
 import cn.xdf.acdc.devops.core.domain.entity.enumeration.DataSystemType;
 import cn.xdf.acdc.devops.service.config.RuntimeProperties;
 import cn.xdf.acdc.devops.service.error.ErrorMsg;
@@ -51,6 +52,8 @@ public class MysqlHelperService {
     protected static final String SQL_SHOW_DATABASES = " SHOW DATABASES ";
     
     protected static final String SQL_SHOW_TABLES = " SHOW TABLES ";
+    
+    protected static final String SQL_SHOW_SLAVE_STATUS = "SHOW SLAVE STATUS";
     
     protected static final String SQL_DESC_TABLE = new StringBuilder()
             .append("SELECT ")
@@ -289,6 +292,33 @@ public class MysqlHelperService {
     }
     
     /**
+     * Check whether it is the slave instance.
+     *
+     * @param hostAndPort host and port model
+     * @param usernameAndPassword username and password model
+     * @return false:master,true:slave
+     */
+    public boolean isSlaveInstance(
+            final HostAndPort hostAndPort,
+            final UsernameAndPassword usernameAndPassword) {
+        return executeQuery(createConnection(generateMysqlUrl(hostAndPort), usernameAndPassword), SQL_SHOW_SLAVE_STATUS, resultSet -> {
+            String result = SystemConstant.EMPTY_STRING;
+            try {
+                if (resultSet.next()) {
+                    result = resultSet.getString(1);
+                }
+            } catch (SQLException e) {
+                throw new ServerErrorException(String.format("error while execute show slave status at mysql instance '%s:%s'", hostAndPort.getHost(), hostAndPort.getPort()), e);
+            }
+            
+            if (log.isDebugEnabled()) {
+                log.debug("execute show slave status successfully, result: {}", result);
+            }
+            return !Strings.isNullOrEmpty(result);
+        });
+    }
+    
+    /**
      * Get database names of an instance.
      *
      * @param hostAndPort host and port model
@@ -386,14 +416,14 @@ public class MysqlHelperService {
     /**
      * 从 rdb 实例中选择一个可用的，读取并返回某张 rdb 表的 ddl 信息.
      *
-     * @param hostAndPosts host and port model
+     * @param hostAndPorts host and port model
      * @param usernameAndPassword username and password model
      * @param database database name
      * @param table table name
      * @return table filed list
      */
-    public List<RelationalDatabaseTableField> descTable(final Set<HostAndPort> hostAndPosts, final UsernameAndPassword usernameAndPassword, final String database, final String table) {
-        HostAndPort hostAndPort = choiceAvailableInstance(hostAndPosts, usernameAndPassword);
+    public List<RelationalDatabaseTableField> descTable(final Set<HostAndPort> hostAndPorts, final UsernameAndPassword usernameAndPassword, final String database, final String table) {
+        HostAndPort hostAndPort = choiceAvailableInstance(hostAndPorts, usernameAndPassword);
         return descTable(hostAndPort, usernameAndPassword, database, table);
     }
     
@@ -499,7 +529,7 @@ public class MysqlHelperService {
         checkPermissions(grantedPermissions, requiredPermissions);
     }
     
-    private HostAndPort choiceAvailableInstance(final Set<HostAndPort> hostAndPorts, final UsernameAndPassword usernameAndPassword) {
+    protected HostAndPort choiceAvailableInstance(final Set<HostAndPort> hostAndPorts, final UsernameAndPassword usernameAndPassword) {
         if (!CollectionUtils.isEmpty(hostAndPorts)) {
             for (HostAndPort each : hostAndPorts) {
                 try {

@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 @Getter
 public class DataCollectionDefinition {
@@ -15,7 +16,14 @@ public class DataCollectionDefinition {
     
     private Map<String, List<DataFieldDefinition>> uniqueIndexNameToFieldDefinitions = new HashMap<>();
     
+    private Properties extendProperties = new Properties();
+    
     private String name;
+    
+    public DataCollectionDefinition(final String name, final List<DataFieldDefinition> dataFieldDefinitions, final Properties extendProperties) {
+        this(name, dataFieldDefinitions);
+        this.extendProperties = extendProperties;
+    }
     
     public DataCollectionDefinition(final String name, final List<DataFieldDefinition> dataFieldDefinitions) {
         this.name = name;

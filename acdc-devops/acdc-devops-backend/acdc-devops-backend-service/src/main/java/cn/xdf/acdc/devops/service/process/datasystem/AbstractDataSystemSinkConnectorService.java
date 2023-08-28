@@ -236,7 +236,7 @@ public abstract class AbstractDataSystemSinkConnectorService implements DataSyst
                 : Joiner.on(SystemConstant.Symbol.COMMA).join(extensionColumns);
     }
     
-    private boolean isNone(final String fieldName) {
+    protected boolean isNone(final String fieldName) {
         return Strings.isNullOrEmpty(fieldName);
     }
     

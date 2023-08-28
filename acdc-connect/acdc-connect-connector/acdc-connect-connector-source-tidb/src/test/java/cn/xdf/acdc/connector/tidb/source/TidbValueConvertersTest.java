@@ -61,6 +61,8 @@ public class TidbValueConvertersTest {
     private static final Column JSON_COLUMN = Column.editor().name("JSON_COLUMN").nativeType(Types.JSON).create();
 
     private static final Column DECIMAL_COLUMN = Column.editor().name("DECIMAL_COLUMN").nativeType(Types.DECIMAL).length(TidbDatabaseSchema.MAX_DECIMAL_LENGTH).scale(3).create();
+    
+    private static final Column DECIMAL_COLUMN_ZERO_SCALE = Column.editor().name("DECIMAL_COLUMN").nativeType(Types.DECIMAL).length(TidbDatabaseSchema.MAX_DECIMAL_LENGTH).scale(0).create();
 
     private static final Column ENUM_COLUMN = Column.editor().name("ENUM_COLUMN").nativeType(Types.ENUM).create();
 
@@ -87,6 +89,13 @@ public class TidbValueConvertersTest {
         Schema decimalSchema = SpecialValueDecimal.builder(config.getDecimalMode(), DECIMAL_COLUMN.length(), DECIMAL_COLUMN.scale().get()).build();
         Assert.assertEquals("0.000",
                 tidbValueConverters.converter(DECIMAL_COLUMN, new Field("DECIMAL_FIELD", 0, decimalSchema)).convert("0").toString());
+    }
+    
+    @Test
+    public void testBigDecimalShouldValueScaleMatchesSchemaScaleWithMoreScale() {
+        Schema decimalSchema = SpecialValueDecimal.builder(config.getDecimalMode(), DECIMAL_COLUMN_ZERO_SCALE.length(), DECIMAL_COLUMN_ZERO_SCALE.scale().get()).build();
+        Assert.assertEquals("0",
+                tidbValueConverters.converter(DECIMAL_COLUMN_ZERO_SCALE, new Field("DECIMAL_FIELD", 0, decimalSchema)).convert("0.000").toString());
     }
     
     @Test

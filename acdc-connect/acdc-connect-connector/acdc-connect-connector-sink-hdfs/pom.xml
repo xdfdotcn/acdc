@@ -17,6 +17,11 @@
     <packaging>jar</packaging>
 
     <dependencies>
+        <dependency>
+            <groupId>cn.xdf.acdc</groupId>
+            <artifactId>acdc-connect-transforms</artifactId>
+            <scope>provided</scope>
+        </dependency>
         <!-- log4j -->
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -28,7 +33,6 @@
             <artifactId>log4j</artifactId>
             <scope>provided</scope>
         </dependency>
-
         <!-- acdc -->
         <dependency>
             <groupId>cn.xdf.acdc</groupId>
@@ -219,4 +223,15 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

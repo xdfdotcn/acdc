@@ -18,7 +18,7 @@ class EsDataSystemResourceDefinitionHolderTest {
 
         // cluster
         Assertions.assertThat(esDefinition.getType())
-                .isEqualTo(DataSystemResourceType.ELASTIC_SEARCH_CLUSTER);
+                .isEqualTo(DataSystemResourceType.ELASTICSEARCH_CLUSTER);
         Assertions.assertThat(esDefinition.getChildren()).isNotEmpty();
         Assertions.assertThat(esDefinition.isDataCollection()).isFalse();
         Assertions.assertThat(esDefinition.isHasDataCollectionChild()).isTrue();
@@ -29,7 +29,7 @@ class EsDataSystemResourceDefinitionHolderTest {
 
         // index
         DataSystemResourceDefinition indexDefinition = esDefinition
-                .getChildren().get(DataSystemResourceType.ELASTIC_SEARCH_INDEX);
+                .getChildren().get(DataSystemResourceType.ELASTICSEARCH_INDEX);
         Assertions.assertThat(indexDefinition.getChildren()).isEmpty();
         Assertions.assertThat(indexDefinition.isDataCollection()).isTrue();
         Assertions.assertThat(indexDefinition.isDynamic()).isTrue();

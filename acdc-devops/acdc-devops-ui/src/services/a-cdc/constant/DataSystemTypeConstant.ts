@@ -3,7 +3,8 @@ let DataSystemTypeConstant = {
   TIDB: 'TIDB',
   HIVE: 'HIVE',
   KAFKA: 'KAFKA',
-  ELASTIC_SEARCH: 'ELASTIC_SEARCH',
+  ELASTICSEARCH: 'ELASTICSEARCH',
+  STARROCKS: 'STARROCKS',
 };
 
 export { DataSystemTypeConstant };

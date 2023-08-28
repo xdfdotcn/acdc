@@ -282,11 +282,10 @@ const ConnectionApply: React.FC<{}> = () => {
               columnConfList.push({ ...row })
             }
 
-            if (!verifyUKWithShowMessage(columnConfList!, sinkDataSystemType!)) {
+            if (!verifyUKWithShowMessage(columnConfList!, sinkDataSystemType!, undefined)) {
               return
             }
 
-            const copy = dataSource;
             dataSource[selectKey] = {
               ...dataSource[selectKey],
               columnConfDisplayData: columnConfList,

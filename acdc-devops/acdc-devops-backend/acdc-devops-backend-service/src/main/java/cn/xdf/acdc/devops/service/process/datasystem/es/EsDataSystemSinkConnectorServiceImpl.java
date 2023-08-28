@@ -52,7 +52,7 @@ public class EsDataSystemSinkConnectorServiceImpl extends AbstractDataSystemSink
     public Map<String, String> getConnectorDefaultConfiguration() {
         ConnectorClassDetailDTO connectorClassDetail = connectorClassService
                 .getDetailByDataSystemTypeAndConnectorType(
-                        DataSystemType.ELASTIC_SEARCH,
+                        DataSystemType.ELASTICSEARCH,
                         ConnectorType.SINK
                 );
 
@@ -77,7 +77,7 @@ public class EsDataSystemSinkConnectorServiceImpl extends AbstractDataSystemSink
 
         DataSystemResourceDetailDTO sinkClusterDetail = dataSystemResourceService
                 .getDetailParent(connectionDetail.getSinkDataCollectionId(),
-                        DataSystemResourceType.ELASTIC_SEARCH_CLUSTER);
+                        DataSystemResourceType.ELASTICSEARCH_CLUSTER);
 
         DataSystemResourceDTO sinkIndex = dataSystemResourceService
                 .getById(connectionDetail.getSinkDataCollectionId());
@@ -145,12 +145,12 @@ public class EsDataSystemSinkConnectorServiceImpl extends AbstractDataSystemSink
     @Override
     public ConnectorClassDetailDTO getConnectorClass() {
         return connectorClassService
-                .getDetailByDataSystemTypeAndConnectorType(DataSystemType.ELASTIC_SEARCH, ConnectorType.SINK);
+                .getDetailByDataSystemTypeAndConnectorType(DataSystemType.ELASTICSEARCH, ConnectorType.SINK);
     }
 
     @Override
     public DataSystemType getDataSystemType() {
-        return DataSystemType.ELASTIC_SEARCH;
+        return DataSystemType.ELASTICSEARCH;
     }
 
     private String getEsClusterConf(

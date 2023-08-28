@@ -502,11 +502,6 @@ export async function pagedQueryDataSystemResource(
   query: API.DataSystemResourceQuery,
   options?: { [key: string]: any },
 ) {
-  // TODO 临时兼容老版本的链路申请接口调用，增加'DcSearcher'页面来源
-  if (!query.projectId && !query.parentResourceId && 'DcSearcher' != query.from) {
-    return {};
-  }
-
   if (typeof query.deleted === 'undefined') {
     query.deleted = false;
   }
@@ -609,7 +604,7 @@ export async function queryDataSystemResourceDefinition() {
 }
 
 export async function validateDataCollection(body: number[], options?: { [key: string]: any }) {
-  let url = '/api/v1/data-system-resources/data-collection/validate';
+  let url = '/api/v1/biz/data-system-resources/data-collection/validate';
 
   return request<boolean>(url, {
     method: 'POST',

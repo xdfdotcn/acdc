@@ -3,6 +3,7 @@ package cn.xdf.acdc.devops.repository;
 import cn.xdf.acdc.devops.core.domain.entity.DataSystemResourceConfigurationDO;
 import cn.xdf.acdc.devops.core.domain.entity.DataSystemResourceDO;
 import cn.xdf.acdc.devops.core.domain.entity.ProjectDO;
+import cn.xdf.acdc.devops.core.domain.entity.UserDO;
 import cn.xdf.acdc.devops.core.domain.entity.enumeration.DataSystemResourceType;
 import cn.xdf.acdc.devops.core.domain.query.DataSystemResourceQuery;
 import cn.xdf.acdc.devops.core.domain.query.PagedQuery;
@@ -76,14 +77,20 @@ public interface DataSystemResourceRepository extends JpaRepository<DataSystemRe
                 });
             }
             
-            if (Objects.nonNull(query.getProjectId())) {
+            if (!CollectionUtils.isEmpty(query.getProjectIds())) {
                 Join<DataSystemResourceDO, ProjectDO> joinProject = root.join("projects", JoinType.INNER);
-                predicates.add(cb.equal(joinProject.get("id"), query.getProjectId()));
+                predicates.add(joinProject.get("id").in(query.getProjectIds()));
+            }
+            
+            if (!Strings.isNullOrEmpty(query.getMemberDomainAccount())) {
+                Join<ProjectDO, UserDO> userJoin = root.join("projects", JoinType.INNER).join("users", JoinType.INNER);
+                predicates.add(cb.equal(userJoin.get("domainAccount"), query.getMemberDomainAccount()));
             }
             
             if (Objects.nonNull(query.getDeleted())) {
                 predicates.add(cb.equal(root.get("deleted"), query.getDeleted()));
             }
+            criteriaQuery.distinct(true);
             
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
         };

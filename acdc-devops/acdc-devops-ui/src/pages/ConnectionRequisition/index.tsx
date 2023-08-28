@@ -12,20 +12,24 @@ import ProForm, {
   ProFormTextArea,
   StepsForm,
 } from '@ant-design/pro-form';
-import DcSearcher, { ProjectNode, SearchRecord } from '../connection/components/DcSearcher';
+import DcSearcher, {
+  ProjectNode,
+  SearchRecord,
+  SearchScope,
+} from '../connection/components/DcSearcher';
 import { DataSystemTypeConstant } from '@/services/a-cdc/constant/DataSystemTypeConstant';
 import ConnectionColumnConf, {
   ConnectionColumnConfProps,
 } from '../connection/components/ConnectionColumnConf';
 import {
   generateConnectionColumnConf,
+  getDataCollectionDefinition,
   pagedQueryDataSystemResource,
   validateDataCollection,
 } from '@/services/a-cdc/api';
 import { verifyUKWithShowMessage } from '@/services/a-cdc/connection/connection-column-conf-service';
 import { EditOutlined } from '@ant-design/icons';
 import { DataSystemResourceTypeConstant } from '@/services/a-cdc/constant/DataSystemResourceTypeConstant';
-import ProCard from '@ant-design/pro-card';
 
 const { confirm } = Modal;
 
@@ -212,8 +216,8 @@ const ConnctoinRequisition: React.FC = () => {
   /**
    * 链路申请记录编辑，提交事件监听
    */
-  const editConnDwOnSubmit = (record?: ConnectionReqRecord) => {
-    if (!record) return;
+  const editConnDwOnSubmit = async (record?: ConnectionReqRecord) => {
+    if (!record) return false;
 
     const { source, sink } = record;
     const recordUk = uK(source, sink);
@@ -228,12 +232,24 @@ const ConnctoinRequisition: React.FC = () => {
       const itUk = uK(itSrcNode, itSinkNode);
       if (itUk == recordUk) {
         let clConf = connClConfWhenEditRef.current?.getRowsData?.();
+        // check
+        if (
+          !(await checkTableModelAndUk(
+            itSinkNode.resourceNode!.id!,
+            clConf!,
+            itSinkNode.resourceNode!.dataSystemType,
+          ))
+        ) {
+          return false;
+        }
+
         it.currentClConf = clConf!;
       }
     }
 
     loadRecords(connReqRecordList);
     editConnDwOnClose();
+    return true;
   };
 
   /**
@@ -250,6 +266,7 @@ const ConnctoinRequisition: React.FC = () => {
       canEdit: sinkDc!.dataSystemType != DataSystemTypeConstant.KAFKA,
       canDelete: sinkDc!.dataSystemType == DataSystemTypeConstant.KAFKA,
       sinkDataSystemType: sinkDc!.dataSystemType,
+      sinkDataCollectionId: sinkDc!.id,
       sourceDataCollectionId: sourceDc!.id,
     });
 
@@ -445,6 +462,7 @@ const ConnctoinRequisition: React.FC = () => {
       canEdit: sinkDc!.dataSystemType != DataSystemTypeConstant.KAFKA,
       canDelete: sinkDc!.dataSystemType == DataSystemTypeConstant.KAFKA,
       sinkDataSystemType: sinkDc!.dataSystemType,
+      sinkDataCollectionId: sinkDc!.id,
       sourceDataCollectionId: sourceDc!.id,
     });
 
@@ -452,15 +470,50 @@ const ConnctoinRequisition: React.FC = () => {
     return true;
   };
 
+  let starrocks_support_table_model = new Set(['DUP_KEYS', 'PRIMARY_KEYS', 'UNIQUE_KEYS']);
+
+  async function checkTableModelAndUk(
+    sinkDataCollectionId: number,
+    clConf: API.ConnectionColumnConf[],
+    sinkDataSystemType: string,
+  ) {
+    let definition = (await getDataCollectionDefinition({
+      id: sinkDataCollectionId,
+    })) as API.DataCollectionDefinition;
+    let { extendProperties } = definition;
+    let checkResult = true;
+    if (
+      extendProperties &&
+      extendProperties['TABLE_MODEL'] &&
+      !starrocks_support_table_model.has(extendProperties['TABLE_MODEL'])
+    ) {
+      message.warn('Now starrocks only support primary/unique/duplicate sink tables.');
+      checkResult = false;
+    }
+
+    if (
+      !verifyUKWithShowMessage(
+        clConf!,
+        sinkDataSystemType,
+        extendProperties && extendProperties['TABLE_MODEL'],
+      )
+    ) {
+      checkResult = false;
+    }
+    return checkResult;
+  }
+
   /**
    * 添加链路，步骤3:
    */
-  const onStep3 = () => {
+  const onStep3 = async () => {
     let clConf = connClConfWhenAddRef.current?.getRowsData?.();
 
     let sinkDataSystemType = sinkFirstSrSt?.resourceNode?.dataSystemType!;
 
-    if (!verifyUKWithShowMessage(clConf!, sinkDataSystemType)) {
+    let sinkDataCollectionId = connClConfWhenAddSt?.sinkDataCollectionId;
+
+    if (!(await checkTableModelAndUk(sinkDataCollectionId!, clConf!, sinkDataSystemType))) {
       return false;
     }
 
@@ -808,6 +861,7 @@ const ConnctoinRequisition: React.FC = () => {
           >
             <DcSearcher
               reqPageSize={20}
+              searchScope={SearchScope.ALL}
               multipleChoice={true}
               validateProjectOwner={true}
               includedDataSystemTypes={[DataSystemTypeConstant.TIDB, DataSystemTypeConstant.MYSQL]}
@@ -830,6 +884,7 @@ const ConnctoinRequisition: React.FC = () => {
           >
             <DcSearcher
               reqPageSize={20}
+              searchScope={SearchScope.CURRENT_USER}
               multipleChoice={false}
               validateProjectOwner={false}
               includedDataSystemTypes={[
@@ -837,14 +892,16 @@ const ConnctoinRequisition: React.FC = () => {
                 DataSystemTypeConstant.MYSQL,
                 DataSystemTypeConstant.HIVE,
                 DataSystemTypeConstant.KAFKA,
-                DataSystemTypeConstant.ELASTIC_SEARCH,
+                DataSystemTypeConstant.ELASTICSEARCH,
+                DataSystemTypeConstant.STARROCKS,
               ]}
               rootResourceTypes={[
                 DataSystemResourceTypeConstant.MYSQL_CLUSTER,
                 DataSystemResourceTypeConstant.TIDB_CLUSTER,
                 DataSystemResourceTypeConstant.KAFKA_CLUSTER,
                 DataSystemResourceTypeConstant.HIVE,
-                DataSystemResourceTypeConstant.ELASTIC_SEARCH_CLUSTER,
+                DataSystemResourceTypeConstant.ELASTICSEARCH_CLUSTER,
+                DataSystemResourceTypeConstant.STARROCKS_CLUSTER,
               ]}
               onSelect={(dcList) => {
                 setSinkSrListSt(dcList);
@@ -934,7 +991,7 @@ const ConnctoinRequisition: React.FC = () => {
           },
         }}
         onFinish={async () => {
-          editConnDwOnSubmit(editConnReqRecordSt);
+          return editConnDwOnSubmit(editConnReqRecordSt);
         }}
         onInit={() => {}}
       >

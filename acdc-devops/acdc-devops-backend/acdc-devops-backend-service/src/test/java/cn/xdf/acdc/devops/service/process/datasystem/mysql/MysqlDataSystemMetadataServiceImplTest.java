@@ -199,6 +199,22 @@ public class MysqlDataSystemMetadataServiceImplTest {
         dataSystemMetadataService.checkDataSystem(cluster.getId());
     }
     
+    @Test(expected = ServerErrorException.class)
+    public void testCheckDataSystemShouldErrorWhenLogSlaveUpdatesIsOff() {
+        DataSystemResourceDetailDTO cluster = generateClusterDetail();
+        List<DataSystemResourceDetailDTO> instances = generateInstanceDetails();
+        
+        when(dataSystemResourceService.getDetailById(anyLong())).thenReturn(cluster);
+        when(dataSystemResourceService.getDetailChildren(anyLong(), eq(DataSystemResourceType.MYSQL_INSTANCE))).thenReturn(instances);
+        
+        Map<String, String> mysqlVariables = generateVariables();
+        mysqlVariables.put("log_slave_updates", "OFF");
+        when(mysqlHelperService.showVariables(any(), any())).thenReturn(mysqlVariables);
+        when(mysqlHelperService.isSlaveInstance(any(), any())).thenReturn(true);
+        
+        dataSystemMetadataService.checkDataSystem(cluster.getId());
+    }
+    
     @Test
     public void testGetDataSystemTypeShouldReturnMysql() {
         Assertions.assertThat(dataSystemMetadataService.getDataSystemType()).isEqualTo(DataSystemType.MYSQL);

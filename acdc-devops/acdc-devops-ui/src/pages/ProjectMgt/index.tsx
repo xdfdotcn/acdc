@@ -30,6 +30,8 @@ const ProjectList: React.FC = () => {
   // es集群管理页面
   const {esClusterMgtModel, setEsClusterMgtModel} = useModel('EsClusterMgtModel')
 
+  const {starRocksClusterMgtModel, setStarRocksClusterMgtModel} = useModel('StarRocksClusterMgtModel')
+
   const ref = useRef<ActionType>();
 
 	const projectColumns: ProColumns<API.Project>[] = [
@@ -100,6 +102,14 @@ const ProjectList: React.FC = () => {
 						})
             setEsClusterMgtModel({
               ...esClusterMgtModel,
+              projectId: record.id
+            })
+            setEsClusterMgtModel({
+              ...esClusterMgtModel,
+              projectId: record.id
+            })
+            setStarRocksClusterMgtModel({
+              ...starRocksClusterMgtModel,
               projectId: record.id
             })
 					}}

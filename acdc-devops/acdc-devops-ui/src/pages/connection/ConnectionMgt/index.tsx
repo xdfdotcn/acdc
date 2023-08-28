@@ -22,6 +22,7 @@ import {
   PoweroffOutlined,
   PlaySquareOutlined,
   CopyOutlined,
+  StopOutlined,
 } from '@ant-design/icons';
 import ConnectionColumnConf, {
   ConnectionColumnConfProps,
@@ -249,7 +250,8 @@ const ConnectionList: React.FC = () => {
         TIDB: { text: 'TIDB', status: 'Success' },
         HIVE: { text: 'HIVE', status: 'Success' },
         KAFKA: { text: 'KAFKA', status: 'Success' },
-        ELASTIC_SEARCH: { text: 'ELASTIC_SEARCH', status: 'Success' },
+        ELASTICSEARCH: { text: 'ELASTICSEARCH', status: 'Success' },
+        STARROCKS: { text: 'STARROCKS', status: 'Success' },
       },
     },
     {
@@ -290,27 +292,39 @@ const ConnectionList: React.FC = () => {
           编辑
         </a>,
         <>
-          {record.desiredState == 'RUNNING' ? (
-            <a
-              key={'stop_' + record.id}
-              onClick={() => {
-                startOrStopConnection(record.id, 'STOPPED', record.requisitionState);
-              }}
-            >
-              <PlaySquareOutlined />
-              停止
-            </a>
-          ) : (
-            <a
-              key={'start_' + record.id}
-              onClick={() => {
-                startOrStopConnection(record.id, 'RUNNING', record.requisitionState);
-              }}
-            >
-              <PoweroffOutlined />
-              启动
-            </a>
-          )}
+          {
+            record.requisitionState != 'APPROVING' ? (
+              record.desiredState == 'RUNNING' ? (
+                <a
+                  key={'stop_' + record.id}
+                  onClick={() => {
+                    startOrStopConnection(record.id, 'STOPPED', record.requisitionState);
+                  }}
+                >
+                  <PlaySquareOutlined />
+                  停止
+                </a>
+              ) : (
+                <a
+                  key={'start_' + record.id}
+                  onClick={() => {
+                    startOrStopConnection(record.id, 'RUNNING', record.requisitionState);
+                  }}
+                >
+                  <PoweroffOutlined />
+                  启动
+                </a>
+              )
+            ) : (
+              <a style={{cursor: "wait"}}>
+                <StopOutlined />
+                { requisitionStateValueEnum[record.requisitionState!].text }
+              </a>
+            )
+          }
+        </>,
+        <>
+          {}
         </>,
       ],
     },

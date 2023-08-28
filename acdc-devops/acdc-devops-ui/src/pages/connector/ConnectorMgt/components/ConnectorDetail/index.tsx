@@ -180,11 +180,14 @@ const ConnectorDetail: React.FC<{connectorId: number}> = ({connectorId}) => {
 
   const showConnectorDetail = async () => {
     const connector = await getConnectorDetail(connectorId)
+    if (!connector) {
+      return
+    }
     setConnectorDetail(connector)
 
     let configurationStr = "{\n"
-    connector.connectorConfigurations.forEach((element) => {
-      configurationStr += "  " + element.name + ": " + element.value + ",\n"
+    connector.connectorConfigurations?.forEach((element) => {
+      configurationStr += "  " + "\""+ element.name +"\""+ ": " +"\""+ element.value+"\"" + ",\n"
     })
     configurationStr = configurationStr.slice(0, configurationStr.length - 2)
     configurationStr += "\n}"
@@ -192,7 +195,7 @@ const ConnectorDetail: React.FC<{connectorId: number}> = ({connectorId}) => {
   }
 
   const getConnectorDetailPage = () => {
-    if (!connectorDetail.id) {
+    if (!connectorDetail||!connectorDetail.id) {
       return <></>
     }
     if (connectorDetail.connectorType == 'SINK') {

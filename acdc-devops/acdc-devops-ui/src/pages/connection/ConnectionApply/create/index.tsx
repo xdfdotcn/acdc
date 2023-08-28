@@ -326,7 +326,7 @@ const ConnectionApply: React.FC<ApplyStepFormProps> = (props) => {
 
             let sinkDataSystemType = applyInfoModel.sinkDataSystemType
 
-            if (!verifyUKWithShowMessage(columnConfList, sinkDataSystemType!)) {
+            if (!verifyUKWithShowMessage(columnConfList!, sinkDataSystemType!, undefined)) {
               return false
             }
 

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+    
+    <!--
+       1. 本次更改发生于 devops 1.15 迭代
+    -->
+    <changeSet id="devops-tag-1_15" author="ACDC">
+        <tagDatabase tag="devops-1_15"/>
+    </changeSet>
+    
+    <changeSet id="devops-1_15_1" author="ACDC">
+        <createIndex tableName="project_data_system_resource_mapping" indexName="idx_data_system_resource_id">
+            <column name="data_system_resource_id"/>
+        </createIndex>
+        <createIndex tableName="project_data_system_resource_mapping" indexName="idx_project_id">
+            <column name="project_id"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

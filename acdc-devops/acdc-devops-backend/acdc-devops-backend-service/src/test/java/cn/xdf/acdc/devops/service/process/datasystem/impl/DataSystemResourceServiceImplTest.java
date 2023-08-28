@@ -6,12 +6,15 @@ import cn.xdf.acdc.devops.core.domain.dto.DataSystemResourceDetailDTO;
 import cn.xdf.acdc.devops.core.domain.entity.DataSystemResourceConfigurationDO;
 import cn.xdf.acdc.devops.core.domain.entity.DataSystemResourceDO;
 import cn.xdf.acdc.devops.core.domain.entity.ProjectDO;
+import cn.xdf.acdc.devops.core.domain.entity.UserDO;
 import cn.xdf.acdc.devops.core.domain.entity.enumeration.DataSystemResourceType;
 import cn.xdf.acdc.devops.core.domain.entity.enumeration.DataSystemType;
+import cn.xdf.acdc.devops.core.domain.enumeration.QueryScope;
 import cn.xdf.acdc.devops.core.domain.query.DataSystemResourceQuery;
 import cn.xdf.acdc.devops.repository.DataSystemResourceConfigurationRepository;
 import cn.xdf.acdc.devops.repository.DataSystemResourceRepository;
 import cn.xdf.acdc.devops.repository.ProjectRepository;
+import cn.xdf.acdc.devops.repository.UserRepository;
 import cn.xdf.acdc.devops.service.error.exceptions.ClientErrorException;
 import cn.xdf.acdc.devops.service.error.exceptions.ServerErrorException;
 import cn.xdf.acdc.devops.service.process.datasystem.DataSystemMetadataService;
@@ -19,6 +22,8 @@ import cn.xdf.acdc.devops.service.process.datasystem.DataSystemResourceService;
 import cn.xdf.acdc.devops.service.process.datasystem.DataSystemServiceManager;
 import cn.xdf.acdc.devops.service.process.datasystem.definition.CommonDataSystemResourceConfigurationDefinition.Authorization;
 import cn.xdf.acdc.devops.service.util.EncryptUtil;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
@@ -65,6 +70,9 @@ public class DataSystemResourceServiceImplTest {
     
     @Autowired
     private ProjectRepository projectRepository;
+    
+    @Autowired
+    private UserRepository userRepository;
     
     @MockBean
     private DataSystemServiceManager dataSystemServiceManager;
@@ -377,13 +385,28 @@ public class DataSystemResourceServiceImplTest {
         entityManager.flush();
         entityManager.clear();
         
-        DataSystemResourceQuery query = new DataSystemResourceQuery().setProjectId(anyProjectId);
+        DataSystemResourceQuery query = new DataSystemResourceQuery().setProjectIds(Lists.newArrayList(anyProjectId));
         Page<DataSystemResourceDTO> pagedQueriedTables = dataSystemResourceService.pagedQuery(query);
         
         Assertions.assertThat(pagedQueriedTables.getNumberOfElements()).isEqualTo(1);
         Assertions.assertThat(pagedQueriedTables.getTotalElements()).isEqualTo(1);
         Assertions.assertThat(pagedQueriedTables.getTotalPages()).isEqualTo(1);
         Assertions.assertThat(dataSystemResourceRepository.findAll().size()).isEqualTo(saved.size());
+    }
+    
+    private ProjectDO saveProjectWithUser() {
+        UserDO userDO = saveUser("user");
+        return projectRepository.save(new ProjectDO().setId(1L).setName("project").setUsers(Sets.newHashSet(userDO)));
+    }
+    
+    private UserDO saveUser(final String domainAccount) {
+        UserDO user = new UserDO();
+        user.setEmail(domainAccount + "@acdc.io");
+        user.setName(domainAccount);
+        user.setDomainAccount(domainAccount);
+        user.setPassword("user");
+        user.setCreatedBy("user");
+        return userRepository.save(user);
     }
     
     private ProjectDO saveProject() {
@@ -393,6 +416,14 @@ public class DataSystemResourceServiceImplTest {
     @Test
     public void testPagedQueryDetailShouldAsExpect() {
         List<DataSystemResourceDO> saved = saveDataSystemResources();
+    
+        ProjectDO project = saveProjectWithUser();
+        for (DataSystemResourceDO saveOne: saved) {
+            saveOne.getProjects().add(project);
+        }
+    
+        entityManager.flush();
+        entityManager.clear();
         
         // count tables
         int tableCount = 0;
@@ -405,6 +436,7 @@ public class DataSystemResourceServiceImplTest {
         // query all table
         DataSystemResourceQuery query = new DataSystemResourceQuery();
         query.setResourceTypes(Arrays.asList(DataSystemResourceType.MYSQL_TABLE));
+        query.setProjectIds(Lists.newArrayList(1L, 2L));
         query.setCurrent(1);
         query.setPageSize(1);
         
@@ -413,6 +445,62 @@ public class DataSystemResourceServiceImplTest {
         Assertions.assertThat(pagedQueriedTables.stream().count()).isEqualTo(1);
         Assertions.assertThat(pagedQueriedTables.getTotalElements()).isEqualTo(tableCount);
         Assertions.assertThat(pagedQueriedTables.getTotalPages()).isEqualTo(tableCount);
+    
+        // query all table with unknown project
+        DataSystemResourceQuery query2 = new DataSystemResourceQuery();
+        query2.setResourceTypes(Arrays.asList(DataSystemResourceType.MYSQL_TABLE));
+        query2.setProjectIds(Lists.newArrayList(2L));
+        query2.setCurrent(1);
+        query2.setPageSize(1);
+    
+        Page<DataSystemResourceDetailDTO> pagedQueriedTables2 = dataSystemResourceService.pagedQueryDetail(query2);
+    
+        Assertions.assertThat(pagedQueriedTables2.stream().count()).isEqualTo(0);
+    }
+    
+    @Test
+    public void testPagedQueryDetailShouldReturnAccordingToQueryUser() {
+        List<DataSystemResourceDO> saved = saveDataSystemResources();
+        
+        ProjectDO project = saveProjectWithUser();
+        for (DataSystemResourceDO saveOne: saved) {
+            saveOne.getProjects().add(project);
+        }
+        
+        entityManager.flush();
+        entityManager.clear();
+        
+        // count tables
+        int tableCount = 0;
+        for (DataSystemResourceDO each : saved) {
+            if (each.getResourceType().equals(DataSystemResourceType.MYSQL_TABLE)) {
+                tableCount++;
+            }
+        }
+        
+        // query all table with the user
+        DataSystemResourceQuery query = new DataSystemResourceQuery();
+        query.setResourceTypes(Arrays.asList(DataSystemResourceType.MYSQL_TABLE));
+        query.setCurrent(1);
+        query.setPageSize(1);
+        query.setScope(QueryScope.CURRENT_USER);
+        query.setMemberDomainAccount("user");
+        Page<DataSystemResourceDetailDTO> pagedQueriedTables = dataSystemResourceService.pagedQueryDetail(query);
+        
+        Assertions.assertThat(pagedQueriedTables.stream().count()).isEqualTo(1);
+        Assertions.assertThat(pagedQueriedTables.getTotalElements()).isEqualTo(tableCount);
+        Assertions.assertThat(pagedQueriedTables.getTotalPages()).isEqualTo(tableCount);
+    
+        // query all table with unknown user
+        DataSystemResourceQuery query2 = new DataSystemResourceQuery();
+        query2.setResourceTypes(Arrays.asList(DataSystemResourceType.MYSQL_TABLE));
+        query2.setCurrent(1);
+        query2.setPageSize(1);
+        query2.setScope(QueryScope.CURRENT_USER);
+        query2.setMemberDomainAccount("user2");
+        Page<DataSystemResourceDetailDTO> pagedQueriedTables2 = dataSystemResourceService.pagedQueryDetail(query2);
+    
+        Assertions.assertThat(pagedQueriedTables2.stream().count()).isEqualTo(0);
     }
     
     @Test

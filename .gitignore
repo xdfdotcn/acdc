@@ -33,3 +33,4 @@ bin/
 derby.log
 metastore_db/
 /deployment/quick-start/acdc/volumes/
+.attach_pid*

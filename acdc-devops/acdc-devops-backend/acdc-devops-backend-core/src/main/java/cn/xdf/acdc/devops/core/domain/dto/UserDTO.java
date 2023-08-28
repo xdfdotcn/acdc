@@ -18,19 +18,19 @@ import lombok.experimental.Accessors;
 @EqualsAndHashCode
 @Accessors(chain = true)
 public class UserDTO {
-    
+
     private Long id;
-    
+
     private String email;
-    
+
     private Integer ownerFlag;
-    
+
     private String domainAccount;
-    
+
     private String name;
-    
+
     private String password;
-    
+
     public UserDTO(final UserDO user) {
         this.id = user.getId();
         // Customize it here if you need, or not, firstName/lastName/etc
@@ -39,7 +39,7 @@ public class UserDTO {
         this.name = user.getName();
         this.password = user.getPassword();
     }
-    
+
     /**
      * To UserDO.
      *

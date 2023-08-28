@@ -32,6 +32,12 @@ public class MysqlDataSystemConstant {
             
             public static final List<String[]> PERMISSIONS_FOR_DATASOURCE = Lists.newArrayList(new String[]{"SELECT"}, new String[]{"REPLICATION SLAVE"},
                     new String[]{"REPLICATION CLIENT"}, new String[]{"RELOAD", "LOCK TABLES"});
+            
+            public static final String EXPRESSION_ON = "string.contains(result,'ON')";
+            
+            public static final String EXPRESSION_EXPECTED_VALUE_ON = "ON";
+            
+            public static final String VARIABLES_LOG_SLAVE_UPDATES = "log_slave_updates";
         }
         
         public static class Mysql {

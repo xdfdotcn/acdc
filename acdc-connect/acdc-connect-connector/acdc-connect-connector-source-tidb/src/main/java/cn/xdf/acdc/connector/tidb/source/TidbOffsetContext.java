@@ -2,6 +2,7 @@ package cn.xdf.acdc.connector.tidb.source;
 
 import io.debezium.config.CommonConnectorConfig;
 import io.debezium.connector.AbstractSourceInfo;
+import io.debezium.connector.SourceInfoStructMaker;
 import io.debezium.pipeline.spi.OffsetContext;
 import io.debezium.pipeline.txmetadata.TransactionContext;
 import io.debezium.relational.TableId;
@@ -28,13 +29,15 @@ public class TidbOffsetContext implements OffsetContext {
 
     private final Map<String, String> partition;
 
-    private final Struct sourceInfo;
+    private final SourceInfoStructMaker<AbstractSourceInfo> sourceInfoStructMaker;
 
     private Map<String, Object> offset = new HashMap<>();
+    
+    private TableId tableId;
 
     public TidbOffsetContext(final CommonConnectorConfig connectorConfig) {
         partition = Collections.singletonMap(SERVER_PARTITION_KEY, connectorConfig.getLogicalName());
-        sourceInfo = new TidbSourceInfoStructMaker().struct(null);
+        sourceInfoStructMaker = connectorConfig.getSourceInfoStructMaker();
     }
 
     /**
@@ -58,12 +61,13 @@ public class TidbOffsetContext implements OffsetContext {
 
     @Override
     public Schema getSourceInfoSchema() {
-        return sourceInfo.schema();
+        return sourceInfoStructMaker.schema();
     }
 
     @Override
     public Struct getSourceInfo() {
-        return sourceInfo;
+        // Here we should build a new object for data send to task thread can not modify by event() in this one.
+        return sourceInfoStructMaker.struct(null).put(AbstractSourceInfo.TABLE_NAME_KEY, tableId.table());
     }
 
     @Override
@@ -93,8 +97,7 @@ public class TidbOffsetContext implements OffsetContext {
 
     @Override
     public void event(final DataCollectionId collectionId, final Instant timestamp) {
-        TableId tableId = (TableId) collectionId;
-        sourceInfo.put(AbstractSourceInfo.TABLE_NAME_KEY, tableId.table());
+        tableId = (TableId) collectionId;
     }
 
     @Override

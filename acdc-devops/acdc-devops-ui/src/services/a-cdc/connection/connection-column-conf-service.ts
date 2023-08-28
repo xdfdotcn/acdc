@@ -8,6 +8,7 @@ import { isEmptyArray } from '../util/acdc-util';
 export function verifyUk(
   columnConfList: API.ConnectionColumnConf[],
   sinkDataSystemType: string,
+  tableModel?: string
 ): boolean {
   let valid: boolean = false;
   let existsSrcUks: boolean = false;
@@ -25,14 +26,16 @@ export function verifyUk(
   if (
     sinkDataSystemType == DataSystemTypeConstant.HIVE ||
     sinkDataSystemType == DataSystemTypeConstant.KAFKA ||
-    sinkDataSystemType == DataSystemTypeConstant.ELASTIC_SEARCH
+    sinkDataSystemType == DataSystemTypeConstant.ELASTICSEARCH ||
+    sinkDataSystemType == DataSystemTypeConstant.STARROCKS && tableModel === "DUP_KEYS"
   ) {
     return existsSrcUks;
   }
 
   if (
     sinkDataSystemType == DataSystemTypeConstant.TIDB ||
-    sinkDataSystemType == DataSystemTypeConstant.MYSQL
+    sinkDataSystemType == DataSystemTypeConstant.MYSQL ||
+    sinkDataSystemType == DataSystemTypeConstant.STARROCKS && (tableModel === "PRIMARY_KEYS" || tableModel === "UNIQUE_KEYS")
   ) {
     return valid;
   }
@@ -43,13 +46,15 @@ export function verifyUk(
 export function verifyUKWithShowMessage(
   columnConfList: API.ConnectionColumnConf[],
   sinkDataSystemType: string,
+  tableModel?: string
 ): boolean {
-  let verifyPass = verifyUk(columnConfList, sinkDataSystemType);
+  let verifyPass = verifyUk(columnConfList, sinkDataSystemType, tableModel);
 
   if (
     sinkDataSystemType == DataSystemTypeConstant.HIVE ||
     sinkDataSystemType == DataSystemTypeConstant.KAFKA ||
-    sinkDataSystemType == DataSystemTypeConstant.ELASTIC_SEARCH
+    sinkDataSystemType == DataSystemTypeConstant.ELASTICSEARCH ||
+    sinkDataSystemType == DataSystemTypeConstant.STARROCKS && tableModel === "DUP_KEYS"
   ) {
     if (!verifyPass) {
       message.warn('源表不存在唯一索引字段');
@@ -58,8 +63,9 @@ export function verifyUKWithShowMessage(
 
   if (
     sinkDataSystemType == DataSystemTypeConstant.TIDB ||
-    sinkDataSystemType == DataSystemTypeConstant.MYSQL
-  ) {
+    sinkDataSystemType == DataSystemTypeConstant.MYSQL ||
+    sinkDataSystemType == DataSystemTypeConstant.STARROCKS && (tableModel === "PRIMARY_KEYS" || tableModel === "UNIQUE_KEYS")
+) {
     if (!verifyPass) {
       message.warn('至少包含一组唯一索引字段的映射关系');
     }

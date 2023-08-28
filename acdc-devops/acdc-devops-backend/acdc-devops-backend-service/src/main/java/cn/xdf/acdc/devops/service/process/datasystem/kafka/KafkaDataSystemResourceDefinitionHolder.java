@@ -9,23 +9,23 @@ import java.util.HashMap;
 import java.util.Map;
 
 public final class KafkaDataSystemResourceDefinitionHolder {
-    
+
     private static final DataSystemResourceDefinition KAFKA_DATA_SYSTEM_RESOURCE_DEFINITION = generateKafkaDataSystemResourceDefinition();
-    
+
     private KafkaDataSystemResourceDefinitionHolder() {
     }
-    
+
     private static DataSystemResourceDefinition generateKafkaDataSystemResourceDefinition() {
         return generateKafkaClusterDataSystemResourceDefinition();
     }
-    
+
     private static DataSystemResourceDefinition generateKafkaClusterDataSystemResourceDefinition() {
         Map<DataSystemResourceType, DataSystemResourceDefinition> children = new HashMap<>();
         children.put(DataSystemResourceType.KAFKA_TOPIC, generateKafkaTopicDataSystemResourceDefinition());
-        
+
         return new DataSystemResourceDefinition(generateClusterConfiguration(), DataSystemResourceType.KAFKA_CLUSTER, false, true, false, children);
     }
-    
+
     private static DataSystemResourceDefinition generateKafkaTopicDataSystemResourceDefinition() {
         return new DataSystemResourceDefinition(DataSystemResourceType.KAFKA_TOPIC, true, false, true);
     }
@@ -38,10 +38,10 @@ public final class KafkaDataSystemResourceDefinitionHolder {
         configuration.put(Cluster.SECURITY_PROTOCOL_CONFIG.getName(), Cluster.SECURITY_PROTOCOL_CONFIG);
         configuration.put(Cluster.USERNAME.getName(), Cluster.USERNAME);
         configuration.put(Cluster.PASSWORD.getName(), Cluster.PASSWORD);
-        
+
         return configuration;
     }
-    
+
     /**
      * Get data system definition for kafka cluster.
      *

@@ -91,7 +91,7 @@ public final class I18nKey {
         
         public final class Check {
             
-            public static final String WRONG_ENDPOINT_OR_PASSWORD = "data-system.check.wrong-endpoint-or-password";
+            public static final String FAILURE = "data-system.check.failure";
         }
     }
     

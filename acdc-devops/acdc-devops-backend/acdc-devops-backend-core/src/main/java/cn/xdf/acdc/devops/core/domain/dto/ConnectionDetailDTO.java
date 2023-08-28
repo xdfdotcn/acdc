@@ -26,99 +26,99 @@ import java.util.Set;
 @AllArgsConstructor
 @Accessors(chain = true)
 public class ConnectionDetailDTO {
-    
+
     private Long id;
-    
+
     private DataSystemType sourceDataSystemType;
-    
+
     private Long sourceProjectId;
-    
+
     private String sourceProjectName;
-    
+
     private Long sourceDataSystemClusterId;
-    
+
     private String sourceDataSystemClusterName;
-    
+
     private Long sourceInstanceId;
-    
+
     private String sourceInstanceHost;
-    
+
     private String sourceInstanceVip;
-    
+
     private String sourceInstancePort;
-    
+
     private Long sourceDatabaseId;
-    
+
     private String sourceDatabaseName;
-    
+
     private Long sourceDataCollectionId;
-    
+
     private String sourceDataCollectionName;
-    
+
     private String sourceDataCollectionTopicName;
-    
+
     private DataSystemType sinkDataSystemType;
-    
+
     private Long sinkProjectId;
-    
+
     private String sinkProjectName;
-    
+
     private Long sinkDataSystemClusterId;
-    
+
     private String sinkDataSystemClusterName;
-    
+
     private Long sinkInstanceId;
-    
+
     private String sinkInstanceHost;
-    
+
     private String sinkInstanceVip;
-    
+
     private String sinkInstancePort;
-    
+
     private Long sinkDatabaseId;
-    
+
     private String sinkDatabaseName;
-    
+
     private Long sinkDataCollectionId;
-    
+
     private String sinkDataCollectionName;
-    
+
     private Long userId;
-    
+
     private String userEmail;
-    
+
     private String specificConfiguration;
-    
+
     private Long sourceConnectorId;
-    
+
     private String sourceConnectorName;
-    
+
     private Long sinkConnectorId;
-    
+
     private String sinkConnectorName;
-    
+
     private Integer version = 1;
-    
+
     private RequisitionState requisitionState = RequisitionState.APPROVING;
-    
+
     private ConnectionState desiredState = ConnectionState.STOPPED;
-    
+
     private ConnectionState actualState = ConnectionState.STOPPED;
-    
+
     private Date updateTime;
-    
+
     private Date creationTime;
-    
+
     private Boolean deleted = Boolean.FALSE;
-    
+
     private List<ConnectionColumnConfigurationDTO> connectionColumnConfigurations = new ArrayList<>();
-    
+
     public ConnectionDetailDTO(final ConnectionDO connection) {
         this.id = connection.getId();
         this.sourceDataSystemType = connection.getSourceDataSystemType();
         this.sourceProjectId = connection.getSourceProject().getId();
         this.sourceProjectName = connection.getSourceProject().getName();
-        
+
         // source database, cluster
         switch (sourceDataSystemType) {
             case MYSQL:
@@ -131,7 +131,7 @@ public class ConnectionDetailDTO {
             default:
                 throw new IllegalArgumentException(String.format("unsupported source data system type: %s", sourceDataSystemType));
         }
-        
+
         this.sourceDataCollectionId = connection.getSourceDataCollection().getId();
         this.sourceDataCollectionName = connection.getSourceDataCollection().getName();
         if (Objects.nonNull(connection.getSourceConnector())) {
@@ -139,25 +139,26 @@ public class ConnectionDetailDTO {
             this.sourceConnectorName = connection.getSourceConnector().getName();
             this.sourceDataCollectionTopicName = connection.getSourceDataCollection().getKafkaTopic().getName();
         }
-        
+
         this.sinkDataSystemType = connection.getSinkDataSystemType();
         this.sinkProjectId = connection.getSinkProject().getId();
         this.sinkProjectName = connection.getSinkProject().getName();
         this.sinkDataCollectionId = connection.getSinkDataCollection().getId();
         this.sinkDataCollectionName = connection.getSinkDataCollection().getName();
-        
+
         // sink cluster
         switch (sinkDataSystemType) {
             case MYSQL:
             case TIDB:
             case HIVE:
+            case STARROCKS:
                 if (Objects.nonNull(connection.getSinkDataCollection().getParentResource())) {
                     this.sinkDatabaseName = connection.getSinkDataCollection().getParentResource().getName();
                     this.sinkDataSystemClusterName = connection.getSinkDataCollection().getParentResource().getParentResource().getName();
                 }
                 break;
             case KAFKA:
-            case ELASTIC_SEARCH:
+            case ELASTICSEARCH:
                 if (Objects.nonNull(connection.getSinkDataCollection().getParentResource())) {
                     this.sinkDataSystemClusterName = connection.getSinkDataCollection().getParentResource().getName();
                 }
@@ -165,7 +166,7 @@ public class ConnectionDetailDTO {
             default:
                 throw new IllegalArgumentException(String.format("unsupported sink data system type: %s", sourceDataSystemType));
         }
-        
+
         this.specificConfiguration = connection.getSpecificConfiguration();
         if (Objects.nonNull(connection.getSinkConnector())) {
             this.sinkConnectorId = connection.getSinkConnector().getId();
@@ -180,16 +181,16 @@ public class ConnectionDetailDTO {
         this.deleted = connection.getDeleted();
         this.creationTime = connection.getCreationTime();
         this.updateTime = connection.getUpdateTime();
-        
+
         if (Objects.nonNull(connection.getSinkInstance())) {
             this.sinkInstanceId = connection.getSinkInstance().getId();
         }
-        
+
         connection.getConnectionColumnConfigurations().forEach(each -> {
             connectionColumnConfigurations.add(new ConnectionColumnConfigurationDTO(each));
         });
     }
-    
+
     /**
      * Convert to DO.
      *
@@ -202,7 +203,7 @@ public class ConnectionDetailDTO {
             columnConfigurationDO.setConnectionVersion(this.version);
             connectionColumnConfigurationDOs.add(columnConfigurationDO);
         }
-        
+
         ConnectionDO connectionDO = new ConnectionDO();
         connectionDO.setId(this.id);
         connectionDO.setSourceDataSystemType(this.getSourceDataSystemType());
@@ -221,21 +222,21 @@ public class ConnectionDetailDTO {
         connectionDO.setConnectionColumnConfigurations(connectionColumnConfigurationDOs);
         connectionDO.setCreationTime(this.creationTime);
         connectionDO.setUpdateTime(this.updateTime);
-        
+
         if (Objects.nonNull(this.getSourceConnectorId())) {
             connectionDO.setSourceConnector(new ConnectorDO(this.getSourceConnectorId()));
         }
-        
+
         if (Objects.nonNull(this.getSinkConnectorId())) {
             connectionDO.setSinkConnector(new ConnectorDO(this.getSinkConnectorId()));
         }
-        
+
         if (Objects.nonNull(this.getSinkInstanceId())) {
             connectionDO.setSinkInstance(new DataSystemResourceDO(this.getSinkInstanceId()));
         }
         // cascading save
         connectionColumnConfigurationDOs.forEach(it -> it.setConnection(connectionDO));
-        
+
         return connectionDO;
     }
 }

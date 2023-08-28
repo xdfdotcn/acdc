@@ -8,6 +8,8 @@ public class UrlUtil {
     
     private static final String JDBC_URL_FORMAT = "jdbc:%s://%s:%d";
     
+    private static final String HTTP_URL_FORMAT = "%s:%d";
+    
     /**
      * Generate jdbc schema url.
      *
@@ -43,5 +45,16 @@ public class UrlUtil {
      */
     public static String generateJDBCUrl(final String dataSystemType, final String host, final int port, final String database) {
         return generateJDBCUrl(dataSystemType, host, port, database, SystemConstant.EMPTY_STRING);
+    }
+    
+    /**
+     * Generate http url.
+     *
+     * @param ip ip
+     * @param port port
+     * @return http url
+     */
+    public static String generateHttpUrl(final String ip, final int port) {
+        return String.format(HTTP_URL_FORMAT, ip, port);
     }
 }

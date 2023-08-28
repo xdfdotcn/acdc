@@ -17,6 +17,6 @@ public class Jdbc2EsConnectionColumnConfigurationGenerator implements Connection
     
     @Override
     public Set<DataSystemType> supportedSinkDataSystemTypes() {
-        return Sets.immutableEnumSet(DataSystemType.ELASTIC_SEARCH);
+        return Sets.immutableEnumSet(DataSystemType.ELASTICSEARCH);
     }
 }

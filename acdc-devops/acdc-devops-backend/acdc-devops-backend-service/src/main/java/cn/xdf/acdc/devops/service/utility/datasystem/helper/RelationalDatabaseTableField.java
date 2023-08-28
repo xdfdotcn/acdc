@@ -12,7 +12,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * 数据表字段.
+ * Field for relational database table.
  */
 @Getter
 @NoArgsConstructor

@@ -22,5 +22,6 @@
         <module>acdc-connect-connector-sink-hdfs</module>
         <module>acdc-connect-connector-sink-kafka</module>
         <module>acdc-connect-connector-source-tidb</module>
+        <module>acdc-connect-connector-sink-starrocks</module>
     </modules>
 </project>

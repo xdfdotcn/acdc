@@ -38,9 +38,7 @@ public class ConnectionColumnConfigurationController {
         ) {
             return Collections.EMPTY_LIST;
         }
-        List<ConnectionColumnConfigurationDTO> connectionColumnConfigurations = connectionColumnConfigurationGeneratorManager
-                .generateConnectionColumnConfiguration(sourceDataCollectionId, sinkDataCollectionId);
-        return connectionColumnConfigurations;
+        return connectionColumnConfigurationGeneratorManager.generateConnectionColumnConfiguration(sourceDataCollectionId, sinkDataCollectionId);
     }
 
     /**
@@ -56,26 +54,6 @@ public class ConnectionColumnConfigurationController {
         if (QueryUtil.isNullId(connectionId)) {
             return Collections.EMPTY_LIST;
         }
-        List<ConnectionColumnConfigurationDTO> connectionColumnConfigurations = connectionColumnConfigurationGeneratorManager
-                .generateConnectionColumnConfiguration(connectionId);
-        return connectionColumnConfigurations;
-    }
-
-    /**
-     * Get column configurations.
-     *
-     * @param connectionId connection id
-     * @return column configurations
-     */
-    @GetMapping("/connections/{connectionId}/column-configurations")
-    public List<ConnectionColumnConfigurationDTO> getByConnectionId(
-            @PathVariable("connectionId") final Long connectionId
-    ) {
-        if (QueryUtil.isNullId(connectionId)) {
-            return Collections.EMPTY_LIST;
-        }
-
-        List<ConnectionColumnConfigurationDTO> connectionColumnConfigurations = connectionColumnConfigurationGeneratorManager.getConnectionColumnConfiguration(connectionId);
-        return connectionColumnConfigurations;
+        return connectionColumnConfigurationGeneratorManager.generateConnectionColumnConfiguration(connectionId);
     }
 }
