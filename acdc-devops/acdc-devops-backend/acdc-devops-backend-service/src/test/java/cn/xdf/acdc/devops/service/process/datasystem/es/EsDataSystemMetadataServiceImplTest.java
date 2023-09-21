@@ -74,14 +74,14 @@ public class EsDataSystemMetadataServiceImplTest {
         Mockito.verify(dataSystemResourceService, Mockito.times(1))
                 .mergeAllChildrenByName(
                         captor.capture(),
-                        Mockito.eq(DataSystemResourceType.ELASTIC_SEARCH_INDEX),
+                        Mockito.eq(DataSystemResourceType.ELASTICSEARCH_INDEX),
                         Mockito.eq(clusterRsDetail.getId()));
 
         Map<String, String> indexMap = indexs.stream().collect(Collectors.toMap(it -> it, it -> it));
 
         captor.getValue().forEach(it -> {
             Assertions.assertThat(indexMap.get(it.getName())).isEqualTo(it.getName());
-            Assertions.assertThat(it.getResourceType()).isEqualTo(DataSystemResourceType.ELASTIC_SEARCH_INDEX);
+            Assertions.assertThat(it.getResourceType()).isEqualTo(DataSystemResourceType.ELASTICSEARCH_INDEX);
             Assertions.assertThat(it.getParentResource().getId()).isEqualTo(clusterRsDetail.getId());
         });
     }
@@ -89,7 +89,7 @@ public class EsDataSystemMetadataServiceImplTest {
     @Test
     public void testGetDataSystemTypeShouldReturnEs() {
         DataSystemType type = dataSystemMetadataServiceImpl.getDataSystemType();
-        Assertions.assertThat(type).isEqualTo(DataSystemType.ELASTIC_SEARCH);
+        Assertions.assertThat(type).isEqualTo(DataSystemType.ELASTICSEARCH);
     }
 
     @Test
@@ -106,7 +106,7 @@ public class EsDataSystemMetadataServiceImplTest {
 
         Mockito.when(dataSystemResourceService.getDetailParent(
                 Mockito.eq(dataCollectionId),
-                Mockito.eq(DataSystemResourceType.ELASTIC_SEARCH_CLUSTER))
+                Mockito.eq(DataSystemResourceType.ELASTICSEARCH_CLUSTER))
         )
                 .thenReturn(clusterRsDetail);
 
@@ -137,7 +137,7 @@ public class EsDataSystemMetadataServiceImplTest {
 
         Mockito.when(dataSystemResourceService.getDetailParent(
                 Mockito.eq(dataCollectionId),
-                Mockito.eq(DataSystemResourceType.ELASTIC_SEARCH_CLUSTER))
+                Mockito.eq(DataSystemResourceType.ELASTICSEARCH_CLUSTER))
         )
                 .thenReturn(clusterRsDetail);
 

@@ -3,6 +3,7 @@ package cn.xdf.acdc.connector.tidb.source;
 import io.debezium.config.Configuration;
 import io.debezium.connector.AbstractSourceInfo;
 import io.debezium.relational.TableId;
+import org.apache.kafka.connect.data.Struct;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -12,11 +13,26 @@ import java.util.Properties;
 public class TidbOffsetContextTest {
 
     @Test
-    public void testSourceStructShouldBeWithAName() {
+    public void testSourceStructSchemaShouldBeWithAName() {
         TidbConnectorConfig config = getTidbConnectorConfig("test-bootstrap", "test-topic", "test-group", 1);
         TidbOffsetContext tidbOffsetContext = new TidbOffsetContext(config);
+        final TableId tableId = new TableId("catalog", "schema", "table");
+        tidbOffsetContext.event(tableId, Instant.now());
         Assert.assertEquals("cn.xdf.acdc.connector.tidb.Source", tidbOffsetContext.getSourceInfoSchema().name());
-        Assert.assertEquals(new TidbSourceInfoStructMaker().struct(null), tidbOffsetContext.getSourceInfo());
+        Assert.assertEquals(new TidbSourceInfoStructMaker().struct(null).put(AbstractSourceInfo.TABLE_NAME_KEY, tableId.table()), tidbOffsetContext.getSourceInfo());
+    }
+    
+    @Test
+    public void testSourceStructShouldBeWithANewObject() {
+        TidbConnectorConfig config = getTidbConnectorConfig("test-bootstrap", "test-topic", "test-group", 1);
+        TidbOffsetContext tidbOffsetContext = new TidbOffsetContext(config);
+        final TableId tableId = new TableId("catalog", "schema", "table");
+        tidbOffsetContext.event(tableId, Instant.now());
+        // bug fixed
+        final Struct sourceInfo = tidbOffsetContext.getSourceInfo();
+        tidbOffsetContext.event(tableId, Instant.now());
+        Assert.assertEquals(sourceInfo, tidbOffsetContext.getSourceInfo());
+        Assert.assertNotSame(sourceInfo, tidbOffsetContext.getSourceInfo());
     }
 
     @Test

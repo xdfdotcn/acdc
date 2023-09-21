@@ -21,11 +21,11 @@ public final class EsDataSystemResourceDefinitionHolder {
 
     private static DataSystemResourceDefinition generateClusterDefinition() {
         Map<DataSystemResourceType, DataSystemResourceDefinition> children = new HashMap<>();
-        children.put(DataSystemResourceType.ELASTIC_SEARCH_INDEX, generateIndexDefinition());
+        children.put(DataSystemResourceType.ELASTICSEARCH_INDEX, generateIndexDefinition());
 
         return new DataSystemResourceDefinition(
                 generateClusterConfigurations(),
-                DataSystemResourceType.ELASTIC_SEARCH_CLUSTER,
+                DataSystemResourceType.ELASTICSEARCH_CLUSTER,
                 false,
                 true,
                 false,
@@ -34,7 +34,7 @@ public final class EsDataSystemResourceDefinitionHolder {
     }
 
     private static DataSystemResourceDefinition generateIndexDefinition() {
-        return new DataSystemResourceDefinition(generateIndexConfigurations(), DataSystemResourceType.ELASTIC_SEARCH_INDEX, true, false, true);
+        return new DataSystemResourceDefinition(generateIndexConfigurations(), DataSystemResourceType.ELASTICSEARCH_INDEX, true, false, true);
     }
 
     private static Map<String, ConfigurationDefinition<?>> generateIndexConfigurations() {

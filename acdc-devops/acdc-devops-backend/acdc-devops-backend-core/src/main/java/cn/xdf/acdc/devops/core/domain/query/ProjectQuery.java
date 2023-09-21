@@ -1,5 +1,6 @@
 package cn.xdf.acdc.devops.core.domain.query;
 
+import cn.xdf.acdc.devops.core.domain.enumeration.QueryScope;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -32,13 +33,9 @@ public class ProjectQuery extends PagedQuery {
     
     private Instant creationTime;
     
-    private RANGE queryRange;
+    private QueryScope scope;
     
     private Set<Long> projectIds;
     
     private Boolean deleted;
-    
-    public enum RANGE {
-        ALL, CURRENT_USER
-    }
 }

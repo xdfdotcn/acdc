@@ -5,9 +5,9 @@ package cn.xdf.acdc.devops.core.util;
  */
 public class DelayStrategy {
     
-    public static final long MAX_TIME_INTERVAL = 3600_000L;
+    public static final long MAX_TIME_INTERVAL = 4320_000L;
     
-    private static final long BASE_TIME_INTERVAL = 2_000L;
+    private static final long BASE_TIME_INTERVAL = 60_000L;
     
     private static final long BACKOFF_MULTIPLIER = 2L;
     

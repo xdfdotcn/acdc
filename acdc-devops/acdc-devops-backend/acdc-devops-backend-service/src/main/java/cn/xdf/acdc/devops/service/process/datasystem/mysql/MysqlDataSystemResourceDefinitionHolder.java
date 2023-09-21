@@ -10,25 +10,25 @@ import java.util.HashMap;
 import java.util.Map;
 
 public final class MysqlDataSystemResourceDefinitionHolder {
-    
+
     private static final DataSystemResourceDefinition MYSQL_DATA_SYSTEM_RESOURCE_DEFINITION = generateMysqlDataSystemResourceDefinition();
-    
+
     private MysqlDataSystemResourceDefinitionHolder() {
     }
-    
+
     private static DataSystemResourceDefinition generateMysqlDataSystemResourceDefinition() {
         return generateMysqlClusterDataSystemResourceDefinition();
     }
-    
+
     private static DataSystemResourceDefinition generateMysqlClusterDataSystemResourceDefinition() {
         // cluster
         Map<DataSystemResourceType, DataSystemResourceDefinition> children = new HashMap<>();
         children.put(DataSystemResourceType.MYSQL_INSTANCE, generateInstanceDataSystemResourceDefinition());
         children.put(DataSystemResourceType.MYSQL_DATABASE, generateIDatabaseDataSystemResourceDefinition());
-        
+
         return new DataSystemResourceDefinition(generateClusterConfigurations(), DataSystemResourceType.MYSQL_CLUSTER, false, true, false, children);
     }
-    
+
     private static DataSystemResourceDefinition generateInstanceDataSystemResourceDefinition() {
         return new DataSystemResourceDefinition(generateInstanceConfigurations(), DataSystemResourceType.MYSQL_INSTANCE, false, false, false);
     }
@@ -40,14 +40,14 @@ public final class MysqlDataSystemResourceDefinitionHolder {
         configurationDefinitions.put(Instance.ROLE_TYPE.getName(), Instance.ROLE_TYPE);
         return configurationDefinitions;
     }
-    
+
     private static DataSystemResourceDefinition generateIDatabaseDataSystemResourceDefinition() {
         Map<DataSystemResourceType, DataSystemResourceDefinition> children = new HashMap<>();
         children.put(DataSystemResourceType.MYSQL_TABLE, generateTableDataSystemResourceDefinition());
-        
+
         return new DataSystemResourceDefinition(DataSystemResourceType.MYSQL_DATABASE, true, true, false, children);
     }
-    
+
     private static DataSystemResourceDefinition generateTableDataSystemResourceDefinition() {
         return new DataSystemResourceDefinition(DataSystemResourceType.MYSQL_TABLE, true, false, true);
     }
@@ -59,7 +59,7 @@ public final class MysqlDataSystemResourceDefinitionHolder {
         configurationDefinitions.put(Cluster.SOURCE.getName(), Cluster.SOURCE);
         return configurationDefinitions;
     }
-    
+
     /**
      * Get data system definition for mysql cluster.
      *

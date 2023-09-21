@@ -6,7 +6,7 @@ import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.data.SchemaBuilder;
 import org.apache.kafka.connect.data.Struct;
 
-public class TidbSourceInfoStructMaker implements SourceInfoStructMaker {
+public class TidbSourceInfoStructMaker implements SourceInfoStructMaker<AbstractSourceInfo> {
 
     private static final String TIDB_SOURCE_INFO_SCHEMA_NAME = "cn.xdf.acdc.connector.tidb.Source";
 

@@ -108,6 +108,22 @@ const RESOURCE_TYPE_MAPPING: Map<string, string[]> = new Map([
     DataSystemTypeConstant.KAFKA,
     [DataSystemResourceTypeConstant.KAFKA_CLUSTER, DataSystemResourceTypeConstant.KAFKA_TOPIC],
   ],
+  [
+    DataSystemTypeConstant.ELASTICSEARCH,
+    [
+      DataSystemResourceTypeConstant.ELASTICSEARCH_CLUSTER,
+      DataSystemResourceTypeConstant.ELASTICSEARCH_INDEX,
+    ],
+  ],
+  [
+    DataSystemTypeConstant.STARROCKS,
+    [
+      DataSystemResourceTypeConstant.STARROCKS_CLUSTER,
+      DataSystemResourceTypeConstant.STARROCKS_DATABASE,
+      DataSystemResourceTypeConstant.STARROCKS_TABLE,
+      DataSystemResourceTypeConstant.STARROCKS_FRONTEND,
+    ],
+  ],
 ]);
 
 /**
@@ -127,7 +143,7 @@ type ResourceDefinition = {
 type ResourceQuery = {
   parentId?: number;
   keyword?: string;
-  projectId?: number;
+  projectIds?: number[];
   resourceTypes?: string[];
 };
 
@@ -369,6 +385,16 @@ export type SearchRecord = {
 };
 
 /**
+ *搜索范围枚举
+ */
+const SearchScope = {
+  CURRENT_USER: 'CURRENT_USER',
+  ALL: 'ALL',
+};
+
+export { SearchScope };
+
+/**
  *搜索组件属性
  */
 export type DcSearcherProps = {
@@ -387,6 +413,9 @@ export type DcSearcherProps = {
   // 是否校验项目 owner
   validateProjectOwner: boolean;
 
+  // 搜索范围
+  searchScope: string;
+
   // 数据集选中事件监听
   onSelect: (srList: SearchRecord[]) => void;
 };
@@ -394,6 +423,9 @@ export type DcSearcherProps = {
 // 数据集搜索组件定义
 const DcSearcher: React.FC<DcSearcherProps> = (dcSearcherProps) => {
   const {
+    // 查询范围,默认只查询当前用户所属的资源
+    searchScope = SearchScope.CURRENT_USER,
+    // 请求分页大小，默认为 1
     reqPageSize = 1,
     multipleChoice = false,
     includedDataSystemTypes,
@@ -487,6 +519,7 @@ const DcSearcher: React.FC<DcSearcherProps> = (dcSearcherProps) => {
   const searchProject = async (pageNum: number, keyword?: string) => {
     const projectQuery = {
       pageSize: reqPageSize,
+      scope: searchScope,
       deleted: false,
       current: pageNum,
       name: keyword,
@@ -509,13 +542,13 @@ const DcSearcher: React.FC<DcSearcherProps> = (dcSearcherProps) => {
   const searchResource = async (pageNum: number, query: ResourceQuery) => {
     const resourceQuery: API.DataSystemResourceQuery = {
       pageSize: reqPageSize,
+      scope: searchScope,
       deleted: false,
       current: pageNum,
       name: query.keyword,
-      projectId: query.projectId,
+      projectIds: query.projectIds,
       resourceTypes: query.resourceTypes,
       parentResourceId: query.parentId,
-      from: 'DcSearcher', // TODO 临时处理
     };
 
     const pagedResource = await pagedQueryDataSystemResource(resourceQuery);
@@ -1129,6 +1162,21 @@ const DcSearcher: React.FC<DcSearcherProps> = (dcSearcherProps) => {
       if (!searchNode || !searchNode.projectNodes) throw new Error('require ProjectNode[id]');
     };
 
+    // 获取项目id 集合
+
+    const obtainProjectIds = (projectNodes?: ProjectNode[]) => {
+      const ids: number[] = [];
+
+      if (!projectNodes) {
+        return ids;
+      }
+
+      for (let node of projectNodes) {
+        ids.push(node.id);
+      }
+      return ids;
+    };
+
     /*
      * 主流程逻辑处理:
      *
@@ -1158,7 +1206,7 @@ const DcSearcher: React.FC<DcSearcherProps> = (dcSearcherProps) => {
           await searchResource(pagination.resourcePageNum, {
             keyword: command.sKw(),
             // TODO 目前只支持一个项目的搜索
-            projectId: searchNode?.projectNodes[0].id,
+            projectIds: obtainProjectIds(searchNode?.projectNodes),
             resourceTypes: rootResourceTypes,
           }),
           tracker,
@@ -1176,7 +1224,7 @@ const DcSearcher: React.FC<DcSearcherProps> = (dcSearcherProps) => {
             // 解决查询集群的情况，会把实例信息查询出来的问题
             resourceTypes: canBeSearchResourceTypes,
             // TODO 目前只支持一个项目的搜索
-            projectId: searchNode?.projectNodes[0].id,
+            projectIds: obtainProjectIds(searchNode?.projectNodes),
           }),
           tracker,
         );

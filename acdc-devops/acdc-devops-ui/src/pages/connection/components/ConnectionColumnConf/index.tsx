@@ -19,6 +19,7 @@ export type ConnectionColumnConfProps = {
   canDelete?: boolean;
   sinkDataSystemType?: string;
   sourceDataCollectionId?: number;
+  sinkDataCollectionId?: number;
 };
 
 type ComponentProps = {
@@ -121,6 +122,10 @@ const ConnectionColumnConf: React.FC<ComponentProps> = (componentProps) => {
 
   // ES 不支持ACDC元数据
   const ES_META_FIELD_MAP: Map<string, API.DataFieldDefinition> = new Map([
+    [NONE_FIELD_DEFINITION_MENU_ITEM.displayName!, NONE_FIELD_DEFINITION_MENU_ITEM!],
+  ]);
+
+  const STARROCKS_META_FIELD_MAP: Map<string, API.DataFieldDefinition> = new Map([
     [NONE_FIELD_DEFINITION_MENU_ITEM.displayName!, NONE_FIELD_DEFINITION_MENU_ITEM!],
   ]);
 
@@ -579,11 +584,18 @@ const ConnectionColumnConf: React.FC<ComponentProps> = (componentProps) => {
       }
     }
 
-    if (sinkDataSystemType == DataSystemTypeConstant.ELASTIC_SEARCH) {
+    if (sinkDataSystemType == DataSystemTypeConstant.ELASTICSEARCH) {
       if (!ES_META_FIELD_MAP.has(curSourceColumnDisplayName!)) {
         tempMenuMapping.delete(curSourceColumnDisplayName);
       }
     }
+
+    if (sinkDataSystemType == DataSystemTypeConstant.STARROCKS) {
+      if (!STARROCKS_META_FIELD_MAP.has(curSourceColumnDisplayName!)) {
+        tempMenuMapping.delete(curSourceColumnDisplayName);
+      }
+    }
+
 
     if (
       sinkDataSystemType == DataSystemTypeConstant.TIDB ||
@@ -718,8 +730,14 @@ const ConnectionColumnConf: React.FC<ComponentProps> = (componentProps) => {
       }
     }
 
-    if (sinkDataSystemType == DataSystemTypeConstant.ELASTIC_SEARCH) {
+    if (sinkDataSystemType == DataSystemTypeConstant.ELASTICSEARCH) {
       for (let entity of ES_META_FIELD_MAP.entries()) {
+        srcDataFiledDefinitionMapping.set(entity[0]!, entity[1]);
+      }
+    }
+
+    if (sinkDataSystemType == DataSystemTypeConstant.STARROCKS) {
+      for (let entity of STARROCKS_META_FIELD_MAP.entries()) {
         srcDataFiledDefinitionMapping.set(entity[0]!, entity[1]);
       }
     }

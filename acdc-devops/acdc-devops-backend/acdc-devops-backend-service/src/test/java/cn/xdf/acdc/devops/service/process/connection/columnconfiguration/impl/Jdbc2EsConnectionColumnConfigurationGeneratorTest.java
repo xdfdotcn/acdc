@@ -29,6 +29,6 @@ public class Jdbc2EsConnectionColumnConfigurationGeneratorTest {
     @Test
     public void testSupportSinkDataSystemTypes() {
         Set<DataSystemType> dataSystemTypes = connectionColumnConfigurationGenerator.supportedSinkDataSystemTypes();
-        Assertions.assertThat(dataSystemTypes).contains(DataSystemType.ELASTIC_SEARCH);
+        Assertions.assertThat(dataSystemTypes).contains(DataSystemType.ELASTICSEARCH);
     }
 }

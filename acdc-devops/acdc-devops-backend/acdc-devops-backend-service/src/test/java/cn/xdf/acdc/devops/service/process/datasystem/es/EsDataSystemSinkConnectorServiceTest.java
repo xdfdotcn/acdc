@@ -96,7 +96,7 @@ public class EsDataSystemSinkConnectorServiceTest {
         ConnectorClassDetailDTO connectorClassDetail = new ConnectorClassDetailDTO()
                 .setDefaultConnectorConfigurations(defaultConnectorConfigurations);
         when(connectorClassService.getDetailByDataSystemTypeAndConnectorType(
-                eq(DataSystemType.ELASTIC_SEARCH),
+                eq(DataSystemType.ELASTICSEARCH),
                 eq(ConnectorType.SINK))
         ).thenReturn(connectorClassDetail);
 
@@ -123,7 +123,7 @@ public class EsDataSystemSinkConnectorServiceTest {
                 .thenReturn(sinkIndex);
 
         when(dataSystemResourceService.getDetailParent(eq(connectionDetail.getSinkDataCollectionId()),
-                eq(DataSystemResourceType.ELASTIC_SEARCH_CLUSTER)))
+                eq(DataSystemResourceType.ELASTICSEARCH_CLUSTER)))
                         .thenReturn(sinkClusterDetail);
 
         final Map<String, String> customConfiguration = esDataSystemSinkConnectorServiceImpl
@@ -158,6 +158,6 @@ public class EsDataSystemSinkConnectorServiceTest {
     @Test
     public void testGetDataSystemTypeShouldReturnEs() {
         Assertions.assertThat(esDataSystemSinkConnectorServiceImpl
-                .getDataSystemType()).isEqualTo(DataSystemType.ELASTIC_SEARCH);
+                .getDataSystemType()).isEqualTo(DataSystemType.ELASTICSEARCH);
     }
 }

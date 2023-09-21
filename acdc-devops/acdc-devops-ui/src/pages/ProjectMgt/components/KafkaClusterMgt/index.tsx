@@ -82,7 +82,7 @@ const KafkaClusterMgt: React.FC = () => {
 				columns={columns}
 				// 分页设置,默认数据,不展示动态调整分页大小
 				params={{
-					projectId: kafkaClusterMgtModel.projectId,
+					projectIds: [kafkaClusterMgtModel.projectId!],
           resourceTypes: ["KAFKA_CLUSTER"]
 				}}
 				request={pagedQueryDataSystemResource}

@@ -2,7 +2,6 @@ package cn.xdf.acdc.devops.service.process.connection.columnconfiguration.impl;
 
 import cn.xdf.acdc.devops.core.domain.dto.ConnectionColumnConfigurationDTO;
 import cn.xdf.acdc.devops.core.domain.dto.ConnectionDTO;
-import cn.xdf.acdc.devops.core.domain.dto.ConnectionDetailDTO;
 import cn.xdf.acdc.devops.core.domain.entity.enumeration.DataSystemType;
 import cn.xdf.acdc.devops.service.process.connection.ConnectionService;
 import cn.xdf.acdc.devops.service.process.connection.columnconfiguration.ConnectionColumnConfigurationGenerator;
@@ -10,19 +9,13 @@ import cn.xdf.acdc.devops.service.process.datasystem.DataSystemResourceService;
 import cn.xdf.acdc.devops.service.process.datasystem.DataSystemServiceManager;
 import cn.xdf.acdc.devops.service.process.datasystem.definition.DataCollectionDefinition;
 import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -71,17 +64,6 @@ public class ConnectionColumnConfigurationGeneratorManager {
         ConnectionColumnConfigurationGenerator generator = FIELD_MAPPING_SERVICE_MAP
                 .get(sourceDataSystemType, sinkDataSystemType);
         return generator;
-    }
-    
-    /**
-     * Get the connection column configuration.
-     *
-     * @param connectionId connection id
-     * @return connection column configuration
-     */
-    public List<ConnectionColumnConfigurationDTO> getConnectionColumnConfiguration(final Long connectionId) {
-        ConnectionDetailDTO connectionDetailDTO = connectionService.getDetailById(connectionId);
-        return generateConnectionColumnConfiguration(connectionDetailDTO);
     }
     
     /**
@@ -135,54 +117,5 @@ public class ConnectionColumnConfigurationGeneratorManager {
         // 2. diffing and sort
         return FIELD_MAPPING_SERVICE_MAP.get(sourceDataSystemType, sinkDataSystemType)
                 .generateColumnConfiguration(sourceDataCollectionDefinition, sinkDataCollectionDefinition);
-    }
-    
-    /**
-     * Generate column configuration.
-     *
-     * @param connectionDetailDTO connection detail DTO
-     * @return connection column configuration list
-     */
-    public List<ConnectionColumnConfigurationDTO> generateConnectionColumnConfiguration(
-            final ConnectionDetailDTO connectionDetailDTO) {
-        if (Objects.isNull(connectionDetailDTO)
-                || CollectionUtils.isEmpty(connectionDetailDTO.getConnectionColumnConfigurations())) {
-            return Collections.EMPTY_LIST;
-        }
-        
-        DataSystemType sourceDataSystemType = connectionDetailDTO.getSourceDataSystemType();
-        DataSystemType sinkDataSystemType = connectionDetailDTO.getSinkDataSystemType();
-        
-        List<ConnectionColumnConfigurationDTO> connectionColumnConfigurations = connectionDetailDTO.getConnectionColumnConfigurations();
-        
-        List<ConnectionColumnConfigurationDTO> newConnectionColumnConfigurations = Lists.newArrayListWithCapacity(connectionColumnConfigurations.size());
-        
-        for (ConnectionColumnConfigurationDTO configurationDTO : connectionColumnConfigurations) {
-            newConnectionColumnConfigurations.add(new ConnectionColumnConfigurationDTO()
-                    .setId(configurationDTO.getId())
-                    .setRowId(configurationDTO.getRowId())
-                    .setConnectionVersion(configurationDTO.getConnectionVersion())
-                    .setSourceColumnName(configurationDTO.getSourceColumnName())
-                    .setSourceColumnType(configurationDTO.getSourceColumnType())
-                    .setSourceColumnUniqueIndexNames(configurationDTO.getSourceColumnUniqueIndexNames())
-                    .setSinkColumnName(configurationDTO.getSinkColumnName())
-                    .setSinkColumnType(configurationDTO.getSinkColumnType())
-                    .setSinkColumnUniqueIndexNames(configurationDTO.getSinkColumnUniqueIndexNames())
-                    .setFilterOperator(configurationDTO.getFilterOperator())
-                    .setFilterValue(configurationDTO.getFilterValue())
-                    .setCreationTime(configurationDTO.getCreationTime())
-                    .setUpdateTime(configurationDTO.getUpdateTime())
-            );
-        }
-        
-        ConnectionColumnConfigurationGenerator generator = FIELD_MAPPING_SERVICE_MAP.get(sourceDataSystemType, sinkDataSystemType);
-        // append rowId
-        generator.appendIdForConnectionColumnConfigurations(newConnectionColumnConfigurations, () -> 1);
-        
-        // sort
-        return newConnectionColumnConfigurations
-                .stream()
-                .sorted(Comparator.comparing(it -> generator.generateSequenceWhenEdit(it)))
-                .collect(Collectors.toList());
     }
 }

@@ -22,6 +22,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -102,7 +104,7 @@ public class MysqlDataSystemMetadataServiceImpl extends RelationalDataSystemMeta
             log.info("checking permissions for user '{}' in data source rdb instance '{}:{}'", usernameAndPassword.getUsername(), hostAndPort);
             mysqlHelperService.checkPermissions(hostAndPort, usernameAndPassword, UserPermissionsAndBinlogConfiguration.PERMISSIONS_FOR_DATASOURCE);
             log.info("checking binlog configuration for data source rdb instance '{}:{}'", hostAndPort);
-            checkVariablesForDataSource(variables);
+            checkVariablesForDataSource(hostAndPort, usernameAndPassword, variables);
         }
         
         log.info("successfully check permissions and binlog configuration for rdb instance '{}'", instance);
@@ -123,20 +125,54 @@ public class MysqlDataSystemMetadataServiceImpl extends RelationalDataSystemMeta
         }
     }
     
-    protected void checkVariablesForDataSource(final Map<String, String> variables) {
-        checkBinlogConfiguration(variables);
+    protected void checkVariablesForDataSource(
+            final HostAndPort hostAndPort,
+            final UsernameAndPassword usernameAndPassword,
+            final Map<String, String> variables) {
+        List<String> toCheckBinlogConfiguration = new ArrayList<>(Arrays.asList(
+                UserPermissionsAndBinlogConfiguration.TO_CHECK_BINLOG_CONFIGURATION
+        ));
+        
+        List<String> expectedBinlogConfigurationValueExpression = new ArrayList<>(Arrays.asList(
+                UserPermissionsAndBinlogConfiguration.EXPECTED_BINLOG_CONFIGURATION_VALUE_EXPRESSION
+        ));
+        
+        List<String> expectedBinlogConfigurationValue = new ArrayList<>(Arrays.asList(
+                UserPermissionsAndBinlogConfiguration.EXPECTED_BINLOG_CONFIGURATION_VALUE
+        ));
+        
+        // only for slave check
+        boolean isSlave = mysqlHelperService.isSlaveInstance(hostAndPort, usernameAndPassword);
+        if (isSlave) {
+            toCheckBinlogConfiguration.add(UserPermissionsAndBinlogConfiguration.VARIABLES_LOG_SLAVE_UPDATES);
+            expectedBinlogConfigurationValueExpression.add(UserPermissionsAndBinlogConfiguration.EXPRESSION_ON);
+            expectedBinlogConfigurationValue.add(UserPermissionsAndBinlogConfiguration.EXPRESSION_EXPECTED_VALUE_ON);
+        }
+        
+        checkBinlogConfiguration(
+                variables,
+                toCheckBinlogConfiguration,
+                expectedBinlogConfigurationValueExpression,
+                expectedBinlogConfigurationValue
+        );
     }
     
-    protected void checkBinlogConfiguration(final Map<String, String> variables) {
-        for (int i = 0; i < UserPermissionsAndBinlogConfiguration.TO_CHECK_BINLOG_CONFIGURATION.length; i++) {
-            String variableValue = variables.getOrDefault(UserPermissionsAndBinlogConfiguration.TO_CHECK_BINLOG_CONFIGURATION[i], SystemConstant.EMPTY_STRING);
+    protected void checkBinlogConfiguration(
+            final Map<String, String> variables,
+            final List<String> toCheckBinlogConfiguration,
+            final List<String> expectedBinlogConfigurationValueExpression,
+            final List<String> expectedBinlogConfigurationValue
+    ) {
+        for (int i = 0; i < toCheckBinlogConfiguration.size(); i++) {
+            String variableValue = variables.getOrDefault(toCheckBinlogConfiguration.get(i), SystemConstant.EMPTY_STRING);
             
             // 使用表达式引擎Aviator计算比较结果
-            executeExpression(UserPermissionsAndBinlogConfiguration.EXPECTED_BINLOG_CONFIGURATION_VALUE_EXPRESSION[i],
-                    UserPermissionsAndBinlogConfiguration.TO_CHECK_BINLOG_CONFIGURATION[i],
-                    UserPermissionsAndBinlogConfiguration.EXPECTED_BINLOG_CONFIGURATION_VALUE[i],
+            executeExpression(expectedBinlogConfigurationValueExpression.get(i),
+                    toCheckBinlogConfiguration.get(i),
+                    expectedBinlogConfigurationValue.get(i),
                     variableValue);
         }
+        
     }
     
     protected void executeExpression(final String expression, final String config, final String exceptedValue, final String result) {

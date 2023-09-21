@@ -7,6 +7,7 @@ import cn.xdf.acdc.devops.core.domain.dto.UserDetailDTO;
 import cn.xdf.acdc.devops.core.domain.entity.ProjectDO;
 import cn.xdf.acdc.devops.core.domain.entity.UserDO;
 import cn.xdf.acdc.devops.core.domain.entity.enumeration.MetadataSourceType;
+import cn.xdf.acdc.devops.core.domain.enumeration.QueryScope;
 import cn.xdf.acdc.devops.core.domain.query.ProjectQuery;
 import cn.xdf.acdc.devops.repository.ProjectRepository;
 import cn.xdf.acdc.devops.repository.UserRepository;
@@ -155,7 +156,7 @@ public class ProjectServiceImplTest {
         
         // execute
         ProjectQuery query = new ProjectQuery();
-        query.setQueryRange(ProjectQuery.RANGE.CURRENT_USER);
+        query.setScope(QueryScope.CURRENT_USER);
         query.setMemberDomainAccount(projectUser.getDomainAccount());
         List<ProjectDTO> queriedProjects = projectService.query(query);
         

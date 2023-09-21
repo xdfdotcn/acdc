@@ -47,7 +47,7 @@ public class ConnectorStateHandler {
     
     private static final String CONNECTOR_NAME_KEY = "name";
     
-    private static final long DELAY_STRATEGY_BASE_TIME_INTERVAL_IN_MILLISECOND = 30_000L;
+    private static final long DELAY_STRATEGY_BASE_TIME_INTERVAL_IN_MILLISECOND = 60_000L;
     
     private static final long DELAY_STRATEGY_EXPIRE_TIME_IN_MILLISECOND = DelayStrategy.MAX_TIME_INTERVAL * 2;
     
@@ -89,7 +89,7 @@ public class ConnectorStateHandler {
         this.connectClusterService = connectClusterService;
         this.meterRegistry = meterRegistry;
         
-        Cache<Long, DelayStrategy> connectorRetryDelayStrategyCache = CacheBuilder.newBuilder().expireAfterWrite(DELAY_STRATEGY_EXPIRE_TIME_IN_MILLISECOND, TimeUnit.MILLISECONDS).build();
+        Cache<Long, DelayStrategy> connectorRetryDelayStrategyCache = CacheBuilder.newBuilder().expireAfterAccess(DELAY_STRATEGY_EXPIRE_TIME_IN_MILLISECOND, TimeUnit.MILLISECONDS).build();
         connectorRetryDelayStrategyMap = connectorRetryDelayStrategyCache.asMap();
         
         initDbEventHandlers();

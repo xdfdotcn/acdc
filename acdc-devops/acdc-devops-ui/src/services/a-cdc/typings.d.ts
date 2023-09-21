@@ -209,6 +209,42 @@ declare namespace API {
     dataSystemType?: string;
   };
 
+  type StarRocksClusterConfigModel = {
+    resourceId?: number;
+    dataSystemType?: string;
+    showDrawer?: boolean;
+  };
+
+  type StarRocksClusterEditingModel = {
+    showDrawer?: boolean;
+    from?: string;
+    resourceId?: number;
+    projectId?: number;
+  };
+
+  type StarRocksClusterDetailModel = {
+    resourceId?: number;
+    name?: string;
+    description?: string;
+    username?: string;
+    dataSystemType?: string;
+  };
+
+  type StarRocksClusterMgtModel = {
+    projectId?: number;
+  };
+
+  type StarRocksInstanceModel = {
+    resourceId?: number;
+    dataSystemType?: string;
+  };
+
+  type StarRocksDatasetModel = {
+    clusterResourceId?: number;
+    databaseResourceId?: number;
+    dataSystemType?: string;
+  };
+
   type KafkaClusterMgtModel = {
     projectId?: number;
   };
@@ -582,6 +618,28 @@ declare namespace API {
     roleType?: string;
   };
 
+  // StarRocks
+  type StarRocks = {
+    id?: number;
+    name?: string;
+    creationTime?: string;
+    updateTime?: string;
+    description?: string;
+    desc?: string;
+    projectId?: number;
+    username?: string;
+    password?: string;
+  };
+
+  type StarRocksInstance = {
+    id?: number;
+    host?: string;
+    jdbcPort?: number;
+
+    httpPort?: number;
+    type?: string;
+  };
+
   type ConnectorDetail = {
     id?: number;
     connectionIdWithThisAsSinkConnector?: number;
@@ -675,11 +733,11 @@ declare namespace API {
     parentResourceId?: number;
     name?: string;
     resourceTypes?: string[];
-    projectId?: number;
+    projectIds?: number[];
     current?: number;
     pageSize?: number;
     deleted?: boolean;
-    from?: string;
+    scope?: string;
   };
 
   type DataSystemResourcePageList = {
@@ -698,6 +756,8 @@ declare namespace API {
   type DataCollectionDefinition = {
     lowerCaseNameToDataFieldDefinitions?: { [key: string]: DataFieldDefinition };
     uniqueIndexNameToFieldDefinitions?: { [key: string]: DataFieldDefinition[] };
+
+    extendProperties?: {[key: string]: string}
   };
 
   type ConnectionRequisitionDetail = {

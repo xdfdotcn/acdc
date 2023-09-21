@@ -1,6 +1,7 @@
 package cn.xdf.acdc.devops.core.domain.query;
 
 import cn.xdf.acdc.devops.core.domain.entity.enumeration.DataSystemResourceType;
+import cn.xdf.acdc.devops.core.domain.enumeration.QueryScope;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -23,7 +24,11 @@ public class DataSystemResourceQuery extends PagedQuery {
     
     private Map<String, String> resourceConfigurations;
     
-    private Long projectId;
+    private List<Long> projectIds;
+    
+    private String memberDomainAccount;
+    
+    private QueryScope scope;
     
     private Boolean deleted;
 }

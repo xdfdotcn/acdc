@@ -35,7 +35,7 @@ const EsDataSetList: React.FC = () => {
 			params={{
         parentResourceId: esDatasetModel.esClusterId,
 				name: queryDatasetName,
-        resourceTypes: [DataSystemResourceTypeConstant.ELASTIC_SEARCH_INDEX]
+        resourceTypes: [DataSystemResourceTypeConstant.ELASTICSEARCH_INDEX]
 			}}
 
 			request={pagedQueryDataSystemResource}

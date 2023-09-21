@@ -100,7 +100,7 @@ const RdbClusterMgt: React.FC = () => {
 				columns={columns}
 				// 分页设置,默认数据,不展示动态调整分页大小
 				params={{
-					projectId: rdbClusterMgtModel.projectId,
+					projectIds: [rdbClusterMgtModel.projectId],
           resourceTypes: [DataSystemResourceTypeConstant.MYSQL_CLUSTER, DataSystemResourceTypeConstant.TIDB_CLUSTER]
 				}}
 				request={pagedQueryDataSystemResource}

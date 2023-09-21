@@ -53,8 +53,8 @@ const EsClusterEditing: React.FC<{tableRef: ActionType}> = ({tableRef}) => {
           name: formObj?.name!,
           description: formObj?.description,
           projects: [project],
-          dataSystemType: DataSystemTypeConstant.ELASTIC_SEARCH,
-          resourceType: DataSystemResourceTypeConstant.ELASTIC_SEARCH_CLUSTER,
+          dataSystemType: DataSystemTypeConstant.ELASTICSEARCH,
+          resourceType: DataSystemResourceTypeConstant.ELASTICSEARCH_CLUSTER,
           dataSystemResourceConfigurations: {
             "node.servers": bootstrapConfiguration,
           }

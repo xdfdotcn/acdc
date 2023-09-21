@@ -47,7 +47,7 @@ public class EsDataSystemMetadataServiceImpl implements DataSystemMetadataServic
 
     @Override
     public DataSystemType getDataSystemType() {
-        return DataSystemType.ELASTIC_SEARCH;
+        return DataSystemType.ELASTICSEARCH;
     }
 
     @Override
@@ -63,7 +63,7 @@ public class EsDataSystemMetadataServiceImpl implements DataSystemMetadataServic
         String index = indexResource.getName();
 
         DataSystemResourceDetailDTO clusterResourceDetail = dataSystemResourceService
-                .getDetailParent(dataCollectionId, DataSystemResourceType.ELASTIC_SEARCH_CLUSTER);
+                .getDetailParent(dataCollectionId, DataSystemResourceType.ELASTICSEARCH_CLUSTER);
         ClusterConfig config = getClusterConfig(clusterResourceDetail);
 
         List<DataFieldDefinition> dataFieldDefinitions = helperService
@@ -125,13 +125,13 @@ public class EsDataSystemMetadataServiceImpl implements DataSystemMetadataServic
 
         List<DataSystemResourceDetailDTO> actualDatabases = generateResourceDetails(
                 actualIndexNames,
-                DataSystemResourceType.ELASTIC_SEARCH_INDEX,
+                DataSystemResourceType.ELASTICSEARCH_INDEX,
                 clusterResourceDetail
         );
 
         dataSystemResourceService.mergeAllChildrenByName(
                 actualDatabases,
-                DataSystemResourceType.ELASTIC_SEARCH_INDEX,
+                DataSystemResourceType.ELASTICSEARCH_INDEX,
                 clusterResourceDetail.getId()
         );
     }
@@ -145,7 +145,7 @@ public class EsDataSystemMetadataServiceImpl implements DataSystemMetadataServic
                 .map(each -> {
                     DataSystemResourceDetailDTO resource = new DataSystemResourceDetailDTO()
                             .setName(each)
-                            .setDataSystemType(DataSystemType.ELASTIC_SEARCH)
+                            .setDataSystemType(DataSystemType.ELASTICSEARCH)
                             .setResourceType(dataSystemResourceType)
                             .setParentResource(
                                     new DataSystemResourceDetailDTO(parentResourceDetail.getId())

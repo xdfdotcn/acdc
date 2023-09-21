@@ -275,10 +275,18 @@ public class TidbValueConverters extends JdbcValueConverters {
     protected Object convertDecimalWithScaleAdjustedIfNeeded(final Column column, final Field fieldDefn, final Object data) {
         Object decimal = toBigDecimal(column, fieldDefn, data);
         if (decimal instanceof BigDecimal) {
-            decimal = withScaleAdjustedIfNeeded(column, (BigDecimal) decimal);
+            decimal = withScaleAdjustedIfNotEqual(column, (BigDecimal) decimal);
             return SpecialValueDecimal.fromLogical(new SpecialValueDecimal((BigDecimal) decimal), decimalMode, column.name());
         }
         return decimal;
+    }
+    
+    private BigDecimal withScaleAdjustedIfNotEqual(Column column, BigDecimal data) {
+        if (column.scale().isPresent() && column.scale().get() != data.scale()) {
+            data = data.setScale(column.scale().get());
+        }
+        
+        return data;
     }
     
     /**

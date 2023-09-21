@@ -14,7 +14,7 @@
     name: 'connector-monitoring',
     icon: 'smile',
     access: 'canAdmin',
-    // 文件夹小写也是没有毛病的
+    // TODO 组建
     component: './monitoring/Connectors',
   },
 
@@ -34,18 +34,6 @@
   /**
   =================================
   链路申请
-  =================================
-  */
-  {
-    path: '/connection/connection-apply',
-    name: 'connection-apply',
-    icon: 'smile',
-    component: './connection/ConnectionApply',
-  },
-
-  /**
-  =================================
-  链路申请beta
   =================================
   */
   {

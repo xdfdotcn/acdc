@@ -17,6 +17,7 @@ COPY target/connector-package/acdc-connect-connector-sink-jdbc /kafka/connect/ac
 COPY target/connector-package/acdc-connect-connector-source-tidb /kafka/connect/acdc-connect-connector-source-tidb
 COPY target/connector-package/acdc-connect-connector-sink-hdfs /kafka/connect/acdc-connect-connector-sink-hdfs
 COPY target/connector-package/acdc-connect-connector-sink-kafka /kafka/connect/acdc-connect-connector-sink-kafka
+COPY target/connector-package/acdc-connect-connector-sink-starrocks /kafka/connect/acdc-connect-connector-sink-starrocks
 
 COPY src/main/resources/plugins/es-sink-connector /kafka/connect/acdc-connect-connector-sink-es
 

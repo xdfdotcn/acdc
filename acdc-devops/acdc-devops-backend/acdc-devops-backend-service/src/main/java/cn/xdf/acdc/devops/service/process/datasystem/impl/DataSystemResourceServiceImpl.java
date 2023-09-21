@@ -108,6 +108,7 @@ public class DataSystemResourceServiceImpl implements DataSystemResourceService 
         
         Map<String, String> configurations = new HashMap<>();
         configurations.put(configurationName, configurationValue);
+        query.setDeleted(false);
         query.setResourceConfigurations(configurations);
         
         return dataSystemResourceRepository.query(query)
@@ -311,7 +312,7 @@ public class DataSystemResourceServiceImpl implements DataSystemResourceService 
             dataSystemServiceManager.getDataSystemMetadataService(dataSystemType).checkDataSystem(dataSystemResourceDetail);
         } catch (ServerErrorException e) {
             log.warn("error when check data system", e);
-            throw new ClientErrorException(i18n.msg(Check.WRONG_ENDPOINT_OR_PASSWORD));
+            throw new ClientErrorException(i18n.msg(Check.FAILURE, e.getMessage()));
         }
     }
     

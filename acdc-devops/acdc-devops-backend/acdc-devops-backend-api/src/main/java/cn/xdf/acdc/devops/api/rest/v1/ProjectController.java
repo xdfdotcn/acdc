@@ -4,10 +4,9 @@ import cn.xdf.acdc.devops.api.util.ApiSecurityUtils;
 import cn.xdf.acdc.devops.core.domain.dto.LoginUserDTO;
 import cn.xdf.acdc.devops.core.domain.dto.PageDTO;
 import cn.xdf.acdc.devops.core.domain.dto.ProjectDTO;
+import cn.xdf.acdc.devops.core.domain.enumeration.QueryScope;
 import cn.xdf.acdc.devops.core.domain.query.ProjectQuery;
-import cn.xdf.acdc.devops.core.domain.query.ProjectQuery.RANGE;
 import cn.xdf.acdc.devops.service.process.project.ProjectService;
-import cn.xdf.acdc.devops.service.process.user.UserService;
 import cn.xdf.acdc.devops.service.util.UserUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -28,9 +27,6 @@ public class ProjectController {
     @Autowired
     private ProjectService projectService;
 
-    @Autowired
-    private UserService userService;
-
     /**
      * 查询项目列表.
      *
@@ -41,7 +37,7 @@ public class ProjectController {
     public PageDTO<ProjectDTO> pagedQuery(final ProjectQuery projectQuery) {
         LoginUserDTO currentUser = ApiSecurityUtils.getCurrentUserDetails();
         boolean isAdmin = UserUtil.isAdmin(currentUser);
-        if (projectQuery.getQueryRange() == RANGE.CURRENT_USER && !isAdmin) {
+        if (projectQuery.getScope() == QueryScope.CURRENT_USER && !isAdmin) {
             projectQuery.setMemberDomainAccount(currentUser.getDomainAccount());
         }
         Page<ProjectDTO> page = projectService.pagedQuery(projectQuery);

@@ -36,6 +36,7 @@
                                 <argument>${basedir}/../acdc-connect-connector/acdc-connect-connector-source-tidb</argument>
                                 <argument>${basedir}/../acdc-connect-connector/acdc-connect-connector-sink-hdfs</argument>
                                 <argument>${basedir}/../acdc-connect-connector/acdc-connect-connector-sink-kafka</argument>
+                                <argument>${basedir}/../acdc-connect-connector/acdc-connect-connector-sink-starrocks</argument>
                                 <argument>${basedir}/../acdc-connect-plugins/acdc-connect-plugins-converter-schemaless-json</argument>
                                 <argument>${basedir}/../acdc-connect-transforms</argument>
                             </arguments>

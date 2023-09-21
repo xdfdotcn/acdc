@@ -83,8 +83,8 @@ const EsClusterMgt: React.FC = () => {
 				columns={columns}
 				// 分页设置,默认数据,不展示动态调整分页大小
 				params={{
-					projectId: esClusterMgtModel.projectId,
-          resourceTypes: [DataSystemResourceTypeConstant.ELASTIC_SEARCH_CLUSTER]
+					projectIds: [esClusterMgtModel.projectId!],
+          resourceTypes: [DataSystemResourceTypeConstant.ELASTICSEARCH_CLUSTER]
 				}}
 				request={pagedQueryDataSystemResource}
         actionRef={ref}

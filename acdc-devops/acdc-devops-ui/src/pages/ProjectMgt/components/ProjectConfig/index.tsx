@@ -8,6 +8,7 @@ import ProjectDetail from '../ProjectDetail';
 import ProjectUser from '../ProjectUser';
 import RdbClusterMgt from '../RdbClusterMgt';
 import EsClusterMgt from '../EsClusterMgt';
+import StarRocksClusterMgt from '../StarRocksClusterMgt';
 const ProjectConfig: React.FC = () => {
 	const [tab, setTab] = useState('tab0');
 	// 项目详情数据流
@@ -70,7 +71,9 @@ const ProjectConfig: React.FC = () => {
         <ProCard.TabPane key="tab5" tab="ES">
           <EsClusterMgt />
         </ProCard.TabPane>
-
+        <ProCard.TabPane key="tab6" tab="STARROCKS">
+          <StarRocksClusterMgt />
+        </ProCard.TabPane>
 			</ProCard>
 			</Drawer>
 	)
