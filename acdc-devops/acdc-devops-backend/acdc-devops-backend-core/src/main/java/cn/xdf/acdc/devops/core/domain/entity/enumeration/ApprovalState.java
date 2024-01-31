@@ -1,5 +1,9 @@
 package cn.xdf.acdc.devops.core.domain.entity.enumeration;
 
+import com.google.common.collect.Sets;
+
+import java.util.Set;
+
 // 0: 待审批 1: 待数据源负责人审批 2: 数据源负责人审批拒绝 3: 待DBA负责人审批 4: DBA 负责人审批拒绝 5: 审批通过
 public enum ApprovalState {
     
@@ -19,5 +23,7 @@ public enum ApprovalState {
     DBA_REFUSED,
     
     // 5: 审批通过
-    APPROVED
+    APPROVED;
+    
+    public static final Set<ApprovalState> REFUSED_STATES = Sets.newHashSet(SOURCE_OWNER_REFUSED, DBA_REFUSED);
 }

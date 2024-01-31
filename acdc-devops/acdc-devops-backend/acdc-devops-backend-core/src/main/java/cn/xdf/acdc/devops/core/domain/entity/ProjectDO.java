@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -77,13 +78,21 @@ public class ProjectDO extends SoftDeletableDO implements Serializable {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "sinkProject")
     private Set<ConnectionDO> connectionsWithThisAsSinkProject = new HashSet<>();
     
+    /**
+     * Related data system resources which the project has permission.
+     */
+    @OneToMany(mappedBy = "project", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private Set<DataSystemResourcePermissionDO> dataSystemResourcePermissions = new HashSet<>();
+    
+    @OneToMany(mappedBy = "project", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private Set<WideTableDataSystemResourceProjectMappingDO> wideTableDataSystemResourceProjectMappings;
+    
     public ProjectDO(final Long id) {
         this.id = id;
     }
     
     // functions for jpa union features
     // CHECKSTYLE:OFF
-    
     public ProjectDO addUser(UserDO user) {
         this.users.add(user);
         return this;
@@ -96,7 +105,6 @@ public class ProjectDO extends SoftDeletableDO implements Serializable {
     
     // functions for jpa union features
     // CHECKSTYLE:ON
-    
     @Override
     public boolean equals(final Object o) {
         if (this == o) {

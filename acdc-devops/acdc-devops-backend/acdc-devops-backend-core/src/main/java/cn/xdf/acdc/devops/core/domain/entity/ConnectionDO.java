@@ -21,6 +21,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinColumns;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
@@ -38,6 +39,8 @@ import java.util.Set;
 @NoArgsConstructor
 @Accessors(chain = true)
 public class ConnectionDO extends SoftDeletableDO implements Serializable {
+    
+    public static final int DEFAULT_CONNECTION_VERSION = 1;
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -103,11 +106,13 @@ public class ConnectionDO extends SoftDeletableDO implements Serializable {
     @OneToMany(mappedBy = "connection", fetch = FetchType.LAZY)
     private Set<ConnectionRequisitionConnectionMappingDO> connectionRequisitionConnectionMappings = new HashSet<>();
     
+    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "connections")
+    private Set<WideTableDO> wideTables;
+    
     public ConnectionDO(final Long id) {
         this.id = id;
     }
     
-    // TODO
     @Override
     public boolean equals(final Object o) {
         if (this == o) {

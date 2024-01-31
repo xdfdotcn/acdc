@@ -8,6 +8,17 @@ import java.util.Set;
 
 public class MysqlDataSystemConstant {
     
+    public static class Keyword {
+        
+        public static final String UNSIGNED_SYMBAL = "unsigned";
+        
+        public static final String UNSIGNED_ZEROFILL_SYMBAL = "unsigned zerofill";
+        
+        public static final String ENUM_TYPE = "enum";
+        
+        public static final String SET_TYPE = "set";
+    }
+    
     public static class Metadata {
         
         static class UserPermissionsAndBinlogConfiguration {

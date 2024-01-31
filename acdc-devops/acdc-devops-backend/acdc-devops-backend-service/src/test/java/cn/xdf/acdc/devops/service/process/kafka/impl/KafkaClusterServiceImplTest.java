@@ -26,7 +26,6 @@ import java.util.Map;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @Transactional
-
 public class KafkaClusterServiceImplTest {
     
     private static final String KAFKA_SASL_JAAS_CONFIG = "org.apache.kafka.common.security.scram.ScramLoginModule required username=\"test\" password=\"123\";";

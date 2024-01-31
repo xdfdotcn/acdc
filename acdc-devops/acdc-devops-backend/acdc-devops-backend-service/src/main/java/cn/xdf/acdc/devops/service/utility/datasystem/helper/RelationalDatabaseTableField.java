@@ -26,7 +26,17 @@ public class RelationalDatabaseTableField {
     
     private String type;
     
+    private String defaultValue;
+    
+    private boolean isOptional;
+    
     private Set<String> uniqueIndexNames = new HashSet<>();
+    
+    public RelationalDatabaseTableField(final String name, final String type, final Set<String> uniqueIndexNames) {
+        this.name = name;
+        this.type = type;
+        this.uniqueIndexNames = uniqueIndexNames;
+    }
     
     @Override
     public boolean equals(final Object obj) {

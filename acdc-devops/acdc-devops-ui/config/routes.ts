@@ -1,4 +1,4 @@
-﻿export default [
+export default [
   {
     path: '/',
     redirect: '/welcome',
@@ -43,7 +43,6 @@
     component: './ConnectionRequisition',
   },
 
-
   /**
   =================================
   链路管理
@@ -56,6 +55,30 @@
     component: './connection/ConnectionMgt',
   },
 
+  /**
+   =================================
+   宽表申请
+   =================================
+   */
+  {
+    path: '/wide-table/requisition',
+    name: 'wide-table.requisition',
+    icon: 'smile',
+    access: 'canAdmin',
+    component: './WideTableRequisition',
+  },
+  /**
+   =================================
+   宽表管理
+   =================================
+   */
+  {
+    path: '/wide-table/mgt',
+    name: 'wide-table.mgt',
+    icon: 'smile',
+    access: 'canAdmin',
+    component: './WideTable/WideTableMgt',
+  },
 
   /**
   =================================
@@ -77,7 +100,6 @@
     component: './user/Login',
   },
 
-
   /**
   =================================
   项目管理
@@ -91,7 +113,6 @@
     component: './ProjectMgt',
   },
 
-
   /**
   =================================
   快速开始
@@ -103,7 +124,6 @@
     icon: 'smile',
     component: './doc/Quickstart',
   },
-
 
   /**
   =================================
@@ -126,4 +146,3 @@
     component: './404',
   },
 ];
-

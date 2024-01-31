@@ -273,4 +273,64 @@ public class StarRocksDataSystemSinkConnectorServiceImplTest {
     public void testGetDataSystemTypeShouldReturnStarRocks() {
         Assertions.assertThat(dataSystemSinkConnectorService.getDataSystemType()).isEqualTo(DataSystemType.STARROCKS);
     }
+    
+    @Test
+    public void testGenerateConnectorCustomConfigurationWithInnerSpecificationShouldAsExpected() {
+        // mock resource
+        Long connectionId = 1L;
+        ConnectionDetailDTO connectionDetailDTO = fakeConnectionDetailDTO()
+                .setSpecificConfiguration("{\"INNER_CONNECTION_TYPE\":\"STARROCKS_SOURCE\"}");
+        List<ConnectionColumnConfigurationDTO> connectionColumnConfigurations = connectionDetailDTO.getConnectionColumnConfigurations();
+        connectionColumnConfigurations.add(
+                new ConnectionColumnConfigurationDTO()
+                        .setSourceColumnName("__deleted")
+                        .setSinkColumnName("__is_deleted")
+        );
+        connectionColumnConfigurations.add(
+                new ConnectionColumnConfigurationDTO()
+                        .setSourceColumnName("__kafka_record_offset")
+                        .setSinkColumnName("__event_offset")
+        );
+        Mockito.when(connectionService.getDetailById(ArgumentMatchers.eq(connectionId)))
+                .thenReturn(connectionDetailDTO);
+        Mockito.when(dataSystemResourceService.getById(ArgumentMatchers.eq(connectionDetailDTO.getSourceDataCollectionId())))
+                .thenReturn(fakeSourceDataCollection());
+        Mockito.when(dataSystemResourceService.getById(ArgumentMatchers.eq(connectionDetailDTO.getSinkDataCollectionId())))
+                .thenReturn(fakeSinkTable());
+        Mockito.when(dataSystemResourceService.getDetailParent(
+                        ArgumentMatchers.eq(connectionDetailDTO.getSinkDataCollectionId()), ArgumentMatchers.eq(DataSystemResourceType.STARROCKS_CLUSTER)))
+                .thenReturn(fakeSinkClusterDetail());
+        Mockito.when(dataSystemResourceService.getParent(
+                        ArgumentMatchers.eq(connectionDetailDTO.getSinkDataCollectionId()), ArgumentMatchers.eq(DataSystemResourceType.STARROCKS_DATABASE)))
+                .thenReturn(fakeSinkDatabase());
+        Mockito.when(dataSystemResourceService.getDetailById(ArgumentMatchers.eq(connectionDetailDTO.getSinkInstanceId())))
+                .thenReturn(fakeSinkInstance());
+        Mockito.when(dataSystemMetadataService.getDataCollectionDefinition(ArgumentMatchers.eq(connectionDetailDTO.getSinkDataCollectionId())))
+                .thenReturn(fakePrimaryKeyDataCollectionDefinition());
+        Mockito.when(dataSystemResourceService.getDetailChildren(ArgumentMatchers.eq(111L), ArgumentMatchers.eq(DataSystemResourceType.STARROCKS_FRONTEND)))
+                .thenReturn(fakeFrontEnds());
+        
+        Map<String, String> customConfig = dataSystemSinkConnectorService.generateConnectorCustomConfiguration(connectionId);
+        Assertions.assertThat(customConfig.get("topics")).isEqualTo("source-topic-name");
+        Assertions.assertThat(customConfig.get("database.name")).isEqualTo("sink-database");
+        Assertions.assertThat(customConfig.get("table.name")).isEqualTo("sink-table");
+        Assertions.assertThat(customConfig.get("load.url")).isEqualTo("sink-host:2222");
+        Assertions.assertThat(customConfig.get("username")).isEqualTo("userName_1");
+        Assertions.assertThat(customConfig.get("password")).isEqualTo("password_1");
+        Assertions.assertThat(customConfig.get("transforms")).isEqualTo("dateToString,unwrap,valueMapperSource,replaceField,insertField");
+        Assertions.assertThat(customConfig.get("transforms.dateToString.type")).isEqualTo("cn.xdf.acdc.connect.transforms.format.date.DateToString");
+        Assertions.assertThat(customConfig.get("transforms.dateToString.zoned.timestamp.formatter")).isEqualTo("local");
+        Assertions.assertThat(customConfig.get("transforms.unwrap.type")).isEqualTo("io.debezium.transforms.ExtractNewRecordState");
+        Assertions.assertThat(customConfig.get("transforms.unwrap.delete.handling.mode")).isEqualTo("rewrite");
+        Assertions.assertThat(customConfig.get("transforms.unwrap.add.fields")).isEqualTo("op");
+        Assertions.assertThat(customConfig.get("transforms.valueMapperSource.type")).isEqualTo("cn.xdf.acdc.connect.transforms.valuemapper.StringValueMapper");
+        Assertions.assertThat(customConfig.get("transforms.valueMapperSource.mappings")).isEqualTo("c:0,u:0,d:0");
+        Assertions.assertThat(customConfig.get("transforms.valueMapperSource.field")).isEqualTo("__op");
+        Assertions.assertThat(customConfig.get("transforms.replaceField.type")).isEqualTo("org.apache.kafka.connect.transforms.ReplaceField$Value");
+        Assertions.assertThat(customConfig.get("transforms.replaceField.whitelist")).isEqualTo("code,__deleted,__op");
+        Assertions.assertThat(customConfig.get("transforms.replaceField.renames")).isEqualTo("code:rename_code,__deleted:__is_deleted,__kafka_record_offset:__event_offset");
+        Assertions.assertThat(customConfig.get("transforms.insertField.type")).isEqualTo("org.apache.kafka.connect.transforms.InsertField$Value");
+        Assertions.assertThat(customConfig.get("transforms.insertField.offset.field")).isEqualTo("__event_offset");
+        Assertions.assertThat(customConfig.get("sink.columns")).isEqualTo("rename_code,__is_deleted,__event_offset,__op");
+    }
 }

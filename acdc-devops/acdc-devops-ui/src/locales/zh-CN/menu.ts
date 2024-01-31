@@ -62,5 +62,7 @@ export default {
   'menu.connector-monitoring': 'Connectors 监控',
   'menu.project-mgt': '项目管理',
   'menu.doc.quick-start': '快速开始',
+  'menu.wide-table.mgt': '宽表管理',
+  'menu.wide-table.requisition': '宽表申请',
 
 };

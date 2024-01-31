@@ -9,7 +9,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
-public class ConnectorInformer extends AbstractInformer<ConnectorDTO> {
+public class ConnectorInformer extends AbstractFixedRateRunnableInformer<ConnectorDTO> {
     
     private final ConnectorService connectorService;
     

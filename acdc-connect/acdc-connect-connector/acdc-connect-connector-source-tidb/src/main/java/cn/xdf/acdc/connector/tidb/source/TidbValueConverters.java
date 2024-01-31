@@ -17,7 +17,6 @@ import io.debezium.time.NanoTimestamp;
 import io.debezium.time.Time;
 import io.debezium.time.Timestamp;
 import io.debezium.time.Year;
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.kafka.connect.data.Field;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.data.SchemaBuilder;
@@ -108,8 +107,6 @@ public class TidbValueConverters extends JdbcValueConverters {
                 return org.apache.kafka.connect.data.Timestamp.builder();
             case Types.YEAR:
                 return Year.builder();
-            // StringEscapeUtils.unescapeJava(s);
-    
             case Types.VARCHAR_OR_VARBINARY_V1:
             case Types.VARCHAR_OR_VARBINARY_V2:
             case Types.CHAR_OR_BINARY:
@@ -183,7 +180,7 @@ public class TidbValueConverters extends JdbcValueConverters {
             case Types.VARCHAR_OR_VARBINARY_V1:
             case Types.VARCHAR_OR_VARBINARY_V2:
             case Types.CHAR_OR_BINARY:
-                return data -> convertString(column, fieldDefn, StringEscapeUtils.unescapeJava((String) data));
+                return data -> convertString(column, fieldDefn, data);
             // Base64 decode
             case Types.TINYTEXT_OR_TINYBLOB:
             case Types.MEDIUMTEXT_OR_MEDIUMBLOB:

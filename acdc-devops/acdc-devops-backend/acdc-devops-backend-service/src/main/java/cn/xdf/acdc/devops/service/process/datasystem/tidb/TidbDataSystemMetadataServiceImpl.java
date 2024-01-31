@@ -4,7 +4,7 @@ import cn.xdf.acdc.devops.core.domain.dto.DataSystemResourceDetailDTO;
 import cn.xdf.acdc.devops.core.domain.entity.enumeration.DataSystemResourceType;
 import cn.xdf.acdc.devops.core.domain.entity.enumeration.DataSystemType;
 import cn.xdf.acdc.devops.service.process.datasystem.DataSystemResourceService;
-import cn.xdf.acdc.devops.service.process.datasystem.RelationalDataSystemMetadataService;
+import cn.xdf.acdc.devops.service.process.datasystem.relational.RelationalDataSystemMetadataService;
 import cn.xdf.acdc.devops.service.process.datasystem.definition.DataSystemResourceDefinition;
 import cn.xdf.acdc.devops.service.process.datasystem.tidb.TidbDataSystemResourceConfigurationDefinition.Server;
 import cn.xdf.acdc.devops.service.utility.datasystem.helper.HostAndPort;

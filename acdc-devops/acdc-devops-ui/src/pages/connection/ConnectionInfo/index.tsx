@@ -41,7 +41,7 @@ const ConnectionInfo: React.FC<{connectionDetail: API.ConnectionDetail}> = ({con
 		{title: '源端审批结果', width: "15%", dataIndex: 'sourceApproveResult', },
 		{title: 'DBA审批人', width: "15%", dataIndex: 'dbaApproverEmail', },
 		{title: 'DBA审批结果', width: "15%", dataIndex: 'dbaApproveResult', },
-		{title: '申请时间', width: "15%", dataIndex: 'creationTimeFormat', },
+		{title: '申请时间', width: "15%", dataIndex: 'creationTime', },
 	];
 
 	return (

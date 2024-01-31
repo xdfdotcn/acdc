@@ -55,18 +55,20 @@ public class MysqlHelperService {
     
     protected static final String SQL_SHOW_SLAVE_STATUS = "SHOW SLAVE STATUS";
     
-    protected static final String SQL_DESC_TABLE = new StringBuilder()
-            .append("SELECT ")
-            .append("info_schema_columns.column_name,")
-            .append("info_schema_columns.column_type,")
-            .append("info_schema_statistics.index_name")
-            .append(" FROM ")
-            .append("(SELECT  column_name,column_type FROM information_schema.columns WHERE table_schema='%s' AND table_name='%s') info_schema_columns")
-            .append(" LEFT JOIN ")
-            .append("(SELECT  index_name,column_name FROM information_schema.statistics WHERE non_unique=0 AND table_schema='%s' AND table_name='%s') info_schema_statistics")
-            .append(" ON ")
-            .append("info_schema_columns.column_name = info_schema_statistics.column_name")
-            .toString();
+    protected static final String COLUMN_IS_NULLABLE = "YES";
+    
+    protected static final String SQL_DESC_TABLE = "SELECT "
+            + "info_schema_columns.column_name,"
+            + "info_schema_columns.column_type,"
+            + "info_schema_columns.column_default,"
+            + "info_schema_columns.is_nullable,"
+            + "info_schema_statistics.index_name"
+            + " FROM "
+            + "(SELECT  column_name,column_type,column_default,is_nullable FROM information_schema.columns WHERE table_schema='%s' AND table_name='%s') info_schema_columns"
+            + " LEFT JOIN "
+            + "(SELECT  index_name,column_name FROM information_schema.statistics WHERE non_unique=0 AND table_schema='%s' AND table_name='%s') info_schema_statistics"
+            + " ON "
+            + "info_schema_columns.column_name = info_schema_statistics.column_name";
     
     protected static final String CONNECTION_PROPERTY = "useSSL=false";
     
@@ -211,6 +213,33 @@ public class MysqlHelperService {
         } finally {
             close(conn, stmt, rs);
         }
+    }
+    
+    protected boolean execute(
+            final Connection connection,
+            final String sql) {
+        PreparedStatement stmt = null;
+        try {
+            stmt = connection.prepareStatement(sql);
+            return stmt.execute();
+        } catch (SQLException e) {
+            throw new ServerErrorException(e);
+        } finally {
+            close(connection, stmt, null);
+        }
+    }
+    
+    /**
+     * Execute the given sql.
+     *
+     * @param hostAndPort host and port
+     * @param usernameAndPassword username and password
+     * @param sql sql
+     * @return if the database is affected by the execution
+     */
+    public boolean execute(final HostAndPort hostAndPort, final UsernameAndPassword usernameAndPassword, final String sql) {
+        Connection conn = createConnection(generateMysqlUrl(hostAndPort), usernameAndPassword);
+        return execute(conn, sql);
     }
     
     /**
@@ -449,11 +478,16 @@ public class MysqlHelperService {
                 while (rs.next()) {
                     String columnName = rs.getString(1);
                     String columnType = rs.getString(2);
-                    String columnUniqueIndexName = rs.getString(3);
+                    String columnDefault = rs.getString(3);
+                    String columnIsNullable = rs.getString(4);
+                    String columnUniqueIndexName = rs.getString(5);
                     
                     nameToFields.computeIfAbsent(columnName, key -> new RelationalDatabaseTableField()
                             .setName(columnName)
-                            .setType(columnType));
+                            .setType(columnType)
+                            .setDefaultValue(columnDefault)
+                            .setOptional(Objects.equals(columnIsNullable, COLUMN_IS_NULLABLE))
+                    );
                     
                     if (!Strings.isNullOrEmpty(columnUniqueIndexName)) {
                         nameToFields.get(columnName).getUniqueIndexNames().add(columnUniqueIndexName);

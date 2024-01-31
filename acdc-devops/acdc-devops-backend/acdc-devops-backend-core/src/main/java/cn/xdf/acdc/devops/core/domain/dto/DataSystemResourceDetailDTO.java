@@ -44,7 +44,7 @@ public class DataSystemResourceDetailDTO {
     
     private Date creationTime;
     
-    private Date updateTIme;
+    private Date updateTime;
     
     private Map<String, DataSystemResourceConfigurationDTO> dataSystemResourceConfigurations = new HashMap<>();
     
@@ -68,7 +68,7 @@ public class DataSystemResourceDetailDTO {
         
         this.deleted = dataSystemResource.getDeleted();
         this.creationTime = dataSystemResource.getCreationTime();
-        this.updateTIme = dataSystemResource.getUpdateTime();
+        this.updateTime = dataSystemResource.getUpdateTime();
         
         dataSystemResource.getDataSystemResourceConfigurations().forEach(each ->
                 dataSystemResourceConfigurations.put(each.getName(), new DataSystemResourceConfigurationDTO(each)));
@@ -122,7 +122,7 @@ public class DataSystemResourceDetailDTO {
         dataSystemResource.setDataSystemResourceConfigurations(dataSystemResourceConfigurations);
         dataSystemResource.setDeleted(deleted);
         dataSystemResource.setCreationTime(this.creationTime);
-        dataSystemResource.setUpdateTime(this.updateTIme);
+        dataSystemResource.setUpdateTime(this.updateTime);
         
         // for cascade save
         dataSystemResourceConfigurations.forEach(each -> each.setDataSystemResource(dataSystemResource));

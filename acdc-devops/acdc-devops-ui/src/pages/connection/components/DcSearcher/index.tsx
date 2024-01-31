@@ -19,7 +19,7 @@ const S_SCROLL = {
 };
 
 // 搜索翻页加载页数显示
-const S_PAGINATION_LIMIT: number = 3;
+const S_PAGINATION_LIMIT: number = 20;
 
 // 搜索行记录 row key 前缀
 const R_ROW_KEY_PREFIX: string = 'r_';
@@ -74,7 +74,7 @@ const B_MULTI_TITLE_PLACEHOLDER: string = '...';
 const B_ROOT_ROUTE_BNAME_PREFIX: string = 'PROJECT';
 
 // 面包屑,route 名称分割符
-const B_BNAME_SEPARATOR: string = '\t';
+export const B_BNAME_SEPARATOR: string = '\t';
 
 // 资源类型映射
 const RESOURCE_TYPE_MAPPING: Map<string, string[]> = new Map([
@@ -382,6 +382,9 @@ export type SearchRecord = {
 
   // 是否启用复选框
   enableCheck: boolean;
+
+  // 扩展字段
+  extras?: any;
 };
 
 /**

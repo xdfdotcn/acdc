@@ -1,0 +1,2 @@
+id;parent_resource_id;name;data_system_type;resource_type;description;is_deleted;creation_time;update_time
+-1;null;ACDC_INNER_STARROCKS_CLUSTER;7;23;null;0;2023-10-18 17:00:00;2023-10-18 17:00:00

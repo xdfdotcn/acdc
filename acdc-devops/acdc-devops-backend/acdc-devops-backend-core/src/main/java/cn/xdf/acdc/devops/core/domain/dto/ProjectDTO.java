@@ -15,36 +15,36 @@ import java.util.Objects;
 @NoArgsConstructor
 @Accessors(chain = true)
 public class ProjectDTO {
-
+    
     private Long id;
-
+    
     private String name;
-
+    
     private String description;
-
+    
     private Long ownerId;
-
+    
     private String ownerEmail;
-
+    
     private String ownerName;
-
+    
     private MetadataSourceType source;
-
+    
     private Long originalId;
-
+    
     private Date creationTime;
-
+    
     private Date updateTime;
-
+    
     public ProjectDTO(final ProjectDO project) {
         this.id = project.getId();
         this.name = project.getName();
         this.description = project.getDescription();
-
+        
         if (Objects.nonNull(project.getOwner())) {
             this.ownerId = project.getOwner().getId();
         }
-
+        
         this.ownerEmail = Objects.nonNull(project.getOwner()) ? project.getOwner().getEmail() : SystemConstant.EMPTY_STRING;
         this.ownerName = Objects.nonNull(project.getOwner()) ? project.getOwner().getName() : SystemConstant.EMPTY_STRING;
         this.source = project.getSource();
@@ -52,11 +52,11 @@ public class ProjectDTO {
         this.creationTime = project.getCreationTime();
         this.updateTime = project.getUpdateTime();
     }
-
+    
     public ProjectDTO(final Long id) {
         this.id = id;
     }
-
+    
     /**
      * Convert to ProjectDO.
      *
@@ -66,7 +66,9 @@ public class ProjectDTO {
         ProjectDO projectDO = new ProjectDO();
         projectDO.setName(this.getName());
         projectDO.setId(this.getId());
-        projectDO.setOwner(new UserDO(this.ownerId));
+        if (this.ownerId != null) {
+            projectDO.setOwner(new UserDO(this.ownerId));
+        }
         projectDO.setDescription(this.getDescription());
         projectDO.setSource(this.getSource());
         projectDO.setOriginalId(this.getOriginalId());

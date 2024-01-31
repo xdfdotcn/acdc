@@ -44,5 +44,7 @@ public class ConnectionQuery extends PagedQuery {
     
     private String sourceDataCollectionName;
     
+    private String specificConfiguration;
+    
     private Boolean deleted;
 }

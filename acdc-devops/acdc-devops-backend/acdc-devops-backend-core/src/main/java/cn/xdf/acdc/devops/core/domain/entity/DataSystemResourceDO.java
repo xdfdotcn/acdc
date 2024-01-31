@@ -91,6 +91,21 @@ public class DataSystemResourceDO extends SoftDeletableDO {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "sinkInstance")
     private Set<ConnectionDO> connectionsWithThisAsSinkInstance = new HashSet<>();
     
+    /**
+     * Related projects which have the data system resource permission.
+     */
+    @OneToMany(mappedBy = "dataSystemResource", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private Set<DataSystemResourcePermissionDO> dataSystemResourcePermissions = new HashSet<>();
+    
+    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "dataSystemResources")
+    private Set<DataSystemResourcePermissionRequisitionDO> dataSystemResourcePermissionRequisitions;
+    
+    @OneToMany(mappedBy = "dataSystemResource", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private Set<WideTableDataSystemResourceProjectMappingDO> wideTableDataSystemResourceProjectMappings;
+    
+    @OneToOne(mappedBy = "dataCollection", fetch = FetchType.LAZY)
+    private WideTableDO wideTable;
+    
     public DataSystemResourceDO(final Long id) {
         this.id = id;
     }

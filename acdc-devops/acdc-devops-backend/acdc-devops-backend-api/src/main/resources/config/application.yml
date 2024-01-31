@@ -101,3 +101,9 @@ acdc:
         - /api/v1/system/**
         - /actuator/**
         - /api/v1/ui/config
+  inner:
+    user-domain-account: ACDC_SYS
+    project-id: -1
+  wide-table:
+    starrocks-cluster-id: -1
+    database-name: acdc_wide_table

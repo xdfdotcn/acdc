@@ -1,25 +1,42 @@
 package cn.xdf.acdc.devops.service.utility.datasystem.helper;
 
+import cn.xdf.acdc.devops.core.constant.SystemConstant.Symbol;
 import cn.xdf.acdc.devops.service.constant.connector.CommonConstant;
 import cn.xdf.acdc.devops.service.error.exceptions.ServerErrorException;
+import cn.xdf.acdc.devops.service.process.datasystem.definition.DataFieldDefinition;
+import cn.xdf.acdc.devops.service.process.datasystem.mysql.MysqlDataSystemConstant.Metadata.Mysql;
+import cn.xdf.acdc.devops.service.process.datasystem.starrocks.StarRocksDataSystemConstant.Keyword;
 import com.google.common.collect.Sets;
+import io.jsonwebtoken.lang.Collections;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 public class StarRocksHelperService {
+    
+    public static final String PRIMARY_KEY_ORDER = "0";
+    
+    public static final String ORDINARY_FIELD_ORDER = "1";
+    
+    public static final String INNER_FIELD_ORDER = "2";
+    
+    public static final String INNER_FIELD_PREFIX = "__";
     
     public static final String TABLE_MODEL = "TABLE_MODEL";
     
@@ -36,6 +53,9 @@ public class StarRocksHelperService {
             + " where TABLE_SCHEMA = '%s' and TABLE_NAME = '%s'";
     
     private static final String CHECK_HEALTH_SQL = "select 1";
+    
+    private static final String CREATE_TABLE_SQL = "create table if not exists %s (\n%s\n) PRIMARY KEY (%s) \nDISTRIBUTED BY HASH(%s)\nPROPERTIES (\n"
+            + "\t\"enable_persistent_index\" = \"true\"\n)";
     
     @Autowired
     private MysqlHelperService mysqlHelperService;
@@ -205,6 +225,79 @@ public class StarRocksHelperService {
      */
     public void checkPermissions(final HostAndPort hostAndPort, final UsernameAndPassword usernameAndPassword, final List<String[]> requiredPermissions) {
         throw new UnsupportedOperationException();
+    }
+    
+    /**
+     * Create data collection if absent.
+     *
+     * @param hosts hosts
+     * @param usernameAndPassword usernameAndPassword
+     * @param databaseName databaseName
+     * @param tableName tableName
+     * @param fieldDefinitions fieldDefinitions
+     * @param uniqueIndexNameToFieldDefinitions uniqueIndexNameToFieldDefinitions
+     */
+    public void createDataCollectionIfAbsent(final Set<HostAndPort> hosts,
+                                             final UsernameAndPassword usernameAndPassword,
+                                             final String databaseName,
+                                             final String tableName,
+                                             final List<DataFieldDefinition> fieldDefinitions,
+                                             final Map<String, List<DataFieldDefinition>> uniqueIndexNameToFieldDefinitions) {
+        HostAndPort hostAndPort = mysqlHelperService.choiceAvailableInstance(hosts, usernameAndPassword);
+        
+        // `database`.`table`
+        String fullTableName = getFullTableName(databaseName, tableName);
+        List<String> primaryKeyList = getPrimaryKey(uniqueIndexNameToFieldDefinitions);
+        String fields = getFields(fieldDefinitions, primaryKeyList);
+        String primaryKeyText = String.join(Symbol.COMMA, primaryKeyList);
+        String sql = String.format(CREATE_TABLE_SQL, fullTableName, fields, primaryKeyText, primaryKeyText);
+        log.info("The sql is: {}.", sql);
+        
+        mysqlHelperService.execute(hostAndPort, usernameAndPassword, sql);
+    }
+    
+    private String getFields(final List<DataFieldDefinition> fieldDefinitions, final List<String> primaryKey) {
+        List<String> fields = fieldDefinitions.stream()
+                .sorted(Comparator.comparing(dataFieldDefinition -> generateSequence(dataFieldDefinition, primaryKey)))
+                .map(dataFieldDefinition -> {
+                    String fieldName = dataFieldDefinition.getName();
+                    String fieldType = dataFieldDefinition.getType();
+                    String nullDesc = primaryKey.contains(fieldName) ? Keyword.NOT_NULL : Keyword.NULL;
+                    return Symbol.TAB + fieldName + Symbol.BLANK + fieldType + Symbol.BLANK + nullDesc;
+                }).collect(Collectors.toList());
+        return String.join(Symbol.COMMA + Symbol.ENTER, fields);
+    }
+    
+    private String generateSequence(final DataFieldDefinition dataFieldDefinition, final List<String> primaryKey) {
+        String fieldName = dataFieldDefinition.getName();
+        String orderValue;
+        int indexInPrimaryKey = primaryKey.indexOf(fieldName);
+        if (indexInPrimaryKey != -1) {
+            orderValue = PRIMARY_KEY_ORDER + indexInPrimaryKey + fieldName;
+        } else if (fieldName.startsWith(INNER_FIELD_PREFIX)) {
+            orderValue = INNER_FIELD_ORDER + fieldName;
+        } else {
+            orderValue = ORDINARY_FIELD_ORDER + fieldName;
+        }
+        return orderValue;
+    }
+    
+    private List<String> getPrimaryKey(final Map<String, List<DataFieldDefinition>> uniqueIndexNameToFieldDefinitions) {
+        List<DataFieldDefinition> fieldDefinitions = uniqueIndexNameToFieldDefinitions.get(Mysql.PK_INDEX_NAME);
+        if (!Collections.isEmpty(fieldDefinitions)) {
+            Set<DataFieldDefinition> nullableFields = fieldDefinitions.stream().filter(DataFieldDefinition::isOptional).collect(Collectors.toSet());
+            if (Collections.isEmpty(nullableFields)) {
+                return fieldDefinitions.stream().map(DataFieldDefinition::getName).collect(Collectors.toList());
+            } else {
+                throw new UnsupportedOperationException(String.format("Primary key field contain nullable fields: %s.", nullableFields));
+            }
+        }
+        throw new UnsupportedOperationException("No primary key field is found.");
+    }
+    
+    @NotNull
+    private static String getFullTableName(final String databaseName, final String tableName) {
+        return Symbol.BACK_TICK + databaseName + Symbol.BACK_TICK + Symbol.DOT + Symbol.BACK_TICK + tableName + Symbol.BACK_TICK;
     }
     
     @Getter

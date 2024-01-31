@@ -147,4 +147,9 @@ public class StarRocksDataSystemMetadataServiceImplTest {
         
         return instanceDetails;
     }
+    
+    @Test
+    public void testCreateDataCollectionByDataDefinitionShouldAsExpected() {
+    
+    }
 }

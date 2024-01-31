@@ -123,7 +123,7 @@
                 <dependency>
                     <groupId>cn.xdf.acdc</groupId>
                     <artifactId>acdc-internal-connect-plugins-converter-xdf</artifactId>
-                    <scope>provided</scope>
+                    <scope>compile</scope>
                 </dependency>
             </dependencies>
         </profile>

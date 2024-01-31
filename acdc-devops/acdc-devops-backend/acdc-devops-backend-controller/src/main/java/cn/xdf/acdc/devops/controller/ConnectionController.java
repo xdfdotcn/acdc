@@ -5,7 +5,7 @@ import cn.xdf.acdc.devops.core.domain.dto.ConnectorDTO;
 import cn.xdf.acdc.devops.core.domain.entity.enumeration.ConnectionState;
 import cn.xdf.acdc.devops.core.domain.entity.enumeration.ConnectorState;
 import cn.xdf.acdc.devops.core.domain.entity.enumeration.ConnectorType;
-import cn.xdf.acdc.devops.informer.AbstractInformer;
+import cn.xdf.acdc.devops.informer.AbstractFixedRateRunnableInformer;
 import cn.xdf.acdc.devops.informer.ConnectionInformer;
 import cn.xdf.acdc.devops.informer.ConnectorInformer;
 import cn.xdf.acdc.devops.service.process.connection.ConnectionService;
@@ -44,9 +44,9 @@ public class ConnectionController extends Controller {
     
     private final Map<Long, Set<Long>> connectorIdToConnectionId = new ConcurrentHashMap<>();
     
-    private AbstractInformer<ConnectionDTO> connectionInformer;
+    private AbstractFixedRateRunnableInformer<ConnectionDTO> connectionInformer;
     
-    private AbstractInformer<ConnectorDTO> connectorInformer;
+    private AbstractFixedRateRunnableInformer<ConnectorDTO> connectorInformer;
     
     public ConnectionController(final TaskScheduler taskScheduler, final ConnectionService connectionService,
                                 final ConnectorService connectorService) {
@@ -68,7 +68,7 @@ public class ConnectionController extends Controller {
     
     @SneakyThrows
     private void waitForConnectionInitialized() {
-        connectionInformer.waitForInitialized(AbstractInformer.DEFAULT_INFORMER_INITIALIZATION_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
+        connectionInformer.waitForInitialized(AbstractFixedRateRunnableInformer.DEFAULT_INFORMER_INITIALIZATION_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
     }
     
     @Override
@@ -110,7 +110,7 @@ public class ConnectionController extends Controller {
         if (Objects.isNull(connectionIds)) {
             return;
         }
-    
+        
         log.info("Connector(id :{}) state changed update related connections(ids: {}).", connectorDto.getId(), connectionIds);
         connectionIds.forEach(connectionId -> {
             ConnectionDTO connectionDTO = waitForNonNull(() -> connectionInformer.get(connectionId));

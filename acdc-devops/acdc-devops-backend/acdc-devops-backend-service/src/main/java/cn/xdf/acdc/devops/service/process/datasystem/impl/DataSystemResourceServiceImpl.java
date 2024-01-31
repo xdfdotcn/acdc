@@ -199,13 +199,18 @@ public class DataSystemResourceServiceImpl implements DataSystemResourceService 
             final List<DataSystemResourceDetailDTO> dataSystemResources,
             final DataSystemResourceType resourceType,
             final Long parentResourceId) {
-        List<DataSystemResourceDetailDTO> savedResources = this.getDetailChildren(parentResourceId, resourceType);
+        // query all detail children
+        DataSystemResourceQuery query = new DataSystemResourceQuery();
+        query.setParentResourceId(parentResourceId);
+        query.setResourceTypes(Arrays.asList(resourceType));
+        List<DataSystemResourceDetailDTO> savedResources = this.queryDetail(query);
+    
         Map<String, DataSystemResourceDetailDTO> nameToSavedResources = savedResources.stream().collect(Collectors.toMap(each -> each.getName(), each -> each));
         Map<String, DataSystemResourceDetailDTO> nameToActualResources = dataSystemResources.stream().collect(Collectors.toMap(each -> each.getName(), each -> each));
-        
+    
         // handle to be deleted resources
         deleteResourcesIfNeeded(nameToSavedResources, nameToActualResources);
-        
+    
         // handle to be updated resources
         List<DataSystemResourceDetailDTO> toBeUpdateResources = getToBeUpdatedResource(nameToSavedResources, nameToActualResources);
         List<DataSystemResourceDetailDTO> updateResult = this.batchUpdate(toBeUpdateResources);
@@ -229,12 +234,17 @@ public class DataSystemResourceServiceImpl implements DataSystemResourceService 
             final List<DataSystemResourceDetailDTO> dataSystemResources,
             final DataSystemResourceType resourceType,
             final Long parentResourceId) {
-        List<DataSystemResourceDetailDTO> savedResources = this.getDetailChildren(parentResourceId, resourceType);
+        // query all detail children
+        DataSystemResourceQuery query = new DataSystemResourceQuery();
+        query.setParentResourceId(parentResourceId);
+        query.setResourceTypes(Arrays.asList(resourceType));
+        List<DataSystemResourceDetailDTO> savedResources = this.queryDetail(query);
+    
         Map<String, DataSystemResourceDetailDTO> nameToSavedResources = savedResources.stream().collect(Collectors.toMap(each -> each.getName(), each -> each));
         Map<String, DataSystemResourceDetailDTO> nameToActualResources = dataSystemResources.stream().collect(Collectors.toMap(each -> each.getName(), each -> each));
-        
+    
         deleteResourcesIfNeeded(nameToSavedResources, nameToActualResources);
-        
+    
         List<DataSystemResourceDetailDTO> changedResources = new ArrayList<>();
         changedResources.addAll(getToBeUpdatedResource(nameToSavedResources, nameToActualResources));
         changedResources.addAll(getToBeCreatedResource(nameToSavedResources, nameToActualResources));
@@ -249,8 +259,8 @@ public class DataSystemResourceServiceImpl implements DataSystemResourceService 
                                                                       final Map<String, DataSystemResourceDetailDTO> nameToActualResources) {
         List<DataSystemResourceDetailDTO> deletedResources = new ArrayList<>();
         nameToSavedResource.forEach((name, savedResource) -> {
-            // if actual resources do not contains one saved resource's name, this resource should be deleted.
-            if (!nameToActualResources.containsKey(name)) {
+            // if actual resources do not contain one saved resource's name, and this resource is not deleted, it should be deleted.
+            if (!nameToActualResources.containsKey(name) && !savedResource.getDeleted()) {
                 this.deleteById(savedResource.getId());
                 savedResource.setDeleted(Boolean.TRUE);
                 deletedResources.add(savedResource);
@@ -276,8 +286,9 @@ public class DataSystemResourceServiceImpl implements DataSystemResourceService 
         nameToActualResources.forEach((name, actualResource) -> {
             if (nameToSavedResource.containsKey(name)) {
                 DataSystemResourceDetailDTO savedResource = nameToSavedResource.get(name);
-                
-                if (!Objects.equals(actualResource.getDescription(), savedResource.getDescription())
+    
+                if (!Objects.equals(actualResource.getDeleted(), savedResource.getDeleted())
+                        || !Objects.equals(actualResource.getDescription(), savedResource.getDescription())
                         || !Objects.equals(actualResource.getDataSystemResourceConfigurations(), savedResource.getDataSystemResourceConfigurations())
                         || !Objects.equals(actualResource.getProjects(), savedResource.getProjects())) {
                     actualResource.setId(savedResource.getId());

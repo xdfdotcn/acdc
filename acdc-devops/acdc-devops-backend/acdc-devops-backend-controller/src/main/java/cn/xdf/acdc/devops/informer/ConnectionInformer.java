@@ -10,7 +10,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
-public class ConnectionInformer extends AbstractInformer<ConnectionDTO> {
+public class ConnectionInformer extends AbstractFixedRateRunnableInformer<ConnectionDTO> {
     
     private final ConnectionService connectionService;
     

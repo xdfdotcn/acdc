@@ -95,6 +95,16 @@ public final class I18nKey {
         }
     }
     
+    public final class WideTable {
+        
+        public static final String DATA_SYSTEM_NOT_FOUND = "wide-table.data-system-not-found";
+        
+        public final class Check {
+            
+            public static final String FAILURE = "data-system.check.failure";
+        }
+    }
+    
     public final class Command {
         
         public static final String EXECUTION_FAILED = "command.execution-failed";

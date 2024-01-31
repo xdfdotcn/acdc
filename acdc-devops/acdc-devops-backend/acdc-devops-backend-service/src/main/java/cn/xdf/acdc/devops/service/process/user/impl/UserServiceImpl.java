@@ -1,5 +1,24 @@
 package cn.xdf.acdc.devops.service.process.user.impl;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.persistence.EntityExistsException;
+import javax.persistence.EntityNotFoundException;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+
+import com.google.common.base.Strings;
+import com.google.common.collect.Sets;
+
 import cn.xdf.acdc.devops.core.constant.SystemConstant;
 import cn.xdf.acdc.devops.core.domain.dto.UserDTO;
 import cn.xdf.acdc.devops.core.domain.dto.UserDetailDTO;
@@ -20,22 +39,6 @@ import cn.xdf.acdc.devops.service.utility.i18n.I18nKey;
 import cn.xdf.acdc.devops.service.utility.i18n.I18nKey.Client;
 import cn.xdf.acdc.devops.service.utility.i18n.I18nKey.User;
 import cn.xdf.acdc.devops.service.utility.i18n.I18nService;
-import com.google.common.base.Strings;
-import com.google.common.collect.Sets;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-
-import javax.persistence.EntityExistsException;
-import javax.persistence.EntityNotFoundException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -245,6 +248,27 @@ public class UserServiceImpl implements UserService {
         
         List<UserDO> userDOS = userRepository.saveAll(result);
         return userDOS.stream().map(UserDTO::new).collect(Collectors.toList());
+    }
+    
+    @Transactional
+    @Override
+    public List<UserDTO> getDbaApprovalUsers() {
+        UserAuthorityQuery userAuthorityQuery = new UserAuthorityQuery()
+                .setAuthorityRoleTypes(Sets.newHashSet(AuthorityRoleType.ROLE_DBA));
+        
+        Set<Long> userIds = userAuthorityService.queryAll(userAuthorityQuery)
+                .stream().map(it -> it.getUserId()).collect(Collectors.toSet());
+        
+        if (CollectionUtils.isEmpty(userIds)) {
+            throw new ClientErrorException("The DBA approve users must not be empty");
+        }
+        
+        UserQuery userQuery = new UserQuery()
+                .setUserIds(userIds);
+        
+        return userRepository.query(userQuery).stream()
+                .map(UserDTO::new)
+                .collect(Collectors.toList());
     }
     
     private void filledUserDOWithDTOProperties(final UserDTO userDTO, final UserDO newUser) {

@@ -1,4 +1,5 @@
 let DataSystemTypeConstant = {
+  ACDC_WIDE_TABLE: 'ACDC_WIDE_TABLE',
   MYSQL: 'MYSQL',
   TIDB: 'TIDB',
   HIVE: 'HIVE',

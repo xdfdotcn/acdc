@@ -116,7 +116,15 @@ public interface ConnectionRepository extends JpaRepository<ConnectionDO, Long>,
                 predicates.add(cb.equal(userJoin.get("domainAccount"), connectionQuery.getDomainAccount()));
             }
             
-            return cb.and(predicates.toArray(new Predicate[predicates.size()]));
+            if (Objects.nonNull(connectionQuery.getBeginUpdateTime())) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("updateTime"), connectionQuery.getBeginUpdateTime()));
+            }
+            
+            if (!Strings.isNullOrEmpty(connectionQuery.getSpecificConfiguration())) {
+                predicates.add(cb.equal(root.get("specificConfiguration"), connectionQuery.getSpecificConfiguration()));
+            }
+            
+            return cb.and(predicates.toArray(new Predicate[0]));
         };
     }
 }

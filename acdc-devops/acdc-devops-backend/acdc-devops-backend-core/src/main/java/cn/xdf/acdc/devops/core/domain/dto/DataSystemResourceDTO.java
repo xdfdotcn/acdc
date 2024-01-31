@@ -37,7 +37,7 @@ public class DataSystemResourceDTO {
     
     private Date creationTime;
     
-    private Date updateTIme;
+    private Date updateTime;
     
     public DataSystemResourceDTO(final DataSystemResourceDO dataSystemResource) {
         this.id = dataSystemResource.getId();
@@ -57,6 +57,15 @@ public class DataSystemResourceDTO {
         
         this.deleted = dataSystemResource.getDeleted();
         this.creationTime = dataSystemResource.getCreationTime();
-        this.updateTIme = dataSystemResource.getUpdateTime();
+        this.updateTime = dataSystemResource.getUpdateTime();
+    }
+    
+    /**
+     * To DataSystemResourceDO.
+     *
+     * @return DataSystemResourceDO
+     */
+    public DataSystemResourceDO toDO() {
+        return new DataSystemResourceDO().setId(this.id);
     }
 }

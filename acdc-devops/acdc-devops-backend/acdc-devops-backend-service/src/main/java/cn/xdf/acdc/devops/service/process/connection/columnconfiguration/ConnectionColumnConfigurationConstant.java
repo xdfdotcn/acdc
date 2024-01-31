@@ -16,6 +16,8 @@ public class ConnectionColumnConfigurationConstant {
     
     public static final String META_LOGICAL_DEL = "__logical_del";
     
+    public static final String META_LOGICAL_DELETION = "__deleted";
+    
     public static final String META_LOGICAL_DEL_TYPE = "Integer";
     
     public static final String META_DATE_TIME = "__datetime";

@@ -35,56 +35,61 @@ import lombok.Setter;
 
 @Service
 public class EsDataSystemMetadataServiceImpl implements DataSystemMetadataService {
-
+    
     @Autowired
     private EsHelperService helperService;
-
+    
     @Autowired
     private DataSystemResourceService dataSystemResourceService;
-
+    
     @Autowired
     private I18nService i18n;
-
+    
     @Override
     public DataSystemType getDataSystemType() {
         return DataSystemType.ELASTICSEARCH;
     }
-
+    
     @Override
     public DataSystemResourceDefinition getDataSystemResourceDefinition() {
         return EsDataSystemResourceDefinitionHolder.get();
     }
-
+    
     @Override
     public DataCollectionDefinition getDataCollectionDefinition(
             final Long dataCollectionId
     ) {
         DataSystemResourceDTO indexResource = dataSystemResourceService.getById(dataCollectionId);
         String index = indexResource.getName();
-
+        
         DataSystemResourceDetailDTO clusterResourceDetail = dataSystemResourceService
                 .getDetailParent(dataCollectionId, DataSystemResourceType.ELASTICSEARCH_CLUSTER);
         ClusterConfig config = getClusterConfig(clusterResourceDetail);
-
+        
         List<DataFieldDefinition> dataFieldDefinitions = helperService
                 .getIndexMapping(config.nodeServers, config.usernameAndPassword, index)
                 .stream()
                 .map(it -> new DataFieldDefinition(it.getName(), it.getType(), new HashSet<>()))
                 .collect(Collectors.toList());
-
+        
         return new DataCollectionDefinition(index, dataFieldDefinitions);
     }
-
+    
+    @Override
+    public DataSystemResourceDTO createDataCollectionByDataDefinition(final Long parentId, final String dataCollectionName, final DataCollectionDefinition dataCollectionDefinition) {
+        throw new UnsupportedOperationException();
+    }
+    
     @Override
     public void checkDataSystem(
             final Long rootDataSystemResourceId
     ) {
         DataSystemResourceDetailDTO dataSystemResourceDetail = dataSystemResourceService
                 .getDetailById(rootDataSystemResourceId);
-
+        
         this.checkDataSystem(dataSystemResourceDetail);
     }
-
+    
     @Override
     public void checkDataSystem(
             final DataSystemResourceDetailDTO dataSystemResourceDetail
@@ -92,7 +97,7 @@ public class EsDataSystemMetadataServiceImpl implements DataSystemMetadataServic
         if (CollectionUtils.isEmpty(dataSystemResourceDetail.getDataSystemResourceConfigurations())) {
             return;
         }
-
+        
         ClusterConfig config = getClusterConfig(dataSystemResourceDetail);
         UsernameAndPassword usernameAndPassword = config.usernameAndPassword;
         String nodeServers = config.nodeServers;
@@ -103,39 +108,39 @@ public class EsDataSystemMetadataServiceImpl implements DataSystemMetadataServic
         ) {
             throw new ClientErrorException(i18n.msg(Client.INVALID_PARAMETER));
         }
-
+        
         helperService.checkCluster(nodeServers, config.usernameAndPassword);
     }
-
+    
     @Override
     public void refreshDynamicDataSystemResource(
             final Long rootDataSystemResourceId
     ) {
         DataSystemResourceDetailDTO clusterResourceDetail = dataSystemResourceService
                 .getDetailById(rootDataSystemResourceId);
-
+        
         refreshIndexs(clusterResourceDetail);
     }
-
+    
     protected void refreshIndexs(final DataSystemResourceDetailDTO clusterResourceDetail) {
         ClusterConfig config = getClusterConfig(clusterResourceDetail);
-
+        
         List<String> actualIndexNames = helperService
                 .getClusterAllIndex(config.nodeServers, config.usernameAndPassword);
-
+        
         List<DataSystemResourceDetailDTO> actualDatabases = generateResourceDetails(
                 actualIndexNames,
                 DataSystemResourceType.ELASTICSEARCH_INDEX,
                 clusterResourceDetail
         );
-
+        
         dataSystemResourceService.mergeAllChildrenByName(
                 actualDatabases,
                 DataSystemResourceType.ELASTICSEARCH_INDEX,
                 clusterResourceDetail.getId()
         );
     }
-
+    
     private List<DataSystemResourceDetailDTO> generateResourceDetails(
             final List<String> resourceNames,
             final DataSystemResourceType dataSystemResourceType,
@@ -155,29 +160,29 @@ public class EsDataSystemMetadataServiceImpl implements DataSystemMetadataServic
                 })
                 .collect(Collectors.toList());
     }
-
+    
     private ClusterConfig getClusterConfig(
             final DataSystemResourceDetailDTO resourceDetail
     ) {
         Map<String, DataSystemResourceConfigurationDTO> configMap = resourceDetail
                 .getDataSystemResourceConfigurations();
-
+        
         String username = configMap.get(Cluster.USERNAME.getName()).getValue();
         String password = configMap.get(Cluster.PASSWORD.getName()).getValue();
         String nodeServers = configMap.get(Cluster.NODE_SERVERS.getName()).getValue();
-
+        
         UsernameAndPassword usernameAndPassword = new UsernameAndPassword(username, EncryptUtil.decrypt(password));
-
+        
         return new ClusterConfig(nodeServers, usernameAndPassword);
     }
-
+    
     @Setter
     @Getter
     @AllArgsConstructor
     private static class ClusterConfig {
-
+        
         private String nodeServers;
-
+        
         private UsernameAndPassword usernameAndPassword;
     }
 }

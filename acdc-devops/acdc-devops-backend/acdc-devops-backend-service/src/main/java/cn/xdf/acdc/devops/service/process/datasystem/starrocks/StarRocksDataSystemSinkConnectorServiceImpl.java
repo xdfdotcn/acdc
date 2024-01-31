@@ -1,5 +1,21 @@
 package cn.xdf.acdc.devops.service.process.datasystem.starrocks;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+
+import com.google.common.base.Joiner;
+
 import cn.xdf.acdc.devops.core.constant.SystemConstant;
 import cn.xdf.acdc.devops.core.constant.SystemConstant.Symbol;
 import cn.xdf.acdc.devops.core.domain.dto.ConnectionColumnConfigurationDTO;
@@ -25,23 +41,9 @@ import cn.xdf.acdc.devops.service.process.datasystem.starrocks.StarRocksDataSyst
 import cn.xdf.acdc.devops.service.process.datasystem.starrocks.StarRocksDataSystemResourceConfigurationDefinition.FrontEnd;
 import cn.xdf.acdc.devops.service.util.UrlUtil;
 import cn.xdf.acdc.devops.service.utility.datasystem.helper.StarRocksHelperService;
-import com.google.common.base.Joiner;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
+import lombok.SneakyThrows;
 
 @Service
-@Slf4j
 public class StarRocksDataSystemSinkConnectorServiceImpl extends AbstractDataSystemSinkConnectorService {
     
     @Autowired
@@ -81,6 +83,7 @@ public class StarRocksDataSystemSinkConnectorServiceImpl extends AbstractDataSys
         return defaultConfigurations;
     }
     
+    @SneakyThrows
     @Override
     public Map<String, String> generateConnectorCustomConfiguration(final Long connectionId) {
         ConnectionDetailDTO connectionDetail = connectionService.getDetailById(connectionId);
@@ -111,7 +114,7 @@ public class StarRocksDataSystemSinkConnectorServiceImpl extends AbstractDataSys
         
         String sourceColumnWhitelist = generateColumnWhitelistConfigurationValue(connectionDetail.getConnectionColumnConfigurations());
         String sinkPropertiesColumns = generateSinkPropertiesColumns(connectionDetail.getConnectionColumnConfigurations());
-
+        
         DataCollectionDefinition dataCollectionDefinition = dataSystemMetadataService.getDataCollectionDefinition(connectionDetail.getSinkDataCollectionId());
         String tableModel = (String) dataCollectionDefinition.getExtendProperties().get(StarRocksHelperService.TABLE_MODEL);
         
@@ -125,7 +128,36 @@ public class StarRocksDataSystemSinkConnectorServiceImpl extends AbstractDataSys
                 generateColumnMappingConfigurationValue(connectionDetail.getConnectionColumnConfigurations())
         );
         configurations.put(Configuration.SINK_COLUMNS, sinkPropertiesColumns);
+        
+        Optional<ConnectionColumnConfigurationDTO> logicalDelOptional =
+                fieldOptional(connectionDetail.getConnectionColumnConfigurations(), ConnectionColumnConfigurationConstant.META_LOGICAL_DELETION);
+        if (logicalDelOptional.isPresent()) {
+            setLogicalDelConfig(configurations);
+        }
+        
+        Optional<ConnectionColumnConfigurationDTO> offsetOptional =
+                fieldOptional(connectionDetail.getConnectionColumnConfigurations(), ConnectionColumnConfigurationConstant.META_KAFKA_RECORD_OFFSET);
+        if (offsetOptional.isPresent()) {
+            setKafkaOffsetConfig(configurations);
+        }
+        
         return configurations;
+    }
+    
+    private void setKafkaOffsetConfig(final Map<String, String> configurations) {
+        configurations.put(Configuration.TRANSFORMS, Configuration.TRANSFORMS_VALUE_4_LOGICAL_DELETION);
+        configurations.put(Configuration.TRANSFORMS_INSERT_FIELD_TYPE, Configuration.TRANSFORMS_INSERT_FIELD_TYPE_VALUE);
+        configurations.put(Configuration.TRANSFORMS_INSERT_FIELD_OFFSET_FIELD, Configuration.TRANSFORMS_INSERT_FIELD_OFFSET_FIELD_VALUE);
+    }
+    
+    private void setLogicalDelConfig(final Map<String, String> configurations) {
+        configurations.put(Configuration.TRANSFORMS_VALUE_MAPPER_SOURCE_MAPPINGS, Configuration.TRANSFORMS_VALUE_MAPPER_SOURCE_MAPPINGS_VALUE_4_LOGICAL_DELETION);
+    }
+    
+    private Optional<ConnectionColumnConfigurationDTO> fieldOptional(final List<ConnectionColumnConfigurationDTO> columnConfigs, final String fieldName) {
+        return columnConfigs.stream().filter(
+                connectionColumnConfiguration -> Objects.equals(connectionColumnConfiguration.getSourceColumnName(), fieldName)
+        ).findFirst();
     }
     
     /**
@@ -136,7 +168,7 @@ public class StarRocksDataSystemSinkConnectorServiceImpl extends AbstractDataSys
      */
     protected String generateSinkPropertiesColumns(final List<ConnectionColumnConfigurationDTO> connectionColumnConfigurations) {
         List<String> sinkFields = connectionColumnConfigurations.stream()
-                .filter(it -> !ConnectionColumnConfigurationConstant.META_FIELD_SET.contains(it.getSourceColumnName()))
+                .filter(it -> !ConnectionColumnConfigurationConstant.META_OP.equals(it.getSourceColumnName()))
                 .filter(it -> !isNone(it.getSourceColumnName()) && !isNone(it.getSinkColumnName()))
                 .map(ConnectionColumnConfigurationDTO::getSinkColumnName).collect(Collectors.toList());
         

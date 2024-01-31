@@ -612,3 +612,96 @@ export async function validateDataCollection(body: number[], options?: { [key: s
     ...(options || {}),
   });
 }
+
+/**
+ * 查询 wide table 列表
+ */
+export async function queryWideTable(
+  params: {
+    // 增加这个参数就是为了触发状态修改请求数据
+    current?: number;
+    pageSize?: number;
+    refreshVersion?: number;
+  },
+  options?: { [key: string]: any },
+) {
+  console.log(options);
+  return request<API.WideTableList>('/api/v1/wide-table', {
+    method: 'GET',
+    params: {
+      ...params,
+      deleted: false,
+    },
+    ...(options || {}),
+  });
+}
+
+/**
+ * disable a wide table
+ */
+export async function disableWideTable(wideTableId: number) {
+  let url = '/api/v1/wide-table/' + wideTableId + '/disable';
+  return request<any>(url, {
+    method: 'POST',
+  });
+}
+
+/**
+ * enable a wide table
+ */
+export async function enableWideTable(wideTableId: number) {
+  let url = '/api/v1/wide-table/' + wideTableId + '/enable';
+  return request<any>(url, {
+    method: 'POST',
+  });
+}
+
+/**
+ * 获取 wide table 详情
+ */
+export async function getWideTableDetail(id: number) {
+  if (!id) {
+    return;
+  }
+
+  const url = '/api/v1/wide-table/' + id;
+
+  return request<API.WideTableDetail>(url, {
+    method: 'GET',
+  });
+}
+
+/**
+ * 获取 wide table 关联的 connections
+ */
+export async function getWideTableConnections(wideTableId: number) {
+  const url = '/api/v1/wide-table/' + wideTableId + '/connections';
+
+  const response = await fetch(url);
+  return await response.json();
+}
+
+/**
+ * 获取 wide table 的审批记录
+ */
+export async function getWideTableRequisitionBatch(wideTableId: number) {
+  const url = '/api/v1/wide-table/' + wideTableId + '/requisition';
+
+  const response = await fetch(url);
+  return await response.json();
+}
+
+/**
+ * 创建宽表.
+ */
+export async function createWideTable(
+  body: API.WideTableDetail,
+  options?: { [key: string]: any },
+) {
+  let url = '/api/v1/wide-table?beforeCreation=false';
+  return request(url, {
+    method: 'POST',
+    data: body,
+    ...(options || {}),
+  });
+}

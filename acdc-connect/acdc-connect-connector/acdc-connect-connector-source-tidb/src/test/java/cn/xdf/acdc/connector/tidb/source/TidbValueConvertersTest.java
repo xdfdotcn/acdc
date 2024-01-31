@@ -174,7 +174,7 @@ public class TidbValueConvertersTest {
         Assert.assertEquals("string", tidbValueConverters.converter(VARCHAR_OR_VARBINARY_V2_COLUMN, new Field("VARCHAR_OR_VARBINARY_V2_FIELD", 0, SchemaBuilder.string().build())).convert("string"));
         Assert.assertEquals("{\"key1\": \"value1\"}", tidbValueConverters.converter(JSON_COLUMN, new Field("JSON_FIELD", 0, Json.builder().build())).convert("{\"key1\": \"value1\"}"));
         Schema decimalSchema = SpecialValueDecimal.builder(config.getDecimalMode(), DECIMAL_COLUMN.length(), DECIMAL_COLUMN.scale().get()).build();
-        Assert.assertEquals(new BigDecimal("129012.1230000"),
+        Assert.assertEquals(new BigDecimal("129012.123"),
                 tidbValueConverters.converter(DECIMAL_COLUMN, new Field("DECIMAL_FIELD", 0, decimalSchema)).convert("129012.1230000"));
         Assert.assertEquals(1, tidbValueConverters.converter(ENUM_COLUMN, new Field("ENUM_FIELD", 0, SchemaBuilder.int32().build())).convert(1));
         Assert.assertEquals(1, tidbValueConverters.converter(SET_COLUMN, new Field("SET_FIELD", 0, SchemaBuilder.int32().build())).convert(1));
@@ -185,7 +185,7 @@ public class TidbValueConvertersTest {
         Assert.assertEquals("string", tidbValueConverters.converter(TEXT_OR_BLOB_COLUMN, new Field("TEXT_OR_BLOB_FIELD", 0, SchemaBuilder.string().build())).convert("c3RyaW5n"));
         Assert.assertEquals("string", tidbValueConverters.converter(CHAR_OR_BINARY_COLUMN, new Field("CHAR_OR_BINARY_FIELD", 0, SchemaBuilder.string().build())).convert("string"));
     }
-
+    
     private java.util.Date getDateFromTime(final String time, final String decimalPlaceHolder) {
         return Date.from(
                 LocalTime.parse(time, DateTimeFormatter.ofPattern(TidbValueConverters.TIME_FORMAT + decimalPlaceHolder))
@@ -194,5 +194,4 @@ public class TidbValueConvertersTest {
                         .toInstant()
         );
     }
-
 }

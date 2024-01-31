@@ -1,5 +1,7 @@
 package cn.xdf.acdc.devops.informer;
 
+import cn.xdf.acdc.devops.controller.Task;
+
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -9,7 +11,7 @@ import java.util.concurrent.TimeoutException;
  *
  * @param <E> element
  */
-public interface Informer<E> extends Runnable {
+public interface Informer<E> extends Task {
     
     /**
      * Wait until informer is initialized.

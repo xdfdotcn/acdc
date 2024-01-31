@@ -41,6 +41,7 @@ import static org.mockito.Mockito.when;
 @SpringBootTest
 @Transactional
 public class ProjectServiceImplTest {
+    private static final String F_PROJECT = "ACDC_INNER";
     
     @Autowired
     private ProjectService projectService;
@@ -119,7 +120,7 @@ public class ProjectServiceImplTest {
         projectService.batchCreate(toCreateProjects);
         
         // assert
-        Assertions.assertThat(projectRepository.count()).isEqualTo(toCreateProjects.size());
+        Assertions.assertThat(getProjectTotalCount()).isEqualTo(toCreateProjects.size());
     }
     
     @Test
@@ -269,5 +270,11 @@ public class ProjectServiceImplTest {
             Assertions.assertThat(projectDO.getName()).isEqualTo(each.getName());
             Assertions.assertThat(projectDO.getDeleted()).isFalse();
         });
+    }
+    
+    private Long getProjectTotalCount() {
+        return projectRepository.findAll()
+                .stream().filter(it -> !it.getName().equals(F_PROJECT))
+                .count();
     }
 }

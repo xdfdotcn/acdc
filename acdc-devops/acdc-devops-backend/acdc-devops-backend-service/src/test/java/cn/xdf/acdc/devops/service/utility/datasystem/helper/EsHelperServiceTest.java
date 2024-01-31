@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
 
+import org.apache.http.HttpHost;
 import org.assertj.core.api.Assertions;
 import org.junit.After;
 import org.junit.Before;
@@ -115,6 +116,14 @@ public class EsHelperServiceTest {
 
         Assertions.assertThat(indexs).containsAll(expectIndexs);
         Assertions.assertThat(indexs.size()).isEqualTo(expectIndexs.size());
+    }
+    
+    @Test
+    public void testGetHttpHostShouldRemovePrefixIfExist() {
+        final EsHelperService helper = new EsHelperService();
+        final HttpHost httpHost = helper.getHttpHost("http://1.1.1.1:1111");
+        Assertions.assertThat(httpHost.getHostName()).isEqualTo("1.1.1.1");
+        Assertions.assertThat(httpHost.getPort()).isEqualTo(1111);
     }
 
     @Test(expected = ServerErrorException.class)

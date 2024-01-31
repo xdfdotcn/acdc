@@ -17,6 +17,7 @@ import cn.xdf.acdc.devops.service.process.connection.approval.definition.Default
 import cn.xdf.acdc.devops.service.process.connection.approval.error.ApprovalProcessStateMatchErrorException;
 import cn.xdf.acdc.devops.service.process.connection.approval.event.ApprovalEvent;
 import cn.xdf.acdc.devops.service.process.connection.approval.event.ApprovalEventGenerator;
+import cn.xdf.acdc.devops.service.process.connection.approval.state.ApprovalCurStateHolder;
 import cn.xdf.acdc.devops.service.utility.mail.DomainUser;
 import com.google.common.collect.Sets;
 import org.springframework.beans.BeansException;
@@ -46,6 +47,9 @@ public class ApprovalStateMachine implements ApplicationContextAware {
     
     @Autowired
     private ConnectionRequisitionService connectionRequisitionService;
+    
+    @Autowired
+    private ApprovalCurStateHolder approvalCurStateHolder;
     
     @Autowired
     private UserAuthorityRepository userAuthorityRepository;
@@ -114,7 +118,7 @@ public class ApprovalStateMachine implements ApplicationContextAware {
      */
     @Transactional
     public ApprovalState currentState(final Long id) {
-        return connectionRequisitionService.getById(id).getState();
+        return approvalCurStateHolder.state(id);
     }
     
     /**

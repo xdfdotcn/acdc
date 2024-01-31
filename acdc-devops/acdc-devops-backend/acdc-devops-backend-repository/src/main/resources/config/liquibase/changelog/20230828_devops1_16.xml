@@ -1,0 +1,339 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+    
+    <!--
+       1. 本次更改发生于 devops 1.16 迭代
+    -->
+    <changeSet id="devops-tag-1_16" author="ACDC">
+        <tagDatabase tag="devops-1_16"/>
+    </changeSet>
+    
+    <!-- 创建 wide_table 及权限审批 相关 13 张表 -->
+    <changeSet id="devops-1_16_1" author="ACDC">
+        <createTable tableName="wide_table" remarks="宽表">
+            <column name="id" type="bigint" autoIncrement="true" remarks="主键">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="varchar(255)" remarks="表名">
+                <constraints nullable="false"/>
+            </column>
+            <column name="select_statement" type="text" remarks="查询 sql">
+                <constraints nullable="true"/>
+            </column>
+            <column name="description" type="varchar(1024)" remarks="描述">
+                <constraints nullable="true"/>
+            </column>
+            <column name="subquery_id" type="bigint" remarks="子查询id">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="bigint" remarks="创建者">
+                <constraints nullable="false"/>
+            </column>
+            <column name="project_id" type="bigint" remarks="所属项目">
+                <constraints nullable="false"/>
+            </column>
+            <column name="data_collection_id" type="bigint" remarks="对应的数据集">
+                <constraints nullable="true"/>
+            </column>
+            <column name="requisition_state" type="int" remarks="申请状态;0: approving 1: refused 2: approved">
+                <constraints nullable="false"/>
+            </column>
+            <column name="requisition_batch_id" type="bigint" remarks="对应的审批单集合">
+                <constraints nullable="true"/>
+            </column>
+            <column name="actual_state" type="int" remarks="实际状态">
+                <constraints nullable="false"/>
+            </column>
+            <column name="desired_state" type="int" remarks="预期状态">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_deleted" type="bit" defaultValue="0" remarks="逻辑删除;0: 未删除 1: 已删除">
+                <constraints nullable="false"/>
+            </column>
+            <column name="update_time" type="datetime(3)" remarks="更新时间">
+                <constraints nullable="false"/>
+            </column>
+            <column name="creation_time" type="datetime(3)" remarks="创建时间">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createTable tableName="wide_table_subquery" remarks="宽表子查询">
+            <column name="id" type="bigint" autoIncrement="true" remarks="主键">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="varchar(1024)" remarks="名称">
+                <constraints nullable="false"/>
+            </column>
+            <column name="select_statement" type="text" remarks="原始查询 sql">
+                <constraints nullable="false"/>
+            </column>
+            <column name="where_expression" type="text" remarks="where 表达式">
+                <constraints nullable="true"/>
+            </column>
+            <column name="other_expression" type="text" remarks="其他表达式;拼接到 where 的后面">
+                <constraints nullable="true"/>
+            </column>
+            <column name="table_source_type" type="int" remarks="查询目标类型;0: 原子 ATOM，1: 关联 JOINED，2: 子查询 SUB_QUERY">
+                <constraints nullable="false"/>
+            </column>
+            <column name="data_system_resource_id" type="bigint" remarks="查询目标为原子表时对应的实际数据集">
+                <constraints nullable="true"/>
+            </column>
+            <column name="left_subquery_id" type="bigint" remarks="关联类型子查询的左子查询">
+                <constraints nullable="true"/>
+            </column>
+            <column name="right_subquery_id" type="bigint" remarks="关联类型子查询的右子查询">
+                <constraints nullable="true"/>
+            </column>
+            <column name="join_type" type="int" remarks="关联类型；0: LEFT，1: RIGHT，2: INNER">
+                <constraints nullable="true"/>
+            </column>
+            <column name="is_real" type="bit" remarks="是否为真实节点: 0:非真实节点，1:真实节点，展示血缘关系使用">
+                <constraints nullable="false"/>
+            </column>
+            <column name="subquery_id" type="bigint" remarks="查询目标为子查询时对应子查询">
+                <constraints nullable="true"/>
+            </column>
+            <column name="update_time" type="datetime(3)" remarks="更新时间">
+                <constraints nullable="false"/>
+            </column>
+            <column name="creation_time" type="datetime(3)" remarks="创建时间">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createTable tableName="wide_table_subquery_join_condition" remarks="关联类型子查询的关联条件">
+            <column name="id" type="bigint" autoIncrement="true" remarks="主键">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="subquery_id" type="bigint" remarks="所属子查询">
+                <constraints nullable="false"/>
+            </column>
+            <column name="left_column" type="varchar(255)" remarks="左边的列">
+                <constraints nullable="false"/>
+            </column>
+            <column name="operator" type="varchar(128)" remarks="连接符">
+                <constraints nullable="false"/>
+            </column>
+            <column name="right_column" type="varchar(255)" remarks="右边的列">
+                <constraints nullable="false"/>
+            </column>
+            <column name="update_time" type="datetime(3)" remarks="更新时间">
+                <constraints nullable="false"/>
+            </column>
+            <column name="creation_time" type="datetime(3)" remarks="创建时间">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createTable tableName="wide_table_subquery_column" remarks="子查询字段">
+            <column name="id" type="bigint" autoIncrement="true" remarks="主键">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="subquery_id" type="bigint" remarks="子查询">
+                <constraints nullable="false"/>
+            </column>
+            <column name="expression" type="varchar(1024)" remarks="表达式">
+                <constraints nullable="false"/>
+            </column>
+            <column name="alias" type="varchar(255)" remarks="别名">
+                <constraints nullable="false"/>
+            </column>
+            <column name="type" type="varchar(128)" remarks="类型">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_primary_key" type="bit" remarks="是否是所在子查询的主键;0: false，1: true">
+                <constraints nullable="true"/>
+            </column>
+            <column name="update_time" type="datetime(3)" remarks="更新时间">
+                <constraints nullable="false"/>
+            </column>
+            <column name="creation_time" type="datetime(3)" remarks="创建时间">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createTable tableName="wide_table_subquery_column_lineage" remarks="子查询字段血缘关系">
+            <column name="id" type="bigint" autoIncrement="true" remarks="主键">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="column_id" type="bigint" remarks="当前字段">
+                <constraints nullable="false"/>
+            </column>
+            <column name="parent_column_id" type="bigint" remarks="父字段">
+                <constraints nullable="false"/>
+            </column>
+            <column name="update_time" type="datetime(3)" remarks="更新时间">
+                <constraints nullable="false"/>
+            </column>
+            <column name="creation_time" type="datetime(3)" remarks="创建时间">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createTable tableName="wide_table_subquery_column_unique_index" remarks="子查询字段唯一键">
+            <column name="id" type="bigint" autoIncrement="true" remarks="主键">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="column_id" type="bigint" remarks="对应字段">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="varchar(255)" remarks="唯一键名称">
+                <constraints nullable="false"/>
+            </column>
+            <column name="update_time" type="datetime(3)" remarks="更新时间">
+                <constraints nullable="false"/>
+            </column>
+            <column name="creation_time" type="datetime(3)" remarks="创建时间">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createTable tableName="wide_table_connection_mapping" remarks="宽表与链路的关系;一个宽表对应多个链路">
+            <column name="id" type="bigint" autoIncrement="true" remarks="主键">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="wide_table_id" type="bigint" remarks="宽表">
+                <constraints nullable="false"/>
+            </column>
+            <column name="connection_id" type="bigint" remarks="链路">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createTable tableName="wide_table_data_system_resource_project_mapping" remarks="宽表与数据系统资源的映射;表示宽表数据的来源数据集">
+            <column name="id" type="bigint" autoIncrement="true" remarks="主键">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="wide_table_id" type="bigint" remarks="宽表">
+                <constraints nullable="false"/>
+            </column>
+            <column name="data_system_resource_id" type="bigint" remarks="数据集">
+                <constraints nullable="false"/>
+            </column>
+            <column name="project_id" type="bigint" remarks="数据集所属项目">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createTable tableName="data_system_resource_permission_requisition_batch" remarks="数据系统资源申请单集合">
+            <column name="id" type="bigint" autoIncrement="true" remarks="主键">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="bigint" remarks="申请人">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="varchar(1024)" remarks="申请理由">
+                <constraints nullable="true"/>
+            </column>
+            <column name="state" type="int" remarks="0: 待审批，1: 审批中，2: 已通过，3: 已拒绝">
+                <constraints nullable="false"/>
+            </column>
+            <column name="update_time" type="datetime(3)" remarks="更新时间">
+                <constraints nullable="false"/>
+            </column>
+            <column name="creation_time" type="datetime(3)" remarks="创建时间">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createTable tableName="data_system_resource_permission_requisition" remarks="数据系统资源权限申请">
+            <column name="id" type="bigint" autoIncrement="true" remarks="主键">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="third_party_id" type="varchar(255)" remarks="三方审批系统中的审批单 id">
+                <constraints nullable="true"/>
+            </column>
+            <column name="description" type="varchar(1024)" remarks="申请理由">
+                <constraints nullable="true"/>
+            </column>
+            <column name="user_id" type="bigint" remarks="申请人">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sink_project_id" type="bigint" remarks="申请人所属项目">
+                <constraints nullable="false"/>
+            </column>
+            <column name="source_project_id" type="bigint" remarks="数据源所属项目">
+                <constraints nullable="false"/>
+            </column>
+            <column name="source_approver_user_id" type="bigint" remarks="数据源负责人审批人">
+                <constraints nullable="true"/>
+            </column>
+            <column name="source_approval_comments" type="varchar(255)" remarks="数据源负责人审批意见">
+                <constraints nullable="true"/>
+            </column>
+            <column name="dba_approver_user_id" type="bigint" remarks="dba 审批人">
+                <constraints nullable="true"/>
+            </column>
+            <column name="dba_approval_comments" type="varchar(255)" remarks="dba 审批意见">
+                <constraints nullable="true"/>
+            </column>
+            <column name="state" type="int" remarks="状态;0: 待审批 1: 待数据源负责人审批 2: 数据源负责人审批拒绝 3: 待DBA负责人审批 4: DBA 负责人审批拒绝 5: 审批通过">
+                <constraints nullable="false"/>
+            </column>
+            <column name="update_time" type="datetime(3)" remarks="更新时间">
+                <constraints nullable="false"/>
+            </column>
+            <column name="creation_time" type="datetime(3)" remarks="创建时间">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createTable tableName="d_s_r_permission_requisition_d_s_r_mapping" remarks="数据系统资源申请单与数据系统资源的映射">
+            <column name="id" type="bigint" autoIncrement="true" remarks="主键">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="data_system_resource_permission_requisition_id" type="bigint" remarks="申请单">
+                <constraints nullable="false"/>
+            </column>
+            <column name="data_system_resource_id" type="bigint" remarks="数据系统资源">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createTable tableName="d_s_r_p_r_b_d_s_r_p_r_mapping" remarks="批量审批与审批单关联">
+            <column name="id" type="bigint" autoIncrement="true" remarks="主键">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="data_system_resource_permission_requisition_id" type="bigint" remarks="审批单 id">
+                <constraints nullable="false"/>
+            </column>
+            <column name="data_system_resource_permission_requisition_batch_id" type="bigint" remarks="批量审批单 id">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createTable tableName="data_system_resource_permission" remarks="数据系统权限">
+            <column name="id" type="bigint" autoIncrement="true" remarks="主键">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="data_system_resource_id" type="bigint" remarks="数据系统资源">
+                <constraints nullable="false"/>
+            </column>
+            <column name="project_id" type="bigint" remarks="被赋予权限的项目">
+                <constraints nullable="false"/>
+            </column>
+            <column name="update_time" type="datetime(3)" remarks="更新时间">
+                <constraints nullable="false"/>
+            </column>
+            <column name="creation_time" type="datetime(3)" remarks="创建时间">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createTable tableName="wide_table_column" remarks="宽表字段信息">
+            <column name="id" type="bigint" autoIncrement="true" remarks="主键">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="wide_table_id" type="bigint" remarks="所属宽表">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="varchar(256)" remarks="字段名">
+                <constraints nullable="false"/>
+            </column>
+            <column name="type" type="varchar(128)" remarks="类型">
+                <constraints nullable="true"/>
+            </column>
+            <column name="is_primary_key" type="bit(1)" remarks="是否主键">
+                <constraints nullable="true"/>
+            </column>
+            <column name="update_time" type="datetime(3)" remarks="更新时间">
+                <constraints nullable="false"/>
+            </column>
+            <column name="creation_time" type="datetime(3)" remarks="创建时间">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>

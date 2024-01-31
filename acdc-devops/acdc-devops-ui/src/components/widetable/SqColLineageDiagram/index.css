@@ -1,0 +1,10 @@
+.diagram-container {
+  width: 100%;
+  height: 100%;
+  padding-top: 25px;
+  padding-right: 50px;
+  padding-bottom: 25px;
+  padding-left: '20%';
+ /* background: #333333;*/
+ background: #333333;
+}

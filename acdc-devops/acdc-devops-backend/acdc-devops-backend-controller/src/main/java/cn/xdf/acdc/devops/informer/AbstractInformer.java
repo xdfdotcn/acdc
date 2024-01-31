@@ -1,8 +1,7 @@
 package cn.xdf.acdc.devops.informer;
 
-import cn.xdf.acdc.devops.controller.FixedRateRunnableTask;
+import cn.xdf.acdc.devops.service.error.exceptions.ServerErrorException;
 import io.jsonwebtoken.lang.Collections;
-import org.springframework.scheduling.TaskScheduler;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -20,13 +19,15 @@ import java.util.function.Consumer;
  *
  * @param <E> element
  */
-public abstract class AbstractInformer<E> extends FixedRateRunnableTask implements Informer<E> {
+public abstract class AbstractInformer<E> implements Informer<E> {
     
     public static final int DEFAULT_INFORMER_INITIALIZATION_TIMEOUT_IN_SECONDS = 300;
     
     private final Object initializationBlocker = new Object();
     
     private Map<Long, E> resources;
+    
+    private E lastResource;
     
     private Date lastUpdateTime;
     
@@ -38,9 +39,7 @@ public abstract class AbstractInformer<E> extends FixedRateRunnableTask implemen
     
     private volatile boolean isInitialized;
     
-    public AbstractInformer(final TaskScheduler scheduler) {
-        super(scheduler);
-        
+    public AbstractInformer() {
         lastUpdateTime = new Date(Long.MIN_VALUE);
         resources = new HashMap<>();
         addCallbacks = new ArrayList<>();
@@ -54,16 +53,12 @@ public abstract class AbstractInformer<E> extends FixedRateRunnableTask implemen
         
         final AtomicReference<Date> tmpUpdateTime = new AtomicReference<>(lastUpdateTime);
         if (!Collections.isEmpty(dataList)) {
-            dataList.forEach(newer ->
-                    resources.compute(getKey(newer), (key, older) -> {
-                        invokeAppropriateCallbacks(older, newer);
-                        
-                        Date updateTime = getUpdateTime(newer);
-                        if (tmpUpdateTime.get().compareTo(updateTime) < 0) {
-                            tmpUpdateTime.set(updateTime);
-                        }
-                        return newer;
-                    })
+            dataList.forEach(newer -> {
+                        Long key = getKey(newer);
+                        lastResource = resources.put(key, newer);
+                        invokeCallbacks(newer, key);
+                        updateTmpUpdateTimeIfNeeded(tmpUpdateTime, newer);
+                    }
             );
         }
         
@@ -74,6 +69,24 @@ public abstract class AbstractInformer<E> extends FixedRateRunnableTask implemen
                 isInitialized = true;
                 initializationBlocker.notify();
             }
+        }
+    }
+    
+    // CHECKSTYLE:OFF
+    private void invokeCallbacks(final E newer, final Long key) {
+        try {
+            invokeAppropriateCallbacks(lastResource, newer);
+        } catch (Exception e) {
+            resources.put(key, lastResource);
+            throw new ServerErrorException(e);
+        }
+    }
+    // CHECKSTYLE:ON
+    
+    private void updateTmpUpdateTimeIfNeeded(final AtomicReference<Date> tmpUpdateTime, final E newer) {
+        Date updateTime = getUpdateTime(newer);
+        if (tmpUpdateTime.get().compareTo(updateTime) < 0) {
+            tmpUpdateTime.set(updateTime);
         }
     }
     

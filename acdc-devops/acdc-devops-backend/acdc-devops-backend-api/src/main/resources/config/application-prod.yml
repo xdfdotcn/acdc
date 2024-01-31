@@ -46,8 +46,6 @@ spring:
     cache-duration: PT1S # 1 second, see the ISO 8601 standard
   thymeleaf:
     cache: false
-#  kafka:
-#    value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 
 server:
   port: 8080
@@ -56,7 +54,6 @@ server:
 # Application specific properties
 # ===================================================================
 
-# application:
 acdc:
   rdb:
     jdbc:
@@ -72,6 +69,8 @@ acdc:
       data-collection:
         partitions: 3
         replication-factor: 3
+        configs:
+          retention.ms: 259200000
       schema-history:
         partitions: 1
         replication-factor: 3
@@ -85,6 +84,7 @@ acdc:
         configs:
           cleanup.policy: compact
           compression.type: lz4
+          retention.ms: 259200000
       ticdc:
         partitions: 12
         replication-factor: 3

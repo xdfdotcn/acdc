@@ -4,8 +4,9 @@ import cn.xdf.acdc.devops.core.domain.dto.DataSystemResourceDTO;
 import cn.xdf.acdc.devops.core.domain.dto.DataSystemResourceDetailDTO;
 import cn.xdf.acdc.devops.core.domain.entity.enumeration.DataSystemResourceType;
 import cn.xdf.acdc.devops.core.domain.entity.enumeration.DataSystemType;
+import cn.xdf.acdc.devops.service.error.exceptions.ServerErrorException;
 import cn.xdf.acdc.devops.service.process.datasystem.DataSystemResourceService;
-import cn.xdf.acdc.devops.service.process.datasystem.RelationalDataSystemMetadataService;
+import cn.xdf.acdc.devops.service.process.datasystem.relational.RelationalDataSystemMetadataService;
 import cn.xdf.acdc.devops.service.process.datasystem.definition.DataCollectionDefinition;
 import cn.xdf.acdc.devops.service.process.datasystem.definition.DataFieldDefinition;
 import cn.xdf.acdc.devops.service.process.datasystem.definition.DataSystemResourceDefinition;
@@ -18,12 +19,17 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityManager;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -36,6 +42,9 @@ public class StarRocksDataSystemMetadataServiceImpl extends RelationalDataSystem
     
     @Autowired
     private DataSystemResourceService dataSystemResourceService;
+    
+    @Autowired
+    private EntityManager entityManager;
     
     @Override
     public DataSystemResourceDefinition getDataSystemResourceDefinition() {
@@ -156,4 +165,45 @@ public class StarRocksDataSystemMetadataServiceImpl extends RelationalDataSystem
         
         return new DataCollectionDefinition(table, dataFieldDefinitions, relationalDatabaseTable.getProperties());
     }
+    
+    @Override
+    public DataSystemResourceDTO createDataCollectionByDataDefinition(final Long parentId, final String dataCollectionName, final DataCollectionDefinition dataCollectionDefinition) {
+        List<DataFieldDefinition> fieldDefinitions = dataCollectionDefinition.getLowerCaseNameToDataFieldDefinitions().values().stream()
+                .map(this::getDataFieldDefinition).collect(Collectors.toList());
+        
+        Map<String, List<DataFieldDefinition>> uniqueIndexNameToFieldDefinitions = dataCollectionDefinition.getUniqueIndexNameToFieldDefinitions().entrySet().stream().collect(
+                Collectors.toMap(Entry::getKey, entry -> entry.getValue().stream()
+                        .map(this::getDataFieldDefinition)
+                        .collect(Collectors.toList())
+                )
+        );
+        DataSystemResourceDTO databaseResource = dataSystemResourceService.getById(parentId);
+        DataSystemResourceDetailDTO clusterResource = dataSystemResourceService.getDetailParent(parentId, getClusterDataSystemResourceType());
+        List<DataSystemResourceDetailDTO> instanceResources = dataSystemResourceService.getDetailChildren(clusterResource.getId(), getInstanceDataSystemResourceType());
+        
+        Set<HostAndPort> hosts = new HashSet<>();
+        instanceResources.forEach(each -> hosts.add(getHostAndPort(each)));
+        starRocksHelperService.createDataCollectionIfAbsent(hosts, getUsernameAndPassword(clusterResource), databaseResource.getName(), dataCollectionName,
+                fieldDefinitions, uniqueIndexNameToFieldDefinitions);
+        refreshDynamicDataSystemResource(clusterResource.getId());
+        entityManager.flush();
+        entityManager.clear();
+        Optional<DataSystemResourceDTO> presentDataCollection = dataSystemResourceService.getChildren(parentId, DataSystemResourceType.STARROCKS_TABLE).stream()
+                .filter(dataSystemResourceDTO -> dataCollectionName.equals(dataSystemResourceDTO.getName())).findFirst();
+        return presentDataCollection.orElseThrow(() -> new ServerErrorException(String.format("Could not find table with name: %s, database id: %s.", dataCollectionName, parentId)));
+    }
+    
+    @NotNull
+    private DataFieldDefinition getDataFieldDefinition(final DataFieldDefinition dataFieldDefinition) {
+        return new DataFieldDefinition(
+                dataFieldDefinition.getName(),
+                StarRocksDataSystemDataCollectionDefinitionUtil.getTypeFromSchema(dataFieldDefinition.getConnectType()),
+                dataFieldDefinition.getConnectType(),
+                dataFieldDefinition.isOptional(),
+                dataFieldDefinition.getDefaultValue(),
+                dataFieldDefinition.getExtendProperties(),
+                new HashSet<>()
+        );
+    }
+    
 }

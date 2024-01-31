@@ -1,20 +1,21 @@
 package cn.xdf.acdc.devops.service.process.datasystem;
 
-import cn.xdf.acdc.devops.core.domain.dto.DataSystemResourceConfigurationDTO;
-import cn.xdf.acdc.devops.core.domain.dto.DataSystemResourceDTO;
-import cn.xdf.acdc.devops.core.domain.dto.DataSystemResourceDetailDTO;
-import cn.xdf.acdc.devops.core.domain.dto.ProjectDTO;
-import cn.xdf.acdc.devops.core.domain.entity.enumeration.DataSystemResourceType;
-import cn.xdf.acdc.devops.core.domain.entity.enumeration.MetadataSourceType;
-import cn.xdf.acdc.devops.service.process.datasystem.definition.DataCollectionDefinition;
-import cn.xdf.acdc.devops.service.process.datasystem.definition.DataFieldDefinition;
-import cn.xdf.acdc.devops.service.process.datasystem.mysql.MysqlDataSystemResourceConfigurationDefinition.Cluster;
-import cn.xdf.acdc.devops.service.process.datasystem.mysql.MysqlDataSystemResourceConfigurationDefinition.Instance;
-import cn.xdf.acdc.devops.service.process.datasystem.mysql.MysqlInstanceRoleType;
-import cn.xdf.acdc.devops.service.util.EncryptUtil;
-import cn.xdf.acdc.devops.service.utility.datasystem.helper.MysqlHelperService;
-import cn.xdf.acdc.devops.service.utility.datasystem.helper.RelationalDatabaseTableField;
-import com.google.common.collect.Sets;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anySet;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.when;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.kafka.connect.data.Schema;
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,20 +28,24 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.google.common.collect.Sets;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anySet;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.when;
+import cn.xdf.acdc.devops.core.domain.dto.DataSystemResourceConfigurationDTO;
+import cn.xdf.acdc.devops.core.domain.dto.DataSystemResourceDTO;
+import cn.xdf.acdc.devops.core.domain.dto.DataSystemResourceDetailDTO;
+import cn.xdf.acdc.devops.core.domain.dto.ProjectDTO;
+import cn.xdf.acdc.devops.core.domain.entity.enumeration.DataSystemResourceType;
+import cn.xdf.acdc.devops.core.domain.entity.enumeration.MetadataSourceType;
+import cn.xdf.acdc.devops.service.process.datasystem.definition.DataCollectionDefinition;
+import cn.xdf.acdc.devops.service.process.datasystem.definition.DataFieldDefinition;
+import cn.xdf.acdc.devops.service.process.datasystem.definition.DataFieldDefinitionExtendPropertyName;
+import cn.xdf.acdc.devops.service.process.datasystem.mysql.MysqlDataSystemResourceConfigurationDefinition.Cluster;
+import cn.xdf.acdc.devops.service.process.datasystem.mysql.MysqlDataSystemResourceConfigurationDefinition.Instance;
+import cn.xdf.acdc.devops.service.process.datasystem.mysql.MysqlInstanceRoleType;
+import cn.xdf.acdc.devops.service.process.datasystem.relational.RelationalDataSystemMetadataService;
+import cn.xdf.acdc.devops.service.util.EncryptUtil;
+import cn.xdf.acdc.devops.service.utility.datasystem.helper.MysqlHelperService;
+import cn.xdf.acdc.devops.service.utility.datasystem.helper.RelationalDatabaseTableField;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -80,14 +85,36 @@ public class RelationalDataSystemMetadataServiceTest {
         final DataCollectionDefinition dataCollectionDefinition = dataSystemMetadataService.getDataCollectionDefinition(table.getId());
         
         List<DataFieldDefinition> expectedDataFieldDefinitions = new ArrayList<>();
-        expectedDataFieldDefinitions.add(new DataFieldDefinition("column_1", "bigint", Sets.newHashSet("PRIMARY")));
-        expectedDataFieldDefinitions.add(new DataFieldDefinition("column_2", "varchar(32)", Sets.newHashSet("unique_index_1")));
-        expectedDataFieldDefinitions.add(new DataFieldDefinition("column_3", "varchar(128)", Sets.newHashSet("unique_index_2", "multi_unique_index_1")));
-        expectedDataFieldDefinitions.add(new DataFieldDefinition("column_4", "varchar(128)", Sets.newHashSet("multi_unique_index_1")));
+        expectedDataFieldDefinitions.add(new DataFieldDefinition("column_1", "bigint", Schema.INT64_SCHEMA, false, null, new HashMap<>(), Sets.newHashSet("PRIMARY")));
+        expectedDataFieldDefinitions.add(new DataFieldDefinition("column_2", "varchar(32)", Schema.STRING_SCHEMA, false,
+                null,
+                getLengthProperty(32),
+                Sets.newHashSet("unique_index_1")));
+        expectedDataFieldDefinitions.add(new DataFieldDefinition("column_3",
+                "varchar(128)",
+                Schema.STRING_SCHEMA,
+                false,
+                null,
+                getLengthProperty(128),
+                Sets.newHashSet("unique_index_2",
+                        "multi_unique_index_1")));
+        expectedDataFieldDefinitions.add(new DataFieldDefinition("column_4",
+                "varchar(128)",
+                Schema.STRING_SCHEMA,
+                false,
+                null,
+                getLengthProperty(128),
+                Sets.newHashSet("multi_unique_index_1")));
         
         DataCollectionDefinition expectedDataCollectionDefinition = new DataCollectionDefinition("table_1", expectedDataFieldDefinitions);
         
         Assertions.assertThat(dataCollectionDefinition).isEqualTo(expectedDataCollectionDefinition);
+    }
+    
+    private Map<DataFieldDefinitionExtendPropertyName, Object> getLengthProperty(final Integer value) {
+        Map<DataFieldDefinitionExtendPropertyName, Object> result = new HashMap<>();
+        result.put(DataFieldDefinitionExtendPropertyName.LENGTH, value);
+        return result;
     }
     
     @Test

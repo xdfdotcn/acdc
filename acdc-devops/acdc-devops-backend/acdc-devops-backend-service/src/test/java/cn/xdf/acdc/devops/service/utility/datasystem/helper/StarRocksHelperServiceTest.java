@@ -1,15 +1,19 @@
 package cn.xdf.acdc.devops.service.utility.datasystem.helper;
 
 import cn.xdf.acdc.devops.service.error.exceptions.ServerErrorException;
+import cn.xdf.acdc.devops.service.process.datasystem.definition.DataFieldDefinition;
 import cn.xdf.acdc.devops.service.utility.datasystem.helper.StarRocksHelperService.TableModelAndPrimaryKey;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import org.apache.kafka.connect.data.Schema;
 import org.assertj.core.api.Assertions;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.locationtech.jts.util.Assert;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -22,16 +26,21 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
+// CHECKSTYLE:OFF
 @RunWith(SpringRunner.class)
 public class StarRocksHelperServiceTest {
     
@@ -230,5 +239,83 @@ public class StarRocksHelperServiceTest {
     @Test(expected = ServerErrorException.class)
     public void testCheckPermissionsShouldThrowExceptionWhenInsufficientPermission() {
         throw new ServerErrorException("");
+    }
+    
+    @Test(expected = UnsupportedOperationException.class)
+    public void testCreateDataCollectionIfAbsentShouldThrowExceptionWithNoUks() {
+        List<DataFieldDefinition> fieldDefinitions = fakeFieldDefinitions();
+        Map<String, List<DataFieldDefinition>> uniqueIndexNameToFieldDefinitions = new HashMap<>();
+        
+        HostAndPort first = HOST_AND_PORTS.stream().findFirst().orElseThrow(UnsupportedOperationException::new);
+        Mockito.when(mysqlHelperService.choiceAvailableInstance(ArgumentMatchers.eq(HOST_AND_PORTS), ArgumentMatchers.eq(USERNAME_AND_PASSWORD))).thenReturn(first);
+        
+        starRocksHelperService.createDataCollectionIfAbsent(HOST_AND_PORTS, USERNAME_AND_PASSWORD, DATABASE_NAME, TABLE_NAME, fieldDefinitions, uniqueIndexNameToFieldDefinitions);
+        
+        ArgumentCaptor<String> sqlCapture = ArgumentCaptor.forClass(String.class);
+        Mockito.verify(mysqlHelperService).execute(ArgumentMatchers.eq(first), ArgumentMatchers.eq(USERNAME_AND_PASSWORD), sqlCapture.capture());
+    }
+    
+    @Test
+    public void testCreateDataCollectionIfAbsentShouldPassWithPrimaryKeySingleField() {
+        List<DataFieldDefinition> fieldDefinitions = fakeFieldDefinitions();
+        Map<String, List<DataFieldDefinition>> uniqueIndexNameToFieldDefinitions = new HashMap<>();
+        uniqueIndexNameToFieldDefinitions.put("PRIMARY", fieldDefinitions.stream().filter(dataFieldDefinition -> dataFieldDefinition.getName().equals("id")).collect(Collectors.toList()));
+        
+        HostAndPort first = HOST_AND_PORTS.stream().findFirst().orElseThrow(UnsupportedOperationException::new);
+        Mockito.when(mysqlHelperService.choiceAvailableInstance(ArgumentMatchers.eq(HOST_AND_PORTS), ArgumentMatchers.eq(USERNAME_AND_PASSWORD))).thenReturn(first);
+        
+        starRocksHelperService.createDataCollectionIfAbsent(HOST_AND_PORTS, USERNAME_AND_PASSWORD, DATABASE_NAME, TABLE_NAME, fieldDefinitions, uniqueIndexNameToFieldDefinitions);
+        
+        ArgumentCaptor<String> sqlCapture = ArgumentCaptor.forClass(String.class);
+        Mockito.verify(mysqlHelperService).execute(ArgumentMatchers.eq(first), ArgumentMatchers.eq(USERNAME_AND_PASSWORD), sqlCapture.capture());
+        String expectedSql = "create table if not exists `dummy_database`.`dummy_table` (\n" +
+                "\tid bigint NOT NULL,\n" +
+                "\tcode VARCHAR(1048576) NULL,\n" +
+                "\tname VARCHAR(1048576) NULL\n" +
+                ") PRIMARY KEY (id) \n" +
+                "DISTRIBUTED BY HASH(id)\n" +
+                "PROPERTIES (\n" +
+                "\t\"enable_persistent_index\" = \"true\"\n" +
+                ")";
+        Assert.equals(expectedSql, sqlCapture.getValue());
+    }
+    
+    @Test
+    public void testCreateDataCollectionIfAbsentShouldPassWithPrimaryKeyMultiFields() {
+        List<DataFieldDefinition> fieldDefinitions = fakeFieldDefinitions();
+        Map<String, List<DataFieldDefinition>> uniqueIndexNameToFieldDefinitions = new HashMap<>();
+        uniqueIndexNameToFieldDefinitions.put("PRIMARY", fieldDefinitions.stream()
+                .filter(dataFieldDefinition -> dataFieldDefinition.getName().equals("id") || dataFieldDefinition.getName().equals("code"))
+                .collect(Collectors.toList())
+        );
+        
+        HostAndPort first = HOST_AND_PORTS.stream().findFirst().orElseThrow(UnsupportedOperationException::new);
+        Mockito.when(mysqlHelperService.choiceAvailableInstance(ArgumentMatchers.eq(HOST_AND_PORTS), ArgumentMatchers.eq(USERNAME_AND_PASSWORD))).thenReturn(first);
+        
+        starRocksHelperService.createDataCollectionIfAbsent(HOST_AND_PORTS, USERNAME_AND_PASSWORD, DATABASE_NAME, TABLE_NAME, fieldDefinitions, uniqueIndexNameToFieldDefinitions);
+        
+        ArgumentCaptor<String> sqlCapture = ArgumentCaptor.forClass(String.class);
+        Mockito.verify(mysqlHelperService).execute(ArgumentMatchers.eq(first), ArgumentMatchers.eq(USERNAME_AND_PASSWORD), sqlCapture.capture());
+        String expectedSql = "create table if not exists `dummy_database`.`dummy_table` (\n" +
+                "\tid bigint NOT NULL,\n" +
+                "\tcode VARCHAR(1048576) NOT NULL,\n" +
+                "\tname VARCHAR(1048576) NULL\n" +
+                ") PRIMARY KEY (id,code) \n" +
+                "DISTRIBUTED BY HASH(id,code)\n" +
+                "PROPERTIES (\n" +
+                "\t\"enable_persistent_index\" = \"true\"\n" +
+                ")";
+        Assert.equals(expectedSql, sqlCapture.getValue());
+    }
+    
+    private List<DataFieldDefinition> fakeFieldDefinitions() {
+        List<DataFieldDefinition> result = new ArrayList<>();
+        DataFieldDefinition id = new DataFieldDefinition("id", "bigint", Schema.INT64_SCHEMA, false, "1", new HashMap<>(), new HashSet<>());
+        result.add(id);
+        DataFieldDefinition code = new DataFieldDefinition("code", "VARCHAR(1048576)", Schema.STRING_SCHEMA, false, "code_1", new HashMap<>(), new HashSet<>());
+        result.add(code);
+        DataFieldDefinition name = new DataFieldDefinition("name", "VARCHAR(1048576)", Schema.STRING_SCHEMA, false, "name_1", new HashMap<>(), new HashSet<>());
+        result.add(name);
+        return result;
     }
 }

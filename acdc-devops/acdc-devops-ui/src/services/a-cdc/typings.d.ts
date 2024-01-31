@@ -570,8 +570,8 @@ declare namespace API {
     sourceApproverEmail?: string;
     dbaApproveResult?: string;
     dbaApproverEmail?: string;
-    updateTimeFormat?: string;
-    creationTimeFormat?: string;
+    updateTime?: string;
+    creationTime?: string;
   };
 
   /**
@@ -642,12 +642,14 @@ declare namespace API {
 
   type ConnectorDetail = {
     id?: number;
+    name?:string;
     connectionIdWithThisAsSinkConnector?: number;
     connectorType?: string;
     dataSystemType?: string;
     dataSystemClusterName?: string;
     dataSystemResourceName?: string;
     connectorConfigurations?: ConnectorConfiguration[];
+    actualState?:string;
   };
 
   type ConnectorConfiguration = {
@@ -757,7 +759,7 @@ declare namespace API {
     lowerCaseNameToDataFieldDefinitions?: { [key: string]: DataFieldDefinition };
     uniqueIndexNameToFieldDefinitions?: { [key: string]: DataFieldDefinition[] };
 
-    extendProperties?: {[key: string]: string}
+    extendProperties?: { [key: string]: string };
   };
 
   type ConnectionRequisitionDetail = {
@@ -770,5 +772,165 @@ declare namespace API {
     hasDataCollectionChild: boolean;
     dataCollection: boolean;
     children: { [key: string]: DataSystemResourceDefinition };
+  };
+
+  /**
+   -----------------------
+   Wide table
+   -----------------------
+   */
+  type WideTable = {
+    // basic info
+    id?: number;
+
+    name?: string;
+
+    selectStatement?: string;
+
+    dataCollectionName?: string;
+
+    actualState?: string;
+
+    desiredState?: string;
+
+    requisitionState?: string;
+
+    description?: string;
+
+    creationTime?: string;
+  };
+
+  type WideTableList = {
+    data?: WideTable[];
+    total?: number;
+    success?: boolean;
+  };
+
+  type WideTableQuery = {
+    refreshVersion?: number;
+    name?: string;
+    current?: number;
+    pageSize?: number;
+  };
+  type WideTableSubqueryColumn = {
+    id?: number;
+    expression?: string;
+    alias?: string;
+    type?: string;
+    parentIds?: number[];
+  };
+
+  type WideTableColumn = {
+    id?: number;
+    name: string;
+    type: string;
+    isPrimaryKey?: boolean;
+  };
+
+  /**
+   -----------------------
+   Wide table sub query
+   -----------------------
+   */
+
+  type WideTableSubqueryColumn = {
+    id?: number;
+    expression?: string;
+    alias?: string;
+    type?: string;
+    parentIds?: number[];
+  };
+
+  type WideTableSubquery = {
+    id?: number;
+    name?: string;
+    selectStatement?: string;
+    tableSourceType?: string;
+    real?: boolean;
+    dataSystemResource?: DataSystemResource;
+    leftSubquery?: WideTableSubquery;
+    rightSubquery?: WideTableSubquery;
+    joinType?: string;
+    subquery?: WideTableSubquery;
+    columns: WideTableSubqueryColumn[];
+  };
+
+  /**
+   -----------------------
+   Wide table details
+   -----------------------
+   */
+  type WideTableDetail = {
+    // basic info
+    id?: number;
+
+    name?: string;
+
+    selectStatement?: string;
+
+    relatedConnectionIds?: number[];
+
+    dataCollectionIdProjectIdMappings: { [key: number]: number };
+
+    userDomainAccount?: string;
+
+    actualState?: string;
+
+    desiredState?: string;
+
+    requisitionState?: string;
+
+    description?: string;
+
+    projectId?: number;
+
+    creationTime?: string;
+
+    subQuery?: WideTableSubquery;
+
+    wideTableColumns?: WideTableColumn[];
+  };
+  /**
+   -----------------------
+   Requisition
+   -----------------------
+   */
+  type Requisition = {
+    state?: string;
+
+    thirdPartyId?: string;
+
+    description?: string;
+
+    userDomainAccount?: string;
+
+    sourceProjectName?: string;
+
+    sinkProjectName?: string;
+
+    sourceApproverDomainAccount?: string;
+
+    dbaApproverDomainAccount?: string;
+
+    sourceApprovalComments?: string;
+
+    dbaApprovalComments?: string;
+
+    creationTime?: string;
+  };
+
+  /**
+   -----------------------
+   Requisition batch
+   -----------------------
+   */
+  type RequisitionBatch = {
+    state?: string;
+
+    requisitions?: Requisition[];
+
+    domainAccount?: string;
+
+    creationTime?: string;
   };
 }

@@ -16,6 +16,7 @@ public class DataCollectionDefinition {
     
     private Map<String, List<DataFieldDefinition>> uniqueIndexNameToFieldDefinitions = new HashMap<>();
     
+    // todo: define property name enum, so that each data system can understand it
     private Properties extendProperties = new Properties();
     
     private String name;

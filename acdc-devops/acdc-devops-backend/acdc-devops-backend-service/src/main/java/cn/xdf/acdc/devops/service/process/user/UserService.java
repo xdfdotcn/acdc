@@ -133,4 +133,11 @@ public interface UserService {
      * @return userDTOS users with id
      */
     List<UserDTO> upsertOnDomainAccount(Collection<UserDTO> users);
+    
+    /**
+     * Obtain the user whose role is DBA.
+     *
+     * @return user list
+     */
+    List<UserDTO> getDbaApprovalUsers();
 }

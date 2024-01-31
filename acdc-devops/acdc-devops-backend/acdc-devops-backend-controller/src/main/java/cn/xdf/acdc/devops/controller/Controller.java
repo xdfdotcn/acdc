@@ -5,7 +5,7 @@ import org.springframework.context.SmartLifecycle;
 /**
  * A controller can coordinate multi components to provide capabilities.
  */
-public abstract class Controller implements Task, SmartLifecycle {
+public abstract class Controller implements SmartLifecycle {
     
     private volatile boolean isRunning;
     

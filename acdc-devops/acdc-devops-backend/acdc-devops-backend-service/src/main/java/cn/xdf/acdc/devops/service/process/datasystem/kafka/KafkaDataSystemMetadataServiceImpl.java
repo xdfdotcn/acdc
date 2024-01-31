@@ -83,4 +83,9 @@ public class KafkaDataSystemMetadataServiceImpl implements DataSystemMetadataSer
     public DataSystemType getDataSystemType() {
         return DataSystemType.KAFKA;
     }
+    
+    @Override
+    public DataSystemResourceDTO createDataCollectionByDataDefinition(final Long parentId, final String dataCollectionName, final DataCollectionDefinition dataCollectionDefinition) {
+        throw new UnsupportedOperationException();
+    }
 }

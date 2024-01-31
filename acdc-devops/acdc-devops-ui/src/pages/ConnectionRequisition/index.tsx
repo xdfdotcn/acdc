@@ -1,35 +1,18 @@
 /* eslint-disable react/prop-types */
-import React, { useRef, useState } from 'react';
-import { Breadcrumb, Modal, Button, Drawer, message, Select, Space, Tag, Card } from 'antd';
-import { ConfigProvider } from 'antd';
-import ProTable, { EditableFormInstance, ProColumns } from '@ant-design/pro-table';
-import { history } from 'umi';
+import React, {useRef, useState} from 'react';
+import {Breadcrumb, Button, Card, ConfigProvider, Drawer, message, Modal, Select, Space, Tag} from 'antd';
+import ProTable, {EditableFormInstance, ProColumns} from '@ant-design/pro-table';
+import {history} from 'umi';
+import ProForm, {DrawerForm, ModalForm, ProFormInstance, ProFormTextArea, StepsForm,} from '@ant-design/pro-form';
+import DcSearcher, {ProjectNode, SearchRecord, SearchScope,} from '../connection/components/DcSearcher';
+import {DataSystemTypeConstant} from '@/services/a-cdc/constant/DataSystemTypeConstant';
+import ConnectionColumnConf, {ConnectionColumnConfProps,} from '../connection/components/ConnectionColumnConf';
+import {generateConnectionColumnConf, getDataCollectionDefinition, pagedQueryDataSystemResource, validateDataCollection,} from '@/services/a-cdc/api';
+import {verifyUKWithShowMessage} from '@/services/a-cdc/connection/connection-column-conf-service';
+import {EditOutlined} from '@ant-design/icons';
+import {DataSystemResourceTypeConstant} from '@/services/a-cdc/constant/DataSystemResourceTypeConstant';
+
 const { Option } = Select;
-import ProForm, {
-  DrawerForm,
-  ModalForm,
-  ProFormInstance,
-  ProFormTextArea,
-  StepsForm,
-} from '@ant-design/pro-form';
-import DcSearcher, {
-  ProjectNode,
-  SearchRecord,
-  SearchScope,
-} from '../connection/components/DcSearcher';
-import { DataSystemTypeConstant } from '@/services/a-cdc/constant/DataSystemTypeConstant';
-import ConnectionColumnConf, {
-  ConnectionColumnConfProps,
-} from '../connection/components/ConnectionColumnConf';
-import {
-  generateConnectionColumnConf,
-  getDataCollectionDefinition,
-  pagedQueryDataSystemResource,
-  validateDataCollection,
-} from '@/services/a-cdc/api';
-import { verifyUKWithShowMessage } from '@/services/a-cdc/connection/connection-column-conf-service';
-import { EditOutlined } from '@ant-design/icons';
-import { DataSystemResourceTypeConstant } from '@/services/a-cdc/constant/DataSystemResourceTypeConstant';
 
 const { confirm } = Modal;
 
@@ -166,17 +149,21 @@ const ConnctoinRequisition: React.FC = () => {
         <StepsForm.StepForm title="进入链路管理页,启动链路"></StepsForm.StepForm>
       </StepsForm>
       <br></br>
-      <p style={{ fontSize: 15 }}>源端支持的数据系统</p>
-      <Tag>MYSQL</Tag>
-      <Tag>TIDB</Tag>
+      <p style={{fontSize: 15}}>源端支持的数据系统</p>
+      <Tag>MySQL</Tag>
+      <Tag>TiDB</Tag>
       <br></br>
       <br></br>
       <br></br>
-      <p style={{ fontSize: 15 }}>目标端支持的数据系统</p>
-      <Tag>MYSQL</Tag>
-      <Tag>TIDB</Tag>
-      <Tag>HIVE</Tag>
-      <Tag>KAFKA</Tag>
+      <p style={{fontSize: 15}}>目标端支持的数据系统</p>
+      <Tag>MySQL</Tag>
+      <Tag>TiDB</Tag>
+      <Tag>SQLServer</Tag>
+      <Tag>Oracle</Tag>
+      <Tag>Hive</Tag>
+      <Tag>Starrocks</Tag>
+      <Tag>Elasticsearch</Tag>
+      <Tag>Kafka</Tag>
       <br></br>
       <br></br>
       <br></br>
@@ -864,10 +851,11 @@ const ConnctoinRequisition: React.FC = () => {
               searchScope={SearchScope.ALL}
               multipleChoice={true}
               validateProjectOwner={true}
-              includedDataSystemTypes={[DataSystemTypeConstant.TIDB, DataSystemTypeConstant.MYSQL]}
+              includedDataSystemTypes={[DataSystemTypeConstant.TIDB, DataSystemTypeConstant.MYSQL, DataSystemTypeConstant.ACDC_WIDE_TABLE]}
               rootResourceTypes={[
                 DataSystemResourceTypeConstant.MYSQL_CLUSTER,
                 DataSystemResourceTypeConstant.TIDB_CLUSTER,
+                DataSystemResourceTypeConstant.ACDC_WIDE_TABLE,
               ]}
               onSelect={(records) => {
                 setSourceSrListSt(records);

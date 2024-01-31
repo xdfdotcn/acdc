@@ -2,20 +2,20 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-
+    
     <modelVersion>4.0.0</modelVersion>
-
+    
     <parent>
         <artifactId>acdc-devops-backend</artifactId>
         <groupId>cn.xdf.acdc</groupId>
         <version>1.0.0-Alpha-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-
+    
     <artifactId>acdc-devops-backend-api</artifactId>
     <name>${project.artifactId}</name>
     <packaging>jar</packaging>
-
+    
     <dependencies>
         <!--Spring -->
         <dependency>
@@ -100,7 +100,7 @@
             <artifactId>archunit-junit5-engine</artifactId>
             <scope>test</scope>
         </dependency>
-
+        
         <!-- Spring Cloud -->
         <dependency>
             <groupId>io.micrometer</groupId>
@@ -110,7 +110,7 @@
             <groupId>io.dropwizard.metrics</groupId>
             <artifactId>metrics-core</artifactId>
         </dependency>
-
+        
         <!-- ACDC -->
         <dependency>
             <groupId>cn.xdf.acdc</groupId>
@@ -142,8 +142,12 @@
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>connect-api</artifactId>
+        </dependency>
     </dependencies>
-
+    
     <profiles>
         <profile>
             <id>xdf</id>
@@ -176,7 +180,7 @@
             </dependencies>
         </profile>
     </profiles>
-
+    
     <build>
         <plugins>
             <plugin>

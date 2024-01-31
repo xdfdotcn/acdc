@@ -46,8 +46,6 @@ spring:
     cache-duration: PT1S # 1 second, see the ISO 8601 standard
   thymeleaf:
     cache: false
-#  kafka:
-#    value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 
 server:
   port: 8080
@@ -142,6 +140,9 @@ acdc:
           enable.auto.commit:
           auto.offset.reset:
           max.poll.records:
+
+  approve:
+    policy: SKIP_ALL
   runtime:
     host:
       ranges:

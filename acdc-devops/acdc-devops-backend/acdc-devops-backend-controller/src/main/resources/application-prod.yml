@@ -79,6 +79,8 @@ acdc:
       data-collection:
         partitions: 3
         replication-factor: 3
+        configs:
+          retention.ms: 259200000
       schema-history:
         partitions: 1
         replication-factor: 3
@@ -92,6 +94,7 @@ acdc:
         configs:
           cleanup.policy: compact
           compression.type: lz4
+          retention.ms: 259200000
       ticdc:
         partitions: 12
         replication-factor: 3

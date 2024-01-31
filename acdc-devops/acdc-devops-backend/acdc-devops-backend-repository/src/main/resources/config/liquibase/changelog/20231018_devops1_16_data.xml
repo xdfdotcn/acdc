@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+    
+    <!--
+       1. 本次更改发生于 devops 1.16 迭代
+    -->
+    <changeSet id="devops-tag-1_16_data" author="ACDC">
+        <tagDatabase tag="devops-1_16_data"/>
+    </changeSet>
+    
+    <!-- 维护自建starrocks集群的元数据信息 -->
+    <changeSet id="devops-1_16_data_1" author="ACDC">
+        <loadData
+                file="config/liquibase/data/acdc_user.csv"
+                separator=";"
+                tableName="user"/>
+        <loadData
+                file="config/liquibase/data/project.csv"
+                separator=";"
+                tableName="project"/>
+        <loadData
+                file="config/liquibase/data/data_system_resource.csv"
+                separator=";"
+                tableName="data_system_resource"/>
+        <loadData
+                file="config/liquibase/data/project_data_system_resource_mapping.csv"
+                separator=";"
+                tableName="project_data_system_resource_mapping"/>
+        <rollback/>
+    </changeSet>
+</databaseChangeLog>
